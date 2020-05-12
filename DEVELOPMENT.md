@@ -1,4 +1,4 @@
-# Development
+<!-- # Development
 
 This doc explains how to setup a development environment so you can get started
 [contributing](https://www.knative.dev/contributing/) to Knative
@@ -70,4 +70,4 @@ _Adding the `upstream` remote sets you up nicely for regularly
 [syncing your fork](https://help.github.com/articles/syncing-a-fork/)._
 
 Once you reach this point you are ready to do a full build and deploy as
-described below.
+described below. -->

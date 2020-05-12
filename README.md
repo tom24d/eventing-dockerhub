@@ -1,14 +1,12 @@
-# Knative Eventing Sample Source
+# [WIP]Knative Eventing Dockerhub Source
 
-[![GoDoc](https://godoc.org/knative.dev/sample-source?status.svg)](https://godoc.org/knative.dev/sample-source)
-[![Go Report Card](https://goreportcard.com/badge/knative/sample-source)](https://goreportcard.com/report/knative/sample-source)
+Knative Eventing `dockerhub-source` defines a event source that transforms webhook events
+from hub.docker.com into CloudEvents and deliver specified sink in configuration yaml.
 
-Knative Eventing `sample-source` defines a simple source that transforms events
-from an HTTP server into CloudEvents and demonstrates the canonical style in
-which Knative Eventing writes sources.
-
-To learn more about Knative, please visit our
+To learn more about Knative, please visit
 [Knative docs](https://github.com/knative/docs) repository.
 
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
 and [DEVELOPMENT.md](./DEVELOPMENT.md).
+
+This project is inspired by [the idea of JBoss community](https://docs.jboss.org/display/GSOC/Google+Summer+of+Code+2020+ideas#GoogleSummerofCode2020ideas-Knative-Eventsourcesforcontainerregistries,pipelinesandbuilds).
