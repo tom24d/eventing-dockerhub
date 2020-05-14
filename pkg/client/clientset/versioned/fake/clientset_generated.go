@@ -19,14 +19,14 @@ limitations under the License.
 package fake
 
 import (
+	clientset "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned"
+	dockerhubsourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/typed/sources/v1alpha1"
+	fakedockerhubsourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/typed/sources/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
-	clientset "knative.dev/sample-source/pkg/client/clientset/versioned"
-	samplesv1alpha1 "knative.dev/sample-source/pkg/client/clientset/versioned/typed/samples/v1alpha1"
-	fakesamplesv1alpha1 "knative.dev/sample-source/pkg/client/clientset/versioned/typed/samples/v1alpha1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -76,7 +76,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// SamplesV1alpha1 retrieves the SamplesV1alpha1Client
-func (c *Clientset) SamplesV1alpha1() samplesv1alpha1.SamplesV1alpha1Interface {
-	return &fakesamplesv1alpha1.FakeSamplesV1alpha1{Fake: &c.Fake}
+// DockerhubsourceV1alpha1 retrieves the DockerhubsourceV1alpha1Client
+func (c *Clientset) DockerhubsourceV1alpha1() dockerhubsourcev1alpha1.DockerhubsourceV1alpha1Interface {
+	return &fakedockerhubsourcev1alpha1.FakeDockerhubsourceV1alpha1{Fake: &c.Fake}
 }

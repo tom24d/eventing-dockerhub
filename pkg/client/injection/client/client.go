@@ -21,10 +21,10 @@ package client
 import (
 	context "context"
 
+	versioned "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned"
 	rest "k8s.io/client-go/rest"
 	injection "knative.dev/pkg/injection"
 	logging "knative.dev/pkg/logging"
-	versioned "knative.dev/sample-source/pkg/client/clientset/versioned"
 )
 
 func init() {
@@ -43,7 +43,7 @@ func Get(ctx context.Context) versioned.Interface {
 	untyped := ctx.Value(Key{})
 	if untyped == nil {
 		logging.FromContext(ctx).Panic(
-			"Unable to fetch knative.dev/sample-source/pkg/client/clientset/versioned.Interface from context.")
+			"Unable to fetch github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned.Interface from context.")
 	}
 	return untyped.(versioned.Interface)
 }

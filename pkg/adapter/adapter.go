@@ -1,25 +1,15 @@
 package adapter
 
-// import (
-// 	"context"
-// 	"time"
-
-// 	cloudevents "github.com/cloudevents/sdk-go/v2"
-// 	"go.uber.org/zap"
-
-// 	"knative.dev/eventing/pkg/adapter/v2"
-// 	"knative.dev/pkg/logging"
-// )
-
-// type envConfig struct {
-// 	// Include the standard adapter.EnvConfig used by all adapters.
-// 	adapter.EnvConfig
-
-// 	// Interval between events, for example "5s", "100ms"
-// 	Interval time.Duration `envconfig:"INTERVAL" required:"true"`
-// }
-
-// func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
+//import (
+//	"knative.dev/eventing/pkg/adapter/v2"
+//)
+//
+//type envConfig struct {
+//	// Include the standard adapter.EnvConfig used by all adapters.
+//	adapter.EnvConfig
+//}
+//
+//func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
 
 // // Adapter generates events at a regular interval.
 // type Adapter struct {

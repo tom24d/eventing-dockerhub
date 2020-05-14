@@ -23,13 +23,13 @@ import (
 	sync "sync"
 	time "time"
 
+	versioned "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/tom24d/eventing-dockerhub/pkg/client/informers/externalversions/internalinterfaces"
+	sources "github.com/tom24d/eventing-dockerhub/pkg/client/informers/externalversions/sources"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	versioned "knative.dev/sample-source/pkg/client/clientset/versioned"
-	internalinterfaces "knative.dev/sample-source/pkg/client/informers/externalversions/internalinterfaces"
-	samples "knative.dev/sample-source/pkg/client/informers/externalversions/samples"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.
@@ -172,9 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Samples() samples.Interface
+	Dockerhubsource() sources.Interface
 }
 
-func (f *sharedInformerFactory) Samples() samples.Interface {
-	return samples.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Dockerhubsource() sources.Interface {
+	return sources.New(f, f.namespace, f.tweakListOptions)
 }
