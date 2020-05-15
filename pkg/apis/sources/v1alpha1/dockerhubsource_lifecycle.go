@@ -1,14 +1,10 @@
 package v1alpha1
 
 import (
-
 	"knative.dev/pkg/webhook/resourcesemantics"
 
-	"knative.dev/pkg/apis"
-	"knative.dev/eventing/pkg/apis/duck"
-	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-
+	"knative.dev/pkg/apis"
 )
 
 // Check that GitHubSource can be validated and can be defaulted.
@@ -45,7 +41,7 @@ func (s *DockerHubSourceStatus) InitializeConditions() {
 }
 
 // MarkSink sets the condition that the source has a sink configured.
-func (s DockerHubSourceStatus) MarkSink(uri *apis.URL) {
+func (s *DockerHubSourceStatus) MarkSink(uri *apis.URL) {
 	s.SinkURI = uri
 	if len(uri.String()) > 0 {
 		dockerHubCondSet.Manage(s).MarkTrue(DockerHubSourceConditionSinkProvided)
