@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    samples.knative.dev/release: devel
-    control-plane: sample-source-controller-manager
-  name: sample-source-controller-manager
-  namespace: knative-samples
+    contrib.eventing.knative.dev/release: devel
+    control-plane: dockerhub-source-controller-manager
+  name: dockerhub-source-controller-manager
+  namespace: knative-sources
 spec:
   selector:
-    control-plane: sample-source-controller-manager
+    control-plane: dockerhub-source-controller-manager
   ports:
   - port: 443

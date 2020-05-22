@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-source-webhook
-  namespace: knative-samples
+  name: dockerhub-source-webhook
+  namespace: knative-sources
   labels:
-    sample.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 spec:
   replicas: 1
   selector:
     matchLabels: &labels
-      app: sample-source-webhook
-      role: sample-source-webhook
+      app: dockerhub-source-webhook
+      role: dockerhub-source-webhook
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: "false"
       labels: *labels
     spec:
-      serviceAccountName: sample-source-webhook
+      serviceAccountName: dockerhub-source-webhook
       containers:
-        - name: samplesource-webhook
+        - name: dockerhub-source-webhook
           terminationMessagePolicy: FallbackToLogsOnError
-          image: ko://knative.dev/sample-source/cmd/webhook
+          image: ko://github.com/tom24d/eventing-dockerhub/cmd/webhook
           env:
           - name: SYSTEM_NAMESPACE
             valueFrom:
@@ -32,7 +32,7 @@ spec:
           - name: METRICS_DOMAIN
             value: knative.dev/eventing
           - name: WEBHOOK_NAME
-            value: samplesource-webhook
+            value: dockerhub-source-webhook
           ports:
           - containerPort: 9090
             name: metrics
@@ -52,14 +52,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    eventing.knative.dev/release: devel
-    role: sample-source-webhook
-  name: sample-source-webhook
-  namespace: knative-samples
+    contrib.eventing.knative.dev/release: devel
+    role: dockerhub-source-webhook
+  name: dockerhub-source-webhook
+  namespace: knative-sources
 spec:
   ports:
     - name: https-webhook
       port: 443
       targetPort: 8443
   selector:
-    role: sample-source-webhook
+    role: dockerhub-source-webhook

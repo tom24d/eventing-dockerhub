@@ -1,15 +1,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: sample-source-webhook
+  name: dockerhub-source-webhook
   labels:
-    sample.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 rules:
   # Sources admin
   - apiGroups:
-      - samples.knative.dev
+      - sources.knative.dev
     resources:
-      - samplesources
+      - dockerhubsources
     verbs: &everything
       - get
       - list
@@ -21,16 +21,16 @@ rules:
 
   # Sources finalizer
   - apiGroups:
-      - samples.knative.dev
+      - sources.knative.dev
     resources:
-      - samplesources/finalizers
+      - dockerhubsources/finalizers
     verbs: *everything
 
   # Source statuses update
   - apiGroups:
-      - samples.knative.dev
+      - sources.knative.dev
     resources:
-      - samplesources/status
+      - dockerhubsources/status
     verbs:
       - get
       - update

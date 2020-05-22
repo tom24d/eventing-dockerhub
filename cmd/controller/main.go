@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	component = "dockerhub_controller"
+	component = "dockerhub-source-controller"
 )
 
 func main() {

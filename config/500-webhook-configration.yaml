@@ -1,60 +1,60 @@
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: defaulting.webhook.knative-samples.knative.dev
+  name: defaulting.webhook.dockerhub.sources.knative.dev
   labels:
-    samples.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 webhooks:
   - admissionReviewVersions:
       - v1beta1
     clientConfig:
       service:
-        name: sample-source-webhook
-        namespace: knative-samples
+        name: dockerhub-source-webhook
+        namespace: knative-sources
     failurePolicy: Fail
-    name: defaulting.webhook.knative-samples.knative.dev
+    name: defaulting.webhook.dockerhub.sources.knative.dev
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: validation.webhook.knative-samples.knative.dev
+  name: validation.webhook.dockerhub.sources.knative.dev
   labels:
-    samples.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 webhooks:
   - admissionReviewVersions:
       - v1beta1
     clientConfig:
       service:
-        name: sample-source-webhook
-        namespace: knative-samples
+        name: dockerhub-source-webhook
+        namespace: knative-sources
     failurePolicy: Fail
     name: validation.webhook.knative-samples.knative.dev
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: config.webhook.knative-samples.knative.dev
+  name: config.webhook.dockerhub.sources.knative.dev
   labels:
-    serving.knative.dev/release: devel
+    contrib.eventing..knative.dev/release: devel
 webhooks:
   - admissionReviewVersions:
       - v1beta1
     clientConfig:
       service:
-        name: sample-source-webhook
-        namespace: knative-samples
+        name: dockerhub-source-webhook
+        namespace: knative-sources
     failurePolicy: Fail
-    name: config.webhook.knative-samples.knative.dev
+    name: config.webhook.dockerhub.sources.knative.dev
     namespaceSelector:
       matchExpressions:
-        - key: samples.knative.dev/release
+        - key: contrib.eventing.knative.dev/release
           operator: Exists
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: webhook-certs
-  namespace: knative-samples
+  namespace: knative-sources
   labels:
-    samples.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 # The data is populated at install time.

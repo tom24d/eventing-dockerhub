@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-source-controller
-  namespace: knative-samples
+  name: dockerhub-source-controller
+  namespace: knative-sources
   labels:
-    samples.knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sample-source-controller
+      app: dockerhub-source-controller
   template:
     metadata:
       labels:
-        app: sample-source-controller
-        samples.knative.dev/release: devel
+        app: dockerhub-source-controller
+        contrib.eventing.knative.dev/release: devel
     spec:
-      serviceAccountName: sample-source-controller
+      serviceAccountName: dockerhub-source-controller
 
       containers:
       - name: controller
         terminationMessagePolicy: FallbackToLogsOnError
-        image: ko://knative.dev/sample-source/cmd/controller
+        image: ko://github.com/tom24d/eventing-dockerhub/cmd/controller
 
         resources:
           requests:
@@ -40,7 +40,7 @@ spec:
           - name: METRICS_DOMAIN
             value: knative.dev/sources
           - name: SAMPLE_SOURCE_RA_IMAGE
-            value: ko://knative.dev/sample-source/cmd/receive_adapter
+            value: ko://github.com/tom24d/eventing-dockerhub/cmd/receive_adapter
 
         securityContext:
           allowPrivilegeEscalation: false
