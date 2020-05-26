@@ -55,6 +55,12 @@ func DockerHubCloudEventsSource() string {
 	return dockerHubSourcePrefix //+ owner and repo?
 }
 
+const (
+	// DockerhubSourceConditionReady is set when the revision is starting to materialize
+	// runtime resources, and becomes true when those resources are ready.
+	DockerhubSourceConditionReady = apis.ConditionReady
+)
+
 type DockerHubSourceSpec struct {
 	// OwnerAndRepository contains DockerHub owner/org and repository to
 	// receive events from. The repository may be left off to receive
@@ -93,9 +99,4 @@ type DockerHubSourceList struct {
 	metav1.ObjectMeta `json:"metadata"`
 
 	Items []DockerHubSource `json:"items"`
-}
-
-
-func init() {
-	SchemeBuilder.Register(&DockerHubSource{}, &DockerHubSourceList{})
 }
