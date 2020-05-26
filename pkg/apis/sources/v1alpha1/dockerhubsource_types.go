@@ -1,6 +1,5 @@
 package v1alpha1
 
-
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -8,7 +7,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
@@ -54,12 +52,6 @@ func DockerHubCloudEventsEventType () string {
 func DockerHubCloudEventsSource() string {
 	return dockerHubSourcePrefix //+ owner and repo?
 }
-
-const (
-	// DockerhubSourceConditionReady is set when the revision is starting to materialize
-	// runtime resources, and becomes true when those resources are ready.
-	DockerhubSourceConditionReady = apis.ConditionReady
-)
 
 type DockerHubSourceSpec struct {
 	// OwnerAndRepository contains DockerHub owner/org and repository to
