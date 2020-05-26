@@ -23,7 +23,7 @@ import (
 	// github.com/tom24d/eventing-dockerhub imports
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
-	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/resources"
+	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
 
 	// knative.dev/pkg imports
 	"knative.dev/pkg/controller"
