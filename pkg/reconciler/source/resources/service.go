@@ -78,6 +78,13 @@ func makeEnv(eventSource string) []corev1.EnvVar {
 		},
 	}, {
 		Name:  "METRICS_DOMAIN",
-		Value: "knative.dev/eventing",
+		Value: "knative.dev/sources",
+	}, {
+		Name: "PORT",
+		Value: "8080",
+	}, {
+		Name: "K_METRICS_CONFIG",
+	}, {
+		Name: "K_LOGGING_CONFIG",
 	}}
 }

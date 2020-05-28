@@ -37,9 +37,11 @@ spec:
             value: config-logging
           - name: CONFIG_OBSERVABILITY_NAME
             value: config-observability
+          - name: CONFIG_LEADERELECTION_NAME
+            value: config-leader-election-dockerhub
           - name: METRICS_DOMAIN
             value: knative.dev/sources
-          - name: SAMPLE_SOURCE_RA_IMAGE
+          - name: DH_RA_IMAGE
             value: ko://github.com/tom24d/eventing-dockerhub/cmd/receive_adapter
 
         securityContext:
@@ -48,3 +50,4 @@ spec:
         ports:
           - name: metrics
             containerPort: 9090
+      terminationGracePeriodSeconds: 10

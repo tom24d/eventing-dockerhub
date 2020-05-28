@@ -11,3 +11,4 @@ spec:
     control-plane: dockerhub-source-controller-manager
   ports:
   - port: 443
+    targetPort: 8080
