@@ -35,7 +35,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: config.webhook.dockerhub.sources.knative.dev
   labels:
-    contrib.eventing..knative.dev/release: devel
+    contrib.eventing.knative.dev/release: devel
 webhooks:
   - admissionReviewVersions:
       - v1beta1
