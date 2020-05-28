@@ -37,7 +37,7 @@ type Key struct{}
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := factory.Get(ctx)
-	inf := f.Dockerhubsource().V1alpha1().DockerHubSources()
+	inf := f.Sources().V1alpha1().DockerHubSources()
 	return context.WithValue(ctx, Key{}, inf), inf.Informer()
 }
 

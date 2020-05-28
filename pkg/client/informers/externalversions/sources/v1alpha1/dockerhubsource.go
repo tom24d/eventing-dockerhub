@@ -61,13 +61,13 @@ func NewFilteredDockerHubSourceInformer(client versioned.Interface, namespace st
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.DockerhubsourceV1alpha1().DockerHubSources(namespace).List(options)
+				return client.SourcesV1alpha1().DockerHubSources(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.DockerhubsourceV1alpha1().DockerHubSources(namespace).Watch(options)
+				return client.SourcesV1alpha1().DockerHubSources(namespace).Watch(options)
 			},
 		},
 		&sourcesv1alpha1.DockerHubSource{},

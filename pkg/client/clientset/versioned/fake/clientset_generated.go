@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned"
-	dockerhubsourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/typed/sources/v1alpha1"
-	fakedockerhubsourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/typed/sources/v1alpha1/fake"
+	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/typed/sources/v1alpha1"
+	fakesourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/typed/sources/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -76,7 +76,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// DockerhubsourceV1alpha1 retrieves the DockerhubsourceV1alpha1Client
-func (c *Clientset) DockerhubsourceV1alpha1() dockerhubsourcev1alpha1.DockerhubsourceV1alpha1Interface {
-	return &fakedockerhubsourcev1alpha1.FakeDockerhubsourceV1alpha1{Fake: &c.Fake}
+// SourcesV1alpha1 retrieves the SourcesV1alpha1Client
+func (c *Clientset) SourcesV1alpha1() sourcesv1alpha1.SourcesV1alpha1Interface {
+	return &fakesourcesv1alpha1.FakeSourcesV1alpha1{Fake: &c.Fake}
 }

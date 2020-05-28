@@ -30,13 +30,13 @@ import (
 
 // FakeDockerHubSources implements DockerHubSourceInterface
 type FakeDockerHubSources struct {
-	Fake *FakeDockerhubsourceV1alpha1
+	Fake *FakeSourcesV1alpha1
 	ns   string
 }
 
-var dockerhubsourcesResource = schema.GroupVersionResource{Group: "dockerhubsource.example.com", Version: "v1alpha1", Resource: "dockerhubsources"}
+var dockerhubsourcesResource = schema.GroupVersionResource{Group: "sources.knative.dev", Version: "v1alpha1", Resource: "dockerhubsources"}
 
-var dockerhubsourcesKind = schema.GroupVersionKind{Group: "dockerhubsource.example.com", Version: "v1alpha1", Kind: "DockerHubSource"}
+var dockerhubsourcesKind = schema.GroupVersionKind{Group: "sources.knative.dev", Version: "v1alpha1", Kind: "DockerHubSource"}
 
 // Get takes name of the dockerHubSource, and returns the corresponding dockerHubSource object, and an error if there is any.
 func (c *FakeDockerHubSources) Get(name string, options v1.GetOptions) (result *v1alpha1.DockerHubSource, err error) {

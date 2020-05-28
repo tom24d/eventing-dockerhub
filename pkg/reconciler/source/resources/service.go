@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"context"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,6 +19,7 @@ type ServiceArgs struct {
 	Source              *sourcesv1alpha1.DockerHubSource
 	EventSource         string
 	AdditionalEnvs      []corev1.EnvVar
+	Context context.Context
 }
 
 // MakeService generates, but does not create, a Service for the given
@@ -26,9 +28,19 @@ func MakeService(args *ServiceArgs) *v1.Service {
 	labels := map[string]string{
 		"receive-adapter": "dockerhub",
 	}
-	sinkURI := args.Source.Status.SinkURI
-	containerArgs := []string{fmt.Sprintf("--sink=%s", sinkURI.String())}
-	return &v1.Service{
+
+	envs := []corev1.EnvVar{{
+		Name:  "EVENT_SOURCE",
+		Value: args.EventSource,
+	}, {
+		Name:  "METRICS_DOMAIN",
+		Value: "knative.dev/sources",
+	}, {
+		Name: "NAMESPACE",
+		Value: args.Source.Namespace,
+	}}
+
+	ksvc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: fmt.Sprintf("%s-", args.Source.Name),
 			Namespace:    args.Source.Namespace,
@@ -45,10 +57,9 @@ func MakeService(args *ServiceArgs) *v1.Service {
 							Containers: []corev1.Container{{
 								Image: args.ReceiveAdapterImage,
 								Env: append(
-									makeEnv(args.EventSource),
+									envs,
 									args.AdditionalEnvs...,
 								),
-								Args: containerArgs,
 							}},
 						},
 					},
@@ -56,35 +67,6 @@ func MakeService(args *ServiceArgs) *v1.Service {
 			},
 		},
 	}
-}
-
-func makeEnv(eventSource string) []corev1.EnvVar {
-	return []corev1.EnvVar{{
-		Name:  "EVENT_SOURCE",
-		Value: eventSource,
-	}, {
-		Name: "NAMESPACE",
-		ValueFrom: &corev1.EnvVarSource{
-			FieldRef: &corev1.ObjectFieldSelector{
-				FieldPath: "metadata.namespace",
-			},
-		},
-	}, {
-		Name: "NAME",
-		ValueFrom: &corev1.EnvVarSource{
-			FieldRef: &corev1.ObjectFieldSelector{
-				FieldPath: "metadata.name",
-			},
-		},
-	}, {
-		Name:  "METRICS_DOMAIN",
-		Value: "knative.dev/sources",
-	}, {
-		Name: "PORT",
-		Value: "8080",
-	}, {
-		Name: "K_METRICS_CONFIG",
-	}, {
-		Name: "K_LOGGING_CONFIG",
-	}}
+	ksvc.SetDefaults(args.Context)
+	return ksvc
 }

@@ -221,7 +221,7 @@ func (r *reconcilerImpl) updateStatus(existing *v1alpha1.DockerHubSource, desire
 		// The first iteration tries to use the injectionInformer's state, subsequent attempts fetch the latest state via API.
 		if attempts > 0 {
 
-			getter := r.Client.DockerhubsourceV1alpha1().DockerHubSources(desired.Namespace)
+			getter := r.Client.SourcesV1alpha1().DockerHubSources(desired.Namespace)
 
 			existing, err = getter.Get(desired.Name, metav1.GetOptions{})
 			if err != nil {
@@ -236,7 +236,7 @@ func (r *reconcilerImpl) updateStatus(existing *v1alpha1.DockerHubSource, desire
 
 		existing.Status = desired.Status
 
-		updater := r.Client.DockerhubsourceV1alpha1().DockerHubSources(existing.Namespace)
+		updater := r.Client.SourcesV1alpha1().DockerHubSources(existing.Namespace)
 
 		_, err = updater.UpdateStatus(existing)
 		return err
@@ -293,7 +293,7 @@ func (r *reconcilerImpl) updateFinalizersFiltered(ctx context.Context, resource 
 		return resource, err
 	}
 
-	patcher := r.Client.DockerhubsourceV1alpha1().DockerHubSources(resource.Namespace)
+	patcher := r.Client.SourcesV1alpha1().DockerHubSources(resource.Namespace)
 
 	resource, err = patcher.Patch(resource.Name, types.MergePatchType, patch)
 	if err != nil {

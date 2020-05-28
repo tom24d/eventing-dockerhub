@@ -26,22 +26,22 @@ rules:
   - list
 
 - apiGroups:
-  - ""
-  resources:
-  - events
-  verbs: *everything
-
-- apiGroups:
   - sources.knative.dev
   resources:
   - dockerhubsources
   verbs: *everything
 
+  # Sources finalizer
+- apiGroups:
+    - sources.knative.dev
+  resources:
+    - dockerhubsources/finalizers
+  verbs: *everything
+
 - apiGroups:
   - sources.knative.dev
   resources:
-  - dockersources/status
-  - dockersources/finalizers
+  - dockerhubsources/status
   verbs:
   - get
   - update
@@ -52,6 +52,7 @@ rules:
   resources:
     - sinkbindings
   verbs: *everything
+
 - apiGroups:
     - sources.knative.dev
   resources:
@@ -62,11 +63,26 @@ rules:
   - ""
   resources:
   - secrets
-  - configmaps
+  - services
   verbs:
   - get
   - list
   - watch
+
+# Events admin
+- apiGroups:
+    - ""
+  resources:
+    - events
+    - configmaps
+  verbs: *everything
+
+# Knative Service admin
+- apiGroups:
+    - serving.knative.dev
+  resources:
+    - services
+  verbs: *everything
 
 ---
 # The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".

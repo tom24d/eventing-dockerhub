@@ -52,9 +52,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=dockerhubsource.example.com, Version=v1alpha1
+	// Group=sources.knative.dev, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("dockerhubsources"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Dockerhubsource().V1alpha1().DockerHubSources().Informer()}, nil
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Sources().V1alpha1().DockerHubSources().Informer()}, nil
 
 	}
 

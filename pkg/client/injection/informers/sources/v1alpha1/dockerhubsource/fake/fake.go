@@ -35,6 +35,6 @@ func init() {
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := fake.Get(ctx)
-	inf := f.Dockerhubsource().V1alpha1().DockerHubSources()
+	inf := f.Sources().V1alpha1().DockerHubSources()
 	return context.WithValue(ctx, dockerhubsource.Key{}, inf), inf.Informer()
 }

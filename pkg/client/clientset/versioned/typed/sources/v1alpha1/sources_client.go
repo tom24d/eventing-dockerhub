@@ -24,22 +24,22 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-type DockerhubsourceV1alpha1Interface interface {
+type SourcesV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	DockerHubSourcesGetter
 }
 
-// DockerhubsourceV1alpha1Client is used to interact with features provided by the dockerhubsource.example.com group.
-type DockerhubsourceV1alpha1Client struct {
+// SourcesV1alpha1Client is used to interact with features provided by the sources.knative.dev group.
+type SourcesV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *DockerhubsourceV1alpha1Client) DockerHubSources(namespace string) DockerHubSourceInterface {
+func (c *SourcesV1alpha1Client) DockerHubSources(namespace string) DockerHubSourceInterface {
 	return newDockerHubSources(c, namespace)
 }
 
-// NewForConfig creates a new DockerhubsourceV1alpha1Client for the given config.
-func NewForConfig(c *rest.Config) (*DockerhubsourceV1alpha1Client, error) {
+// NewForConfig creates a new SourcesV1alpha1Client for the given config.
+func NewForConfig(c *rest.Config) (*SourcesV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -48,12 +48,12 @@ func NewForConfig(c *rest.Config) (*DockerhubsourceV1alpha1Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DockerhubsourceV1alpha1Client{client}, nil
+	return &SourcesV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new DockerhubsourceV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new SourcesV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *DockerhubsourceV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *SourcesV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -61,9 +61,9 @@ func NewForConfigOrDie(c *rest.Config) *DockerhubsourceV1alpha1Client {
 	return client
 }
 
-// New creates a new DockerhubsourceV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *DockerhubsourceV1alpha1Client {
-	return &DockerhubsourceV1alpha1Client{c}
+// New creates a new SourcesV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *SourcesV1alpha1Client {
+	return &SourcesV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -81,7 +81,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *DockerhubsourceV1alpha1Client) RESTClient() rest.Interface {
+func (c *SourcesV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

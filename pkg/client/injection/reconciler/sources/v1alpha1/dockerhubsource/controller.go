@@ -39,7 +39,7 @@ import (
 
 const (
 	defaultControllerAgentName = "dockerhubsource-controller"
-	defaultFinalizerName       = "dockerhubsources.dockerhubsource.example.com"
+	defaultFinalizerName       = "dockerhubsources.sources.knative.dev"
 )
 
 // NewImpl returns a controller.Impl that handles queuing and feeding work from

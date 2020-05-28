@@ -24,17 +24,17 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeDockerhubsourceV1alpha1 struct {
+type FakeSourcesV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeDockerhubsourceV1alpha1) DockerHubSources(namespace string) v1alpha1.DockerHubSourceInterface {
+func (c *FakeSourcesV1alpha1) DockerHubSources(namespace string) v1alpha1.DockerHubSourceInterface {
 	return &FakeDockerHubSources{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeDockerhubsourceV1alpha1) RESTClient() rest.Interface {
+func (c *FakeSourcesV1alpha1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

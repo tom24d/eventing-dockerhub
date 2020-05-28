@@ -41,9 +41,9 @@ func NewController(
 		return nil
 	}
 
-	dockerhubInformer := dockerhubinformer.Get(ctx)
 	ksvcInformer := kserviceinformer.Get(ctx)
 	sinkBindingInformer := sinkbindinginformer.Get(ctx)
+	dockerhubInformer := dockerhubinformer.Get(ctx)
 
 	r := &Reconciler{
 		kubeClientSet:       kubeclient.Get(ctx),
@@ -63,14 +63,16 @@ func NewController(
 	dockerhubInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	ksvcInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("DockerHubSource")),
+		FilterFunc: controller.FilterControllerGK(v1alpha1.Kind("DockerHubSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 
 	sinkBindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("DockerHubSource")),
+		FilterFunc: controller.FilterControllerGK(v1alpha1.Kind("DockerHubSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
+
+	logging.FromContext(ctx).Info("before return impl")
 
 	return impl
 }

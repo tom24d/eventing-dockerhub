@@ -56,7 +56,7 @@ func (in *DockerHubSource) DeepCopyObject() runtime.Object {
 func (in *DockerHubSourceList) DeepCopyInto(out *DockerHubSourceList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]DockerHubSource, len(*in))

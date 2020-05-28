@@ -56,7 +56,7 @@ type dockerHubSources struct {
 }
 
 // newDockerHubSources returns a DockerHubSources
-func newDockerHubSources(c *DockerhubsourceV1alpha1Client, namespace string) *dockerHubSources {
+func newDockerHubSources(c *SourcesV1alpha1Client, namespace string) *dockerHubSources {
 	return &dockerHubSources{
 		client: c.RESTClient(),
 		ns:     namespace,

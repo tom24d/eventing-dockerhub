@@ -46,8 +46,4 @@ spec:
 
         securityContext:
           allowPrivilegeEscalation: false
-
-        ports:
-          - name: metrics
-            containerPort: 9090
       terminationGracePeriodSeconds: 10
