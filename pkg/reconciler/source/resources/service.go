@@ -34,7 +34,7 @@ func MakeService(args *ServiceArgs) *v1.Service {
 		Value: args.EventSource,
 	}, {
 		Name:  "METRICS_DOMAIN",
-		Value: "knative.dev/sources",
+		Value: "knative.dev/eventing",
 	}, {
 		Name: "NAMESPACE",
 		Value: args.Source.Namespace,
