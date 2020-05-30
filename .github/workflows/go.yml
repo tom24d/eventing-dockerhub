@@ -19,12 +19,14 @@ jobs:
         go-version: ^1.13
       id: go
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
-
     - name: Get google/ko
       run: |
         GO111MODULE=on go get github.com/google/ko/cmd/ko
+
+
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
 
     - name: Unit test for v1alpha1
       run: go test ./pkg/apis/sources/v1alpha1
