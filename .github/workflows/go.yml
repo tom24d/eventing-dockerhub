@@ -31,6 +31,9 @@ jobs:
     - name: Unit test for v1alpha1
       run: go test ./pkg/apis/sources/v1alpha1
 
+    - name: Unit test for adapter
+      run: go test -race ./pkg/adapter
+
     - name: Build test for controller
       run: ko publish ./cmd/controller -L
 
