@@ -120,7 +120,7 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 				return
 			}
 			a.logger.Errorf("hook parser error: %v", err)
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
 		}
