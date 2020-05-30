@@ -1,8 +1,8 @@
-<!-- # Development
+# Development
 
 This doc explains how to setup a development environment so you can get started
 [contributing](https://www.knative.dev/contributing/) to Knative
-`sample-source`. Also take a look at:
+`dockerhub-source`. Also take a look at:
 
 - [The pull request workflow](https://knative.dev/community/contributing/reviewing/)
 
@@ -21,10 +21,9 @@ Before submitting a PR, see also [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 You must install these tools:
 
-1. [`go`](https://golang.org/doc/install): The language Knative `sample-source`
+1. [`go`](https://golang.org/doc/install): The language Knative `dockerhub-source`
    is built in
 1. [`git`](https://help.github.com/articles/set-up-git/): For source control
-1. [`dep`](https://github.com/golang/dep): For managing external dependencies.
 
 ### Environment setup
 
@@ -47,7 +46,7 @@ export PATH="${PATH}:${GOPATH}/bin"
 ### Checkout your fork
 
 The Go tools require that you clone the repository to the
-`src/knative.dev/sample-source` directory in your
+`src/github.com/tom24d/eventing-dockerhub` directory in your
 [`GOPATH`](https://github.com/golang/go/wiki/SettingGOPATH).
 
 To check out this repository:
@@ -58,11 +57,11 @@ To check out this repository:
 1. Clone it to your machine:
 
 ```shell
-mkdir -p ${GOPATH}/src/knative.dev
-cd ${GOPATH}/src/knative.dev
-git clone git@github.com:${YOUR_GITHUB_USERNAME}/sample-source.git
-cd sample-source
-git remote add upstream https://knative.dev/sample-source.git
+mkdir -p ${GOPATH}/src/github.com/tom24d
+cd ${GOPATH}/src/github.com/tom24d
+git clone https://github.com/${YOUR_GITHUB_USERNAME}/eventing-dockerhub.git
+cd eventing-dockerhub
+git remote add upstream https://github.com/tom24d/eventing-dockerhub.git
 git remote set-url --push upstream no_push
 ```
 
@@ -70,4 +69,4 @@ _Adding the `upstream` remote sets you up nicely for regularly
 [syncing your fork](https://help.github.com/articles/syncing-a-fork/)._
 
 Once you reach this point you are ready to do a full build and deploy as
-described below. -->
+described below.
