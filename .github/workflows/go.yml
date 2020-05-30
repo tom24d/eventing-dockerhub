@@ -1,0 +1,39 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Get google/ko
+      run: |
+        GO111MODULE=on go get github.com/google/ko/cmd/ko
+
+    - name: Unit test for v1alpha1
+      run: go test ./pkg/apis/sources/v1alpha1
+
+    - name: Build test for controller
+      run: ko publish ./cmd/controller -L
+
+    - name: Build test for webhook
+      run: ko publish ./cmd/webhook -L
+
+    - name: Build test for receive adapter
+      run: ko publish ./cmd/receive_adapter -L
