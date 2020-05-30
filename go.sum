@@ -287,7 +287,6 @@ github.com/elazarl/goproxy v0.0.0-20170405201442-c4fc26588b6e/go.mod h1:/Zj4wYkg
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/emicklei/go-restful v2.9.5+incompatible h1:spTtZBk5DYEvbxMVutUuTyh1Ao2r4iyvLdACqsl/Ljk=
 github.com/emicklei/go-restful v2.9.5+incompatible/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
-github.com/emicklei/go-restful-swagger12 v0.0.0-20170208215640-dcef7f557305/go.mod h1:qr0VowGBT4CS4Q8vFF8BSeKz34PuqKGxs/L0IAQA9DQ=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/envoyproxy/go-control-plane v0.6.9/go.mod h1:SBwIajubJHhxtWwsL9s8ss4safvEdbitLhGGK48rN6g=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
@@ -607,7 +606,6 @@ github.com/klauspost/cpuid v1.2.0/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgo
 github.com/klauspost/cpuid v1.2.2/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
 github.com/klauspost/pgzip v1.2.1/go.mod h1:Ch1tH69qFZu15pkjo5kYi6mth2Zzwzt50oCQKQE9RUs=
 github.com/knative/build v0.1.2/go.mod h1:/sU74ZQkwlYA5FwYDJhYTy61i/Kn+5eWfln2jDbw3Qo=
-github.com/knative/eventing-contrib v0.15.0 h1:z6Jvru05toSY/8Q/TtnCcQ8bhazTFXpxaaXFM6L5Z38=
 github.com/konsorten/go-windows-terminal-sequences v0.0.0-20180402223658-b729f2633dfe/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.2/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
@@ -681,7 +679,6 @@ github.com/modern-go/reflect2 v1.0.1 h1:9f412s+6RmYXLWZSEzVVgPGK7C2PphHj5RJrvfx9
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/morikuni/aec v1.0.0/go.mod h1:BbKIizmSmc5MMPqRYbxO4ZU0S0+P200+tUnFx7PXmsc=
 github.com/munnerz/goautoneg v0.0.0-20120707110453-a547fc61f48d/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
-github.com/munnerz/goautoneg v0.0.0-20190414153302-2ae31c8b6b30/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822/go.mod h1:+n7T8mK8HuQTcFwEeznm/DIxMOiR9yIdICNftLE1DvQ=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
@@ -1434,6 +1431,7 @@ k8s.io/kubernetes v1.14.7/go.mod h1:ocZa8+6APFNC2tX1DZASIbocyYT5jHzqFVsY5aoB7Jk=
 k8s.io/legacy-cloud-providers v0.17.0/go.mod h1:DdzaepJ3RtRy+e5YhNtrCYwlgyK87j/5+Yfp0L9Syp8=
 k8s.io/legacy-cloud-providers v0.17.4/go.mod h1:FikRNoD64ECjkxO36gkDgJeiQWwyZTuBkhu+yxOc1Js=
 k8s.io/metrics v0.17.2/go.mod h1:3TkNHET4ROd+NfzNxkjoVfQ0Ob4iZnaHmSEA4vYpwLw=
+k8s.io/metrics v0.17.6/go.mod h1:5AuIG+m+U5ga8DpqAUqQWBhGVyY485HfKpn471pmWrQ=
 k8s.io/test-infra v0.0.0-20181019233642-2e10a0bbe9b3/go.mod h1:2NzXB13Ji0nqpyublHeiPC4FZwU0TknfvyaaNfl/BTA=
 k8s.io/test-infra v0.0.0-20191212060232-70b0b49fe247/go.mod h1:d8SKryJBXAwfCFVL4wieRez47J2NOOAb9d029sWLseQ=
 k8s.io/test-infra v0.0.0-20200407001919-bc7f71ef65b8/go.mod h1:/WpJWcaDvuykB322WXP4kJbX8IpalOzuPxA62GpwkJk=
@@ -1447,9 +1445,8 @@ k8s.io/utils v0.0.0-20200124190032-861946025e34 h1:HjlUD6M0K3P8nRXmr2B9o4F9dUy9T
 k8s.io/utils v0.0.0-20200124190032-861946025e34/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
 knative.dev/caching v0.0.0-20190719140829-2032732871ff/go.mod h1:dHXFU6CGlLlbzaWc32g80cR92iuBSpsslDNBWI8C7eg=
 knative.dev/caching v0.0.0-20200521155757-e78d17bc250e/go.mod h1:bsKPIG2XZFYL8uw5BAxg7EMBLp0vNpu9jZIGus8HUPU=
-knative.dev/eventing v0.15.0 h1:0/RdQJ4RLixycbeHgJ7JTcStL64iacafU5NTh0CDOIs=
-knative.dev/eventing v0.15.1-0.20200528004559-c607c293b2a5 h1:E+TFONz3UFQGEduwcUDGN619c4Se7LeUi/FogeU5wfE=
-knative.dev/eventing v0.15.1-0.20200528004559-c607c293b2a5/go.mod h1:q2XG7081UX1xW1AEGmKz2PUdhB8t00PjBEdhAuO/IE0=
+knative.dev/eventing v0.15.1-0.20200529215202-9999757ff643 h1:g+OmHSXXdmKwnV8o8xhynOdwlqL7l7VV1868rNhhXPU=
+knative.dev/eventing v0.15.1-0.20200529215202-9999757ff643/go.mod h1:sHgMoXa+Hs9fqjQRy7Nqi7eq6FDlFZ1CKe96/Mg0aCE=
 knative.dev/eventing-contrib v0.6.1-0.20190723221543-5ce18048c08b h1:DTbaZGn06qcEoHuNyw3VmajapIUMuLSVjwFh6pNPews=
 knative.dev/eventing-contrib v0.6.1-0.20190723221543-5ce18048c08b/go.mod h1:SnXZgSGgMSMLNFTwTnpaOH7hXDzTFtw0J8OmHflNx3g=
 knative.dev/pkg v0.0.0-20191101194912-56c2594e4f11/go.mod h1:pgODObA1dTyhNoFxPZTTjNWfx6F0aKsKzn+vaT9XO/Q=
@@ -1465,8 +1462,10 @@ knative.dev/pkg v0.0.0-20200527173759-2d1a04d1ff82 h1:uC65bOUmC5UsVJgUI28QWis/oi
 knative.dev/pkg v0.0.0-20200527173759-2d1a04d1ff82/go.mod h1:ywZfX/0D8hoOf4uJVgeEvJpSmsOauQvr1IuAWld9UjM=
 knative.dev/pkg v0.0.0-20200528190300-08a86da47d28 h1:tLWWfrpGYT8vs/QLWYc7s0pqaw+ISz4UmM9AhrWBc8o=
 knative.dev/pkg v0.0.0-20200528190300-08a86da47d28/go.mod h1:ywZfX/0D8hoOf4uJVgeEvJpSmsOauQvr1IuAWld9UjM=
-knative.dev/serving v0.15.0 h1:sOzAJ5VGg8458wHsCT3bG5KqtpBVgOY7g2Vt/rHwf2A=
-knative.dev/serving v0.15.0/go.mod h1:cc+LozTiaDvg3802drxoRta8qovnJbxxbtw5l5mqV3o=
+knative.dev/pkg v0.0.0-20200529164702-389d28f9b67a h1:G5FDEM10xOTyWD1+JQFk2+QveGOJ9+InMw0eVvhzZXw=
+knative.dev/pkg v0.0.0-20200529164702-389d28f9b67a/go.mod h1:ywZfX/0D8hoOf4uJVgeEvJpSmsOauQvr1IuAWld9UjM=
+knative.dev/serving v0.15.1-0.20200529200802-e0b4b30c6461 h1:WjQpuq1WLQ7oC84OpmDKvQud46p33rHFxjnzVRwVPKU=
+knative.dev/serving v0.15.1-0.20200529200802-e0b4b30c6461/go.mod h1:ebxxoSXTWJjCBdyb3P6KU0kNuVEAUMi22OI2E7mAxxY=
 knative.dev/test-infra v0.0.0-20200407185800-1b88cb3b45a5/go.mod h1:xcdUkMJrLlBswIZqL5zCuBFOC22WIPMQoVX1L35i0vQ=
 knative.dev/test-infra v0.0.0-20200505052144-5ea2f705bb55/go.mod h1:WqF1Azka+FxPZ20keR2zCNtiQA1MP9ZB4BH4HuI+SIU=
 knative.dev/test-infra v0.0.0-20200513011557-d03429a76034/go.mod h1:aMif0KXL4g19YCYwsy4Ocjjz5xgPlseYV+B95Oo4JGE=
@@ -1477,6 +1476,8 @@ knative.dev/test-infra v0.0.0-20200522180958-6a0a9b9d893a/go.mod h1:n9eQkzmSNj8B
 knative.dev/test-infra v0.0.0-20200527185659-fc87694eb879/go.mod h1:7JtOmoYiYxh2oFO23nwGanuJ6qT6mFrRlZV1LL6gomY=
 knative.dev/test-infra v0.0.0-20200528222301-350178ab2a0e h1:ZzmzPgCKdrFg2MA2sGtd9HrlIQ7XidnmMJB8RDEduO0=
 knative.dev/test-infra v0.0.0-20200528222301-350178ab2a0e/go.mod h1:7JtOmoYiYxh2oFO23nwGanuJ6qT6mFrRlZV1LL6gomY=
+knative.dev/test-infra v0.0.0-20200529183702-2b8ec59797c8 h1:3PWr6WoX9Vjuq4zS1QfEy26E/EXXbEB/bYuobpu1CyM=
+knative.dev/test-infra v0.0.0-20200529183702-2b8ec59797c8/go.mod h1:7JtOmoYiYxh2oFO23nwGanuJ6qT6mFrRlZV1LL6gomY=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=
 modernc.org/golex v1.0.0/go.mod h1:b/QX9oBD/LhixY6NDh+IdGv17hgB+51fET1i2kPSmvk=
 modernc.org/mathutil v1.0.0/go.mod h1:wU0vUrJsVWBZ4P6e7xtFJEhFSNsfRLJ8H458uRjg03k=
