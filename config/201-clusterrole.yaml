@@ -5,10 +5,11 @@ metadata:
   labels:
     contrib.eventing.knative.dev/release: devel
 rules:
+# Knative Service admin
 - apiGroups:
-  - apps
+  - serving.knative.dev
   resources:
-  - deployments
+  - services
   verbs: &everything
   - get
   - list
@@ -75,13 +76,6 @@ rules:
   resources:
     - events
     - configmaps
-  verbs: *everything
-
-# Knative Service admin
-- apiGroups:
-    - serving.knative.dev
-  resources:
-    - services
   verbs: *everything
 
 - apiGroups:
