@@ -18,6 +18,7 @@ import (
 
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
+	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
 const (
@@ -53,6 +54,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 		client:   ceClient,
 		logger:   logger,
 		port: env.Port,
+		source: v1alpha1.DockerHubEventSource(),
 	}
 }
 
@@ -193,7 +195,7 @@ func (a *Adapter) handleEvent(payload interface{}, hdr http.Header) error {
 	dockerHubEventType := hdr.Get("X-" + DHHeaderEvent)
 	eventID := hdr.Get("X-" + DHHeaderDelivery)
 
-	event := cloudevents.NewEvent(cloudevents.VersionV03)
+	event := cloudevents.NewEvent()
 	event.SetID(eventID)
 	event.SetType(dockerHubEventType)
 	event.SetSource(a.source)

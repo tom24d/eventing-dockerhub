@@ -45,11 +45,11 @@ const (
 )
 
 func DockerHubCloudEventsEventType () string {
-	return dockerHubEventTypePrefix + ".webhook"
+	return dockerHubEventTypePrefix + ".webhook" // TODO maybe dockerhub.build?
 }
 
-func DockerHubCloudEventsSource() string {
-	return dockerHubSourcePrefix //+ owner and repo?
+func DockerHubEventSource() string {
+	return dockerHubSourcePrefix // TODO + owner and repo?
 }
 
 type DockerHubSourceSpec struct {

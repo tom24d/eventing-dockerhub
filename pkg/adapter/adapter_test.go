@@ -1,122 +1,130 @@
 package adapter
-// import (
-// 	"context"
-// 	"net"
-// 	"os"
-// 	"os/exec"
-// 	"testing"
-// 	"time"
 
-// 	cloudevents "github.com/cloudevents/sdk-go/v2"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/require"
-// 	"go.uber.org/zap"
-// 	"knative.dev/eventing/pkg/adapter/v2"
-// 	"knative.dev/pkg/logging"
-// )
+import (
+	"bytes"
+	"go.uber.org/zap"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"encoding/json"
+	"time"
 
-// func TestAdapter(t *testing.T) {
-// 	// Test sink to receive events.
-// 	sink := newSink(t)
-// 	defer sink.close()
+	"knative.dev/eventing/pkg/adapter/v2"
+	pkgtesting "knative.dev/pkg/reconciler/testing"
+	"knative.dev/pkg/logging"
+	adaptertest "knative.dev/eventing/pkg/adapter/v2/test"
 
-// 	tr, err := cloudevents.NewHTTP(cloudevents.WithTarget(sink.URL()))
-// 	c, err := cloudevents.NewClient(tr, cloudevents.WithUUIDs())
-// 	require.NoError(t, err)
 
-// 	// Keep the adapter logging quiet for tests.
-// 	ctx := logging.WithLogger(context.Background(), zap.NewNop().Sugar())
-// 	a := NewAdapter(ctx, &envConfig{Interval: time.Millisecond}, c)
-// 	stop := make(chan struct{})
-// 	go func() {
-// 		if err := a.Start(stop); err != nil {
-// 			logging.FromContext(ctx).Errorw("failed to start adapter", zap.Error(err))
-// 		}
-// 	}()
-// 	defer func() { close(stop) }()
-// 	verify(t, sink.received)
-// }
+	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
-// func verify(t *testing.T, received chan cloudevents.Event) {
-// 	for _, id := range []int{0, 1, 2} {
-// 		e := <-received
-// 		assert.Equal(t, "dev.knative.sample", e.Type())
-// 		//m := map[string]json.RawMessage{}
-// 		m := &dataExample{}
-// 		assert.NoError(t, e.DataAs(&m))
-// 		n := &dataExample{Sequence: id, Heartbeat: "1ms"}
-// 		assert.Equal(t, n, m)
-// 	}
-// }
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+)
 
-// func TestAdapterMain(t *testing.T) {
-// 	// Use the test executable to simulate the cmd/receive_adapter process if
-// 	// environment var t.Name() is set to "main"
-// 	// (see https://talks.golang.org/2014/testing.slide#23)
-// 	if os.Getenv(t.Name()) == "main" {
-// 		adapter.Main("sample-source", NewEnv, NewAdapter)
-// 		return
-// 	}
+const (
+	testSubject   = "1234"
+	testOwnerRepo = "test-user/test-repo"
+	testCallbackURL = "http://localhost:3030"
+)
 
-// 	// Set up a test sink to receive from the adapter.
-// 	sink := newSink(t)
-// 	defer sink.close()
+type testCase struct {
+	// name is a descriptive name for this test suitable as a first argument to t.Run()
+	name string
 
-// 	// Run a simulated receive_adapter main using the test executable.
-// 	cmd := exec.Command(os.Args[0], "-test.run="+t.Name())
-// 	cmd.Env = append(os.Environ(),
-// 		t.Name()+"=main",
-// 		"K_SINK="+sink.URL(),
-// 		"INTERVAL="+"1ms",
-// 		"NAMESPACE=namespace",
-// 		"NAME=name",
-// 		`K_METRICS_CONFIG={"domain":"x", "component":"x", "prometheusport":0, "configmap":{}}`,
-// 		`K_LOGGING_CONFIG={}`,
-// 	)
-// 	err := cmd.Start()
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	defer func() { cmd.Process.Kill(); cmd.Wait() }()
-// 	verify(t, sink.received)
-// }
+	// payload contains the DockerHub event payload
+	payload interface{}
 
-// type sink struct {
-// 	listener net.Listener
-// 	client   cloudevents.Client
-// 	proto    *cloudevents.HTTPProtocol
-// 	ctx      context.Context
-// 	close    func()
-// 	received chan cloudevents.Event
-// }
+	// eventType is the DockerHub event type
+	eventType string
 
-// func newSink(t *testing.T) *sink {
-// 	s := &sink{received: make(chan cloudevents.Event)}
-// 	//s.ctx, s.close = context.WithTimeout(context.Background(), 5*time.Second)
-// 	s.ctx, s.close = context.WithTimeout(context.Background(), 1500*time.Millisecond)
-// 	var err error
-// 	s.listener, err = net.Listen("tcp", ":0")
-// 	require.NoError(t, err)
+	// wantEventType is the expected CloudEvent EventType
+	wantCloudEventType string
 
-// 	s.proto, err = cloudevents.NewHTTP(cloudevents.WithListener(s.listener))
-// 	require.NoError(t, err)
+	// wantCloudEventSubject is the expected CloudEvent subject
+	wantCloudEventSubject string
+}
 
-// 	s.client, err = cloudevents.NewClient(s.proto)
-// 	require.NoError(t, err)
+var testCases = []testCase{
+	{
+		name: "valid build payload",
+		payload: func() interface{} {
+			bp := dh.BuildPayload{}
+			return bp
+		}(),
+		eventType:             "build",
+		wantCloudEventSubject: testSubject,
+	},
+}
 
-// 	go func() {
-// 		_ = s.client.StartReceiver(s.ctx, func(ctx context.Context, e cloudevents.Event) cloudevents.Result {
-// 			select {
-// 			case s.received <- e:
-// 				return nil
-// 			case <-ctx.Done():
-// 				return ctx.Err()
-// 			}
-// 		})
-// 		close(s.received)
-// 	}()
 
-// 	return s
-// }
+func TestServer(t *testing.T) {
+	for _, tc := range testCases {
+		ce := adaptertest.NewTestClient()
+		adapter := newTestAdapter(t, ce)
+		hook, err := dh.New()
+		if err != nil {
+			t.Fatal(err)
+		}
+		router := adapter.newRouter(hook)
+		server := httptest.NewServer(router)
+		defer server.Close()
 
-// func (s *sink) URL() string { return "http://" + s.listener.Addr().String() }
+		t.Run(tc.name, tc.runner(t, server.URL, ce))
+	}
+}
+
+func TestGracefulShutdown(t *testing.T) {
+	ce := adaptertest.NewTestClient()
+	ra := newTestAdapter(t, ce)
+	stopCh := make(chan struct{}, 1)
+
+	go func(stopCh chan struct{}) {
+		defer close(stopCh)
+		time.Sleep(time.Second)
+
+	}(stopCh)
+
+	t.Logf("starting webhook server")
+	err := ra.Start(stopCh)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func newTestAdapter(t *testing.T, ce cloudevents.Client) *Adapter {
+	env := envConfig{
+		EnvConfig: adapter.EnvConfig{
+			Namespace: "default",
+		},
+		Port: "8080",
+	}
+	ctx, _ := pkgtesting.SetupFakeContext(t)
+	logger := zap.NewExample().Sugar()
+	ctx = logging.WithLogger(ctx, logger)
+
+	return NewAdapter(ctx, &env, ce).(*Adapter)
+}
+
+
+// runner returns a testing func that can be passed to t.Run.
+func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient) func(t *testing.T) {
+	return func(t *testing.T) {
+		if tc.eventType == "" {
+			t.Fatal("eventType is required for table tests")
+		}
+		body, _ := json.Marshal(tc.payload)
+		req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.Header.Set(DHHeaderEvent, tc.eventType)
+		//req.Header.Set(DHHeaderDelivery, )
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Error(err)
+		}
+		defer resp.Body.Close()
+
+		//tc.validateAcceptedPayload(t, ceClient)
+	}
+}
