@@ -51,7 +51,7 @@ func NewController(
 		servingClientSet:    serviceclient.Get(ctx),
 		eventingClientSet:   eventingclient.Get(ctx),
 		receiveAdapterImage: raImage,
-		configAccessor:      reconcilersource.WatchConfigurations(ctx, "dockerhub-source", cmw),
+		configAccessor:      reconcilersource.WatchConfigurations(ctx, "dockerhub_source", cmw),
 	}
 
 	impl := dhreconciler.NewImpl(ctx, r)
@@ -71,8 +71,6 @@ func NewController(
 		FilterFunc: controller.FilterControllerGK(v1alpha1.Kind("DockerHubSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
-
-	logging.FromContext(ctx).Info("before return impl")
 
 	return impl
 }
