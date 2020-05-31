@@ -61,6 +61,8 @@ rules:
       - namespaces
     verbs:
       - get
+      - create
+      - update
       - list
       - watch
       - patch
