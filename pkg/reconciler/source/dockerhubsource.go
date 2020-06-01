@@ -62,7 +62,6 @@ var _ dhreconciler.Interface = (*Reconciler)(nil)
 // // ReconcileKind implements Interface.ReconcileKind.
 func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubSource) pkgreconciler.Event {
 	src.Status.InitializeConditions()
-	src.Status.ObservedGeneration = src.Generation
 
 	ksvc, err := r.getOwnedService(ctx, src)
 	if apierrors.IsNotFound(err) {

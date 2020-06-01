@@ -1445,6 +1445,7 @@ k8s.io/utils v0.0.0-20200124190032-861946025e34 h1:HjlUD6M0K3P8nRXmr2B9o4F9dUy9T
 k8s.io/utils v0.0.0-20200124190032-861946025e34/go.mod h1:sZAwmy6armz5eXlNoLmJcl4F1QuKu7sr+mFQ0byX7Ew=
 knative.dev/caching v0.0.0-20190719140829-2032732871ff/go.mod h1:dHXFU6CGlLlbzaWc32g80cR92iuBSpsslDNBWI8C7eg=
 knative.dev/caching v0.0.0-20200521155757-e78d17bc250e/go.mod h1:bsKPIG2XZFYL8uw5BAxg7EMBLp0vNpu9jZIGus8HUPU=
+knative.dev/eventing v0.15.0 h1:0/RdQJ4RLixycbeHgJ7JTcStL64iacafU5NTh0CDOIs=
 knative.dev/eventing v0.15.1-0.20200529215202-9999757ff643 h1:g+OmHSXXdmKwnV8o8xhynOdwlqL7l7VV1868rNhhXPU=
 knative.dev/eventing v0.15.1-0.20200529215202-9999757ff643/go.mod h1:sHgMoXa+Hs9fqjQRy7Nqi7eq6FDlFZ1CKe96/Mg0aCE=
 knative.dev/eventing-contrib v0.6.1-0.20190723221543-5ce18048c08b h1:DTbaZGn06qcEoHuNyw3VmajapIUMuLSVjwFh6pNPews=

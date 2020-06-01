@@ -9,9 +9,9 @@ roleRef:
   kind: ClusterRole
   name: dockerhub-source-controller
 subjects:
-- kind: ServiceAccount
-  name: dockerhub-source-controller
-  namespace: knative-sources
+  - kind: ServiceAccount
+    name: dockerhub-source-controller
+    namespace: knative-sources
 
 ---
 
@@ -39,9 +39,9 @@ metadata:
   labels:
     contrib.eventing.knative.dev/release: devel
 subjects:
-- kind: ServiceAccount
-  name: dockerhub-source-controller
-  namespace: knative-sources
+  - kind: ServiceAccount
+    name: dockerhub-source-controller
+    namespace: knative-sources
 # An aggregated ClusterRole for all Addressable CRDs.
 # Ref: https://knative.dev/eventing/blob/master/config/200-addressable-resolvers-clusterrole.yaml
 roleRef:

@@ -5,10 +5,11 @@ metadata:
   labels:
     contrib.eventing.knative.dev/release: devel
 rules:
+# Knative Service admin
 - apiGroups:
-  - apps
+  - serving.knative.dev
   resources:
-  - deployments
+  - services
   verbs: &everything
   - get
   - list
@@ -77,13 +78,6 @@ rules:
     - configmaps
   verbs: *everything
 
-# Knative Service admin
-- apiGroups:
-    - serving.knative.dev
-  resources:
-    - services
-  verbs: *everything
-
 ---
 # The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".
 # See https://github.com/knative/eventing/blob/master/config/200-source-observer-clusterrole.yaml.
@@ -96,7 +90,7 @@ metadata:
     duck.knative.dev/source: "true"
 rules:
   - apiGroups:
-      - "sources.eventing.knative.dev"
+      - "sources.knative.dev"
     resources:
       - "dockerhubsources"
     verbs:

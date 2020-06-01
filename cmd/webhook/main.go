@@ -22,7 +22,7 @@ import (
 
 var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
 	// List the types to validate
-	v1alpha1.SchemeGroupVersion.WithKind("SampleSource"): &v1alpha1.DockerHubSource{},
+	v1alpha1.SchemeGroupVersion.WithKind("DockerHubSource"): &v1alpha1.DockerHubSource{},
 }
 
 var callbacks = map[schema.GroupVersionKind]validation.Callback{}

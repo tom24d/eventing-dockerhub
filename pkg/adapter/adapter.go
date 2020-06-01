@@ -76,7 +76,6 @@ func (a *Adapter) Start(stopCh <-chan struct{}) error {
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("could not listen on %s: %v", server.Addr, err)
 	}
-	a.logger.Info("DockerHub webhook Server up")
 
 	<-done
 	a.logger.Infof("Server stopped")
@@ -120,7 +119,7 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 				return
 			}
 			a.logger.Errorf("hook parser error: %v", err)
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte(err.Error()))
 			return
 		}

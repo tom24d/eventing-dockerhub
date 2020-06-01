@@ -19,7 +19,7 @@ spec:
       serviceAccountName: dockerhub-source-controller
 
       containers:
-      - name: controller
+      - name: dockerhub-source-controller
         terminationMessagePolicy: FallbackToLogsOnError
         image: ko://github.com/tom24d/eventing-dockerhub/cmd/controller
 
