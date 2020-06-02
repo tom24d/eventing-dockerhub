@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	adapter.Main("dockerhub-source", dhadapter.NewEnv, dhadapter.NewAdapter)
+	adapter.Main("dockerhubsource", dhadapter.NewEnv, dhadapter.NewAdapter)
 }
