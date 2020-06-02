@@ -1,6 +1,6 @@
 module github.com/tom24d/eventing-dockerhub
 
-go 1.13
+go 1.14
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.0.0
@@ -9,10 +9,10 @@ require (
 	k8s.io/api v0.17.6
 	k8s.io/apimachinery v0.17.6
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	knative.dev/eventing v0.15.1-0.20200529215202-9999757ff643
-	knative.dev/pkg v0.0.0-20200529164702-389d28f9b67a
-	knative.dev/serving v0.15.1-0.20200529200802-e0b4b30c6461
-	knative.dev/test-infra v0.0.0-20200529183702-2b8ec59797c8 // indirect
+	knative.dev/eventing v0.15.1-0.20200601170604-bdc48890f0e4
+	knative.dev/pkg v0.0.0-20200601184204-18c577c87d4f
+	knative.dev/serving v0.15.1-0.20200602034816-2d0091efb2b8
+	knative.dev/test-infra v0.0.0-20200602024303-e406de9f65c4 // indirect
 )
 
 replace k8s.io/api => k8s.io/api v0.17.5
