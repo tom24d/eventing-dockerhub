@@ -64,10 +64,7 @@ func (a *Adapter) Start(ctx context.Context) error {
 
 func (a *Adapter) start(stopCh <-chan struct{}) error {
 	done := make(chan bool, 1)
-	hook, err := dockerhub.New()
-	if err != nil {
-		return fmt.Errorf("cannot create gitlab hook: %v", err)
-	}
+	hook, _ := dockerhub.New()
 
 	server := &http.Server{
 		Addr:    ":" + a.port,
@@ -110,7 +107,7 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 				w.Write([]byte("event not send to sink as invalid http method"))
 				return
 			} else if err == dockerhub.ErrParsingPayload {
-				w.Write([]byte("event not send to sink as parsing payload err"))
+				w.Write([]byte("event not send to sink as parsing buildPayload err"))
 				return
 			}
 			a.logger.Errorf("Error processing request: %v", err)
@@ -120,7 +117,7 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 
 		bp, ok := payload.(dockerhub.BuildPayload)
 		if !ok {
-			a.logger.Error("type assertion failed for payload")
+			a.logger.Error("type assertion failed for buildPayload")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -145,25 +142,13 @@ func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
 	}
 
 	if a.autoValidation {
+		message := "Event has been sent successfully."
 		if err != nil {
-			a.logger.Info("going to report that sending sink has failed")
-			callbackData := &resources.CallbackPayload{
-				State:       resources.StatusSuccess, // always StatusSuccess to continue receiving webhook.
-				Description: fmt.Sprintf("failed to send event to sink: %v", err),
-				Context:     "",// TODO adapter resource name
-				TargetURL:   "",
-			}
-			err := callbackData.EmitValidationCallback(payload.CallbackURL)
-			if err != nil {
-				a.logger.Errorf("failed to send validation callback: %v", err)
-				return
-			}
-			return
+			message = fmt.Sprintf("failed to send event to sink: %v", err)
 		}
-		a.logger.Info("going to report that sending sink has completed successfully")
 		callbackData := &resources.CallbackPayload{
 			State:       resources.StatusSuccess,
-			Description: "Event has been sent successfully.",
+			Description: message,
 			Context:     "",// TODO adapter resource name
 			TargetURL:   "",
 		}
@@ -175,7 +160,7 @@ func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
 	}
 }
 
-// sendEventToSink transforms payload to CloudEvent, then try to send to sink.
+// sendEventToSink transforms buildPayload to CloudEvent, then try to send to sink.
 func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
@@ -190,7 +175,7 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetSource(cloudEventSource)
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal payload :%v", err)
+		return fmt.Errorf("failed to marshal buildPayload :%v", err)
 	}
 
 	result := a.client.Send(context.Background(), event)
