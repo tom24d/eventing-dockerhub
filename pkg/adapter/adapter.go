@@ -190,12 +190,12 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetSource(cloudEventSource)
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal payload :%v", err)
 	}
 
 	result := a.client.Send(context.Background(), event)
 	if !cloudevents.IsACK(result) {
-		return result
+		return fmt.Errorf("send() could not get ACK: %v", result)
 	}
 	return nil
 }
