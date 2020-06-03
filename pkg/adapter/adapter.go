@@ -58,7 +58,11 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 
 // Start runs the adapter.
 // Returns if stopCh is closed or Send() returns an error.
-func (a *Adapter) Start(stopCh <-chan struct{}) error {
+func (a *Adapter) Start(ctx context.Context) error {
+	return a.start(ctx.Done())
+}
+
+func (a *Adapter) start(stopCh <-chan struct{}) error {
 	done := make(chan bool, 1)
 	hook, err := dockerhub.New()
 	if err != nil {
