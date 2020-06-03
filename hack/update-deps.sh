@@ -58,4 +58,11 @@ go mod tidy
 go mod vendor
 
 rm -rf $(find vendor/ -name 'OWNERS')
+rm -rf $(find vendor/ -name 'OWNERS_ALIASES')
+rm -rf $(find vendor/ -name 'BUILD')
+rm -rf $(find vendor/ -name 'BUILD.bazel')
 rm -rf $(find vendor/ -name '*_test.go')
+
+export GOFLAGS=-mod=vendor
+
+update_licenses third_party/VENDOR-LICENSE "./..."
