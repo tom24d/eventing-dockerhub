@@ -142,6 +142,7 @@ func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
 
 	if a.autoValidation {
 		if err != nil {
+			a.logger.Info("going to report sending sink has failed")
 			callbackData := &resources.CallbackPayload{
 				State:       resources.StatusSuccess, // always StatusSuccess to continue receiving webhook.
 				Description: fmt.Sprintf("failed to send event to sink: %v", err),
@@ -155,7 +156,7 @@ func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
 			}
 			return
 		}
-
+		a.logger.Info("going to report sending sink has completed successfully")
 		callbackData := &resources.CallbackPayload{
 			State:       resources.StatusSuccess,
 			Description: "Event has been sent successfully.",
