@@ -71,6 +71,27 @@ var testCases = []testCase{
 	},
 }
 
+func TestNewEnv(t *testing.T) {
+	want := &envConfig{
+		EnvConfig: adapter.EnvConfig{
+			Component:         "",
+			Namespace:         "",
+			Name:              "",
+			ResourceGroup:     "",
+			Sink:              "",
+			CEOverrides:       "",
+			MetricsConfigJson: "",
+			LoggingConfigJson: "",
+			TracingConfigJson: "",
+		},
+		Port:      "",
+	}
+
+	got := NewEnv()
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Fatalf("unexpected event data (-want, +got) = %v", diff)
+	}
+}
 
 func TestServer(t *testing.T) {
 	for _, tc := range testCases {
