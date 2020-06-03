@@ -3,6 +3,7 @@ package adapter
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
 	"net/http"
@@ -20,12 +21,15 @@ import (
 	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+
+	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 )
 
 const (
 	testSubject   = "1234"
 	testOwnerRepo = "test-user/test-repo"
-	testCallbackURL = "http://localhost:3030"
+	testCallbackPort = "4320"
+	testAdapterPort = "8765"
 )
 
 type testCase struct {
@@ -43,6 +47,9 @@ type testCase struct {
 
 	// wantCloudEventSubject is the expected CloudEvent subject
 	wantCloudEventSubject string
+
+	//wantCallbackStatus is the expected resources.Status
+	wantCallbackStatus resources.Status
 }
 
 var testCases = []testCase{
@@ -51,10 +58,12 @@ var testCases = []testCase{
 		payload: func() interface{} {
 			bp := &dh.BuildPayload{}
 			// TODO populate callback server url
+			bp.CallbackURL = fmt.Sprintf("http://:%s/", testCallbackPort)
 			return bp
 		}(),
 		eventType:             "push",
 		//wantCloudEventSubject: testSubject,
+		wantCallbackStatus: resources.StatusSuccess,
 	},
 }
 
@@ -69,9 +78,14 @@ func TestServer(t *testing.T) {
 		}
 		router := testAdapter.newRouter(hook)
 		server := httptest.NewServer(router)
-		defer server.Close()
 
-		t.Run(tc.name, tc.runner(t, server.URL, ce))
+		notify := make(chan string, 1)
+
+		callbackServer := newCallbackServer(t, testCallbackPort, notify)
+		defer server.Close()
+		defer callbackServer.Close()
+
+		t.Run(tc.name, tc.runner(t, server.URL, ce, notify))
 	}
 }
 
@@ -98,7 +112,7 @@ func newTestAdapter(t *testing.T, ce cloudevents.Client) *Adapter {
 		EnvConfig: adapter.EnvConfig{
 			Namespace: "default",
 		},
-		Port: "8080",
+		Port: testAdapterPort,
 	}
 	ctx, _ := pkgtesting.SetupFakeContext(t)
 	logger := zap.NewExample().Sugar()
@@ -107,9 +121,21 @@ func newTestAdapter(t *testing.T, ce cloudevents.Client) *Adapter {
 	return NewAdapter(ctx, &env, ce).(*Adapter)
 }
 
+func newCallbackServer(t *testing.T, port string, notify chan string) *httptest.Server {
+	h := func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Callback POSTed.")
+		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte("accepted"))
+		notify <- "posted"
+	}
+	r := http.NewServeMux()
+	r.HandleFunc("/", h)
+	server := httptest.NewServer(r)
+	return server
+}
 
 // runner returns a testing func that can be passed to t.Run.
-func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient) func(t *testing.T) {
+func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan string) func(t *testing.T) {
 	return func(t *testing.T) {
 		if tc.eventType == "" {
 			t.Fatal("eventType is required for table tests")
@@ -126,7 +152,25 @@ func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestC
 		}
 		defer resp.Body.Close()
 
+		waitCallbackReport(t, nc)
+
 		tc.validateAcceptedPayload(t, ceClient)
+	}
+}
+
+func waitCallbackReport(t *testing.T, notify chan string) {
+	ticker := time.NewTicker(time.Second)
+	th := 0
+	for {
+		select {
+		case <-notify:
+			return
+		case <-ticker.C:
+			th += 1
+			if th > 4 {
+				t.Fatal("could not receive validation callback")
+			}
+		}
 	}
 }
 
