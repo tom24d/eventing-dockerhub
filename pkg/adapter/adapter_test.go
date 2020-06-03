@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"bytes"
+	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
@@ -47,10 +48,11 @@ var testCases = []testCase{
 	{
 		name: "valid build payload",
 		payload: func() interface{} {
-			bp := dh.BuildPayload{}
+			bp := &dh.BuildPayload{}
+			// TODO populate callback server url
 			return bp
 		}(),
-		eventType:             "build",
+		eventType:             "push",
 		wantCloudEventSubject: testSubject,
 	},
 }
@@ -59,12 +61,12 @@ var testCases = []testCase{
 func TestServer(t *testing.T) {
 	for _, tc := range testCases {
 		ce := adaptertest.NewTestClient()
-		adapter := newTestAdapter(t, ce)
+		testAdapter := newTestAdapter(t, ce)
 		hook, err := dh.New()
 		if err != nil {
 			t.Fatal(err)
 		}
-		router := adapter.newRouter(hook)
+		router := testAdapter.newRouter(hook)
 		server := httptest.NewServer(router)
 		defer server.Close()
 
@@ -117,14 +119,51 @@ func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestC
 			t.Fatal(err)
 		}
 
-		req.Header.Set(DHHeaderEvent, tc.eventType)
-		//req.Header.Set(DHHeaderDelivery, )
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Error(err)
 		}
 		defer resp.Body.Close()
 
-		//tc.validateAcceptedPayload(t, ceClient)
+		tc.validateAcceptedPayload(t, ceClient)
+	}
+}
+
+func (tc *testCase) validateAcceptedPayload(t *testing.T, ce *adaptertest.TestCloudEventsClient) {
+	t.Helper()
+	if len(ce.Sent()) != 1 {
+		return
+	}
+	eventSubject := ce.Sent()[0].Subject()
+	if eventSubject != tc.wantCloudEventSubject {
+		t.Fatalf("Expected %q event subject to be sent, got %q", tc.wantCloudEventSubject, eventSubject)
+	}
+
+	if tc.wantCloudEventType != "" {
+		eventType := ce.Sent()[0].Type()
+		if eventType != tc.wantCloudEventType {
+			t.Fatalf("Expected %q event type to be sent, got %q", tc.wantCloudEventType, eventType)
+		}
+	}
+
+	data := ce.Sent()[0].Data()
+
+	var got interface{}
+	var want interface{}
+
+	err := json.Unmarshal(data, &got)
+	if err != nil {
+		t.Fatalf("Could not unmarshal sent data: %v", err)
+	}
+	payload, err := json.Marshal(tc.payload)
+	if err != nil {
+		t.Fatalf("Could not marshal sent payload: %v", err)
+	}
+	err = json.Unmarshal(payload, &want)
+	if err != nil {
+		t.Fatalf("Could not unmarshal sent payload: %v", err)
+	}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Fatalf("unexpected event data (-want, +got) = %v", diff)
 	}
 }

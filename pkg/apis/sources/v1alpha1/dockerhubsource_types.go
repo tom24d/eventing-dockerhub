@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"knative.dev/pkg/webhook/resourcesemantics"
@@ -39,17 +40,17 @@ var _ runtime.Object = (*DockerHubSource)(nil)
 var _ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
 
 const (
-	dockerHubEventTypePrefix = "dev.knative.source.dockerhub"
-	dockerHubSourcePrefix = "https://hub.docker.com"
+	dockerHubEventTypePrefix   = "dev.knative.source.dockerhub"
+	dockerHubEventSourcePrefix = "https://hub.docker.com"
 	//owner and repo?
 )
 
-func DockerHubCloudEventsEventType () string {
-	return dockerHubEventTypePrefix + ".webhook" // TODO maybe dockerhub.build?
+func DockerHubCloudEventsEventType (dhEventType string) string {
+	return fmt.Sprintf("%s.%s", dockerHubEventTypePrefix, dhEventType)
 }
 
-func DockerHubEventSource() string {
-	return dockerHubSourcePrefix // TODO + owner and repo?
+func DockerHubEventSource(repoName string) string {
+	return fmt.Sprintf("%s/r/%s", dockerHubEventSourcePrefix, repoName)
 }
 
 type DockerHubSourceSpec struct {

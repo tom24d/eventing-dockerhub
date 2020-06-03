@@ -1,9 +1,7 @@
 package adapter
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,14 +14,14 @@ import (
 	"knative.dev/eventing/pkg/adapter/v2"
 	"knative.dev/pkg/logging"
 
+	"github.com/google/uuid"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
 const (
-	DHHeaderEvent    = "DockerHub-Event"
-	DHHeaderDelivery = "DockerHub-Delivery"
+	DockerHubEventType = "push"
 )
 
 type envConfig struct {
@@ -39,10 +37,10 @@ func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
 
 // Adapter converts incoming GitHub webhook events to CloudEvents
 type Adapter struct {
-	client cloudevents.Client
-	source string
-	logger   *zap.SugaredLogger
-	port string
+	client         cloudevents.Client
+	logger         *zap.SugaredLogger
+	port           string
+	autoValidation bool
 }
 
 // NewAdapter creates an adapter to convert incoming DockerHub webhook events to CloudEvents and
@@ -51,10 +49,10 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 	env := aEnv.(*envConfig) // Will always be our own envConfig type
 	logger := logging.FromContext(ctx)
 	return &Adapter{
-		client:   ceClient,
-		logger:   logger,
-		port: env.Port,
-		source: v1alpha1.DockerHubEventSource(),
+		client:         ceClient,
+		logger:         logger,
+		port:           env.Port,
+		autoValidation: true, //TODO
 	}
 }
 
@@ -98,15 +96,6 @@ func gracefulShutdown(server *http.Server, logger *zap.SugaredLogger, stopCh <-c
 	close(done)
 }
 
-// HandleEvent is invoked whenever an event comes in from GitHub
-func (a *Adapter) HandleEvent(payload interface{}, header http.Header) {
-	hdr := http.Header(header)
-	err := a.handleEvent(payload, hdr)
-	if err != nil {
-		a.logger.Errorf("unexpected error handling DockerHub event: %s", err)
-	}
-}
-
 func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 	router := http.NewServeMux()
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -120,86 +109,79 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 				w.Write([]byte("event not send to sink as parsing payload err"))
 				return
 			}
-			a.logger.Errorf("hook parser error: %v", err)
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(err.Error()))
+			a.logger.Errorf("Error processing request: %v", err)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		err = a.handleEvent(payload, r.Header)
-
-		var callbackURL = ""
-		if p, ok := payload.(*dockerhub.BuildPayload); ok {
-			callbackURL = p.CallbackURL
-		}
-
-		if err != nil {
-			a.logger.Errorf("event handler error: %v", err)
-			w.WriteHeader(400)
-			w.Write([]byte(err.Error()))
-			// TODO
-			a.emitCallback(callbackURL, false)
+		bp, ok := payload.(*dockerhub.BuildPayload)
+		if !ok {
+			a.logger.Error("type assertion failed for payload")
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		// TODO
-		a.emitCallback(callbackURL, true)
 		// TODO think what is "event processed"?
-		a.logger.Infof("event processed")
-		w.WriteHeader(202)
+		go a.processPayload(bp)
+
+		a.logger.Infof("event accepted")
+		w.WriteHeader(http.StatusAccepted)
 		w.Write([]byte("accepted"))
 	})
 	return router
 }
 
-// TODO replace in ./resources or send them PR
-func (a *Adapter) emitCallback(callbackURL string, success bool) error {
-	// TODO do right
-	if callbackURL == "" {
-		return fmt.Errorf("callbackURL is not set")
-	}
+func (a *Adapter)processPayload(payload *dockerhub.BuildPayload) {
 
-	var callback *resources.CallbackPayload
-
-	callback = &resources.CallbackPayload{
-		// TODO specific
-		Context: "context",
-		Description: "desc",
-		TargetURL: "knative dockerhub source",
-	}
-
-	if success {
-		callback.State = resources.StatusSuccess
-	} else {
-		callback.State = resources.StatusFailure
-	}
-
-	payload, err := json.Marshal(callback)
+	err := a.sendEventToSink(payload)
 	if err != nil {
-		return err
+		a.logger.Errorf("failed to send event to sink: %v", err)
 	}
 
-	resp, err := http.Post(callbackURL, "application/json", bytes.NewBuffer(payload))
-	if err != nil {
-		return err
+	if a.autoValidation {
+		if err != nil {
+			callbackData := &resources.CallbackPayload{
+				State:       resources.StatusSuccess, // always StatusSuccess to continue receiving webhook.
+				Description: fmt.Sprintf("failed to send event to sink: %v", err),
+				Context:     "",// TODO adapter resource name
+				TargetURL:   "",
+			}
+			err := callbackData.EmitValidationCallback(payload.CallbackURL)
+			if err != nil {
+				a.logger.Errorf("failed to send validation callback: %v", err)
+				return
+			}
+			return
+		}
+
+		callbackData := &resources.CallbackPayload{
+			State:       resources.StatusSuccess,
+			Description: "Event has been sent successfully.",
+			Context:     "",// TODO adapter resource name
+			TargetURL:   "",
+		}
+
+		err := callbackData.EmitValidationCallback(payload.CallbackURL)
+		if err != nil {
+			a.logger.Errorf("failed to send validation callback: %v", err)
+		}
 	}
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("sending callback failed")
-	}
-	return nil
 }
 
-
-// handleEvent transforms payload to CloudEvent, then try to send to sink.
-func (a *Adapter) handleEvent(payload interface{}, hdr http.Header) error {
-	dockerHubEventType := hdr.Get("X-" + DHHeaderEvent)
-	eventID := hdr.Get("X-" + DHHeaderDelivery)
+// sendEventToSink transforms payload to CloudEvent, then try to send to sink.
+func (a *Adapter) sendEventToSink(payload *dockerhub.BuildPayload) error {
+	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
+	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
+	uid, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
 
 	event := cloudevents.NewEvent()
-	event.SetID(eventID)
-	event.SetType(dockerHubEventType)
-	event.SetSource(a.source)
-	err := event.SetData(cloudevents.ApplicationJSON, payload)
+	event.SetID(uid.String())
+	event.SetType(cloudEventType)
+	event.SetSource(cloudEventSource)
+	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
 		return err
 	}
