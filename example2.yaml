@@ -1,0 +1,10 @@
+apiVersion: sources.knative.dev/v1alpha1
+kind: DockerHubSource
+metadata:
+  name: dockerhub-source
+spec:
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-display
