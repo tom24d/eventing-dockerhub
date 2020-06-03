@@ -53,7 +53,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		eventType:             "push",
-		wantCloudEventSubject: testSubject,
+		//wantCloudEventSubject: testSubject,
 	},
 }
 
