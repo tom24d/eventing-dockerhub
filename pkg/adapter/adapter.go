@@ -114,7 +114,7 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 			return
 		}
 
-		bp, ok := payload.(*dockerhub.BuildPayload)
+		bp, ok := payload.(dockerhub.BuildPayload)
 		if !ok {
 			a.logger.Error("type assertion failed for payload")
 			w.WriteHeader(http.StatusBadRequest)
@@ -131,7 +131,9 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 	return router
 }
 
-func (a *Adapter)processPayload(payload *dockerhub.BuildPayload) {
+func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
+
+	a.logger.Info("processing event ...")
 
 	err := a.sendEventToSink(payload)
 	if err != nil {
@@ -169,7 +171,7 @@ func (a *Adapter)processPayload(payload *dockerhub.BuildPayload) {
 }
 
 // sendEventToSink transforms payload to CloudEvent, then try to send to sink.
-func (a *Adapter) sendEventToSink(payload *dockerhub.BuildPayload) error {
+func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
 	uid, err := uuid.NewRandom()
