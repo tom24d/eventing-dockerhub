@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -48,6 +49,9 @@ type testCase struct {
 	// wantCloudEventSubject is the expected CloudEvent subject
 	wantCloudEventSubject string
 
+	//wantCallback is whether callback is expected
+	wantCallback bool
+
 	//wantCallbackStatus is the expected resources.Status
 	wantCallbackStatus resources.Status
 }
@@ -57,13 +61,13 @@ var testCases = []testCase{
 		name: "valid build payload",
 		payload: func() interface{} {
 			bp := &dh.BuildPayload{}
-			// TODO populate callback server url
-			bp.CallbackURL = fmt.Sprintf("http://:%s/", testCallbackPort)
+			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
 			return bp
 		}(),
 		eventType:             "push",
 		//wantCloudEventSubject: testSubject,
 		wantCallbackStatus: resources.StatusSuccess,
+		wantCallback: true,
 	},
 }
 
@@ -79,7 +83,7 @@ func TestServer(t *testing.T) {
 		router := testAdapter.newRouter(hook)
 		server := httptest.NewServer(router)
 
-		notify := make(chan string, 1)
+		notify := make(chan resources.Status, 1)
 
 		callbackServer := newCallbackServer(t, testCallbackPort, notify)
 		defer server.Close()
@@ -121,21 +125,35 @@ func newTestAdapter(t *testing.T, ce cloudevents.Client) *Adapter {
 	return NewAdapter(ctx, &env, ce).(*Adapter)
 }
 
-func newCallbackServer(t *testing.T, port string, notify chan string) *httptest.Server {
+func newCallbackServer(t *testing.T, port string, notify chan resources.Status) *httptest.Server {
 	h := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Callback POSTed.")
 		w.WriteHeader(http.StatusAccepted)
 		w.Write([]byte("accepted"))
-		notify <- "posted"
+		t.Log("callback posted")
+		cp, err := resources.Parse(r)
+		if err != nil {
+			t.Fatalf("failed to parse callback payload: %v", err)
+		}
+		notify <- cp.State
 	}
 	r := http.NewServeMux()
 	r.HandleFunc("/", h)
-	server := httptest.NewServer(r)
+	server := httptest.NewUnstartedServer(r)
+
+	addr, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%s", testCallbackPort))
+	if err != nil {
+		t.Fatalf("cannot listen on custom address: %v", err)
+	}
+	server.Listener.Close()
+	server.Listener = addr
+
+	server.Start()
+
 	return server
 }
 
 // runner returns a testing func that can be passed to t.Run.
-func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan string) func(t *testing.T) {
+func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan resources.Status) func(t *testing.T) {
 	return func(t *testing.T) {
 		if tc.eventType == "" {
 			t.Fatal("eventType is required for table tests")
@@ -152,18 +170,23 @@ func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestC
 		}
 		defer resp.Body.Close()
 
-		waitCallbackReport(t, nc)
+		if tc.wantCallback {
+			tc.waitCallbackReport(t, nc)
+		}
 
 		tc.validateAcceptedPayload(t, ceClient)
 	}
 }
 
-func waitCallbackReport(t *testing.T, notify chan string) {
+func (tc *testCase)waitCallbackReport(t *testing.T, notify chan resources.Status) {
 	ticker := time.NewTicker(time.Second)
 	th := 0
 	for {
 		select {
-		case <-notify:
+		case gotStatus := <-notify:
+			if diff := cmp.Diff(tc.wantCallbackStatus, gotStatus); diff != "" {
+				t.Fatalf("unexpected event data (-want, +got) = %v", diff)
+			}
 			return
 		case <-ticker.C:
 			th += 1

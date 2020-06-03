@@ -3,8 +3,17 @@ package resources
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"encoding/json"
+	"errors"
+)
+
+// parse errors
+var (
+	ErrInvalidHTTPMethod = errors.New("invalid HTTP Method")
+	ErrParsingPayload    = errors.New("error parsing payload")
 )
 
 type CallbackPayload struct {
@@ -37,8 +46,33 @@ func (callback *CallbackPayload) EmitValidationCallback(callbackURL string) erro
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= 300 {
 		return fmt.Errorf("sending callback failed")
 	}
 	return nil
+}
+
+// Parse verifies and parses the events specified and returns the payload object or an error
+func Parse(r *http.Request) (*CallbackPayload, error) {
+	defer func() {
+		_, _ = io.Copy(ioutil.Discard, r.Body)
+		_ = r.Body.Close()
+	}()
+
+	if r.Method != http.MethodPost {
+		return nil, ErrInvalidHTTPMethod
+	}
+
+	payload, err := ioutil.ReadAll(r.Body)
+	if err != nil || len(payload) == 0 {
+		return nil, ErrParsingPayload
+	}
+
+	var pl CallbackPayload
+	err = json.Unmarshal([]byte(payload), &pl)
+	if err != nil {
+		return nil, ErrParsingPayload
+	}
+	return &pl, err
+
 }
