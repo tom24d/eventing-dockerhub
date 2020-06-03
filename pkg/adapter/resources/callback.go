@@ -74,5 +74,4 @@ func Parse(r *http.Request) (*CallbackPayload, error) {
 		return nil, ErrParsingPayload
 	}
 	return &pl, err
-
 }
