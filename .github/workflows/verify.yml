@@ -19,6 +19,9 @@ jobs:
         go-version: ^1.13
       id: go
     
+    - name: export PATH
+      run: export PATH=$PATH:$(go env GOPATH)/bin
+    
     - name: Get go-licenses
       run: go get github.com/google/go-licenses
 
