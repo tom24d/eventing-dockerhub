@@ -13,23 +13,23 @@ import (
 	"testing"
 	"time"
 
+	// knative.dev import
 	"knative.dev/eventing/pkg/adapter/v2"
 	adaptertest "knative.dev/eventing/pkg/adapter/v2/test"
 	"knative.dev/pkg/logging"
 	pkgtesting "knative.dev/pkg/reconciler/testing"
 
-	dh "gopkg.in/go-playground/webhooks.v5/docker"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 )
 
 const (
-	testSubject   = "1234"
-	testOwnerRepo = "test-user/test-repo"
-	testCallbackPort = "4320"
-	testAdapterPort = "8765"
+	testSubject                 = "1234"
+	testOwnerRepo               = "test-user/test-repo"
+	testCallbackPort            = "4320"
+	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
 )
 
@@ -70,12 +70,12 @@ var testCases = []testCase{
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
 			return bp
 		}(),
-		httpMethod: http.MethodPost,
-		eventType:             DockerHubEventType,
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
 		cloudEventSendExpected: true,
-		wantCloudEventType: "dev.knative.source.dockerhub.push",
-		wantCallbackExpected: true,
-		wantCallbackStatus:   resources.StatusSuccess,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   true,
+		wantCallbackStatus:     resources.StatusSuccess,
 	},
 	{
 		name: "invalid callback url",
@@ -84,11 +84,11 @@ var testCases = []testCase{
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", "10000")
 			return bp
 		}(),
-		httpMethod: http.MethodPost,
-		eventType:            DockerHubEventType,
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType: "dev.knative.source.dockerhub.push",//TODO
-		wantCallbackExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push", //TODO
+		wantCallbackExpected:   false,
 	},
 	{
 		name: "nil buildPayload",
@@ -96,11 +96,11 @@ var testCases = []testCase{
 			bp := ""
 			return bp
 		}(),
-		httpMethod: http.MethodPost,
-		eventType:            DockerHubEventType,
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType: "dev.knative.source.dockerhub.push",
-		wantCallbackExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
 	},
 	{
 		name: "funny payload",
@@ -108,11 +108,11 @@ var testCases = []testCase{
 			bp := "bazinga"
 			return bp
 		}(),
-		httpMethod: http.MethodPost,
-		eventType:            DockerHubEventType,
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType: "dev.knative.source.dockerhub.push",
-		wantCallbackExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
 	},
 	{
 		name: "not buildPayload",
@@ -125,11 +125,11 @@ var testCases = []testCase{
 			}
 			return bp
 		}(),
-		httpMethod: http.MethodPost,
-		eventType:            DockerHubEventType,
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType: "dev.knative.source.dockerhub.push",
-		wantCallbackExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
 	},
 	{
 		name: "httpPatch",
@@ -138,11 +138,11 @@ var testCases = []testCase{
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
 			return bp
 		}(),
-		httpMethod: http.MethodPatch,
-		eventType:            DockerHubEventType,
+		httpMethod:             http.MethodPatch,
+		eventType:              DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType: "dev.knative.source.dockerhub.push",
-		wantCallbackExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
 	},
 }
 
@@ -214,7 +214,8 @@ func newCallbackServer(t *testing.T, port string, notify chan resources.Status) 
 		if err != nil {
 			t.Fatalf("failed to parse callback buildPayload: %v", err)
 		}
-		notify <- cp.State
+		gotState := cp.(resources.CallbackPayload).State
+		notify <- gotState
 	}
 	r := http.NewServeMux()
 	r.HandleFunc("/", h)
@@ -233,7 +234,7 @@ func newCallbackServer(t *testing.T, port string, notify chan resources.Status) 
 }
 
 // runner returns a testing func that can be passed to t.Run.
-func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan resources.Status) func(t *testing.T) {
+func (tc *testCase) runner(_ *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan resources.Status) func(t *testing.T) {
 	return func(t *testing.T) {
 		if tc.eventType == "" {
 			t.Fatal("eventType is required for table tests")
@@ -250,16 +251,16 @@ func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestC
 		}
 		defer resp.Body.Close()
 
-		if tc.cloudEventSendExpected && tc.wantCallbackExpected {
-			tc.waitCallbackReport(t, nc)
-			tc.validateCESentPayload(t, ceClient)
-		} else if tc.cloudEventSendExpected {
+		if tc.cloudEventSendExpected {
+			if tc.wantCallbackExpected {
+				tc.waitCallbackReport(t, nc)
+			}
 			tc.validateCESentPayload(t, ceClient)
 		}
 	}
 }
 
-func (tc *testCase)waitCallbackReport(t *testing.T, notify chan resources.Status) {
+func (tc *testCase) waitCallbackReport(t *testing.T, notify chan resources.Status) {
 	ticker := time.NewTicker(time.Second)
 	th := 0
 	for {
