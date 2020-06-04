@@ -27,6 +27,9 @@ type testCallbackCase struct {
 }
 
 type testParseCase struct {
+	// name is a descriptive name for this test suitable as a first argument to t.Run()
+	name string
+
 	// payload contains the CallbackPayload event payload
 	payload interface{}
 
@@ -35,9 +38,6 @@ type testParseCase struct {
 
 	// wantError represents first expected error
 	wantError interface{}
-
-	// name is a descriptive name for this test suitable as a first argument to t.Run()
-	name string
 
 	// httpMethod is used method
 	httpMethod string
