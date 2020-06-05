@@ -3,6 +3,7 @@ package adapter
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
@@ -10,47 +11,52 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"encoding/json"
 	"time"
 
+	// knative.dev import
 	"knative.dev/eventing/pkg/adapter/v2"
-	pkgtesting "knative.dev/pkg/reconciler/testing"
-	"knative.dev/pkg/logging"
 	adaptertest "knative.dev/eventing/pkg/adapter/v2/test"
-
-
-	dh "gopkg.in/go-playground/webhooks.v5/docker"
+	"knative.dev/pkg/logging"
+	pkgtesting "knative.dev/pkg/reconciler/testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 )
 
 const (
-	testSubject   = "1234"
-	testOwnerRepo = "test-user/test-repo"
-	testCallbackPort = "4320"
-	testAdapterPort = "8765"
+	testSubject                 = "1234"
+	testOwnerRepo               = "test-user/test-repo"
+	testCallbackPort            = "4320"
+	testAdapterPort             = "8765"
+	callbackServerWaitThreshold = 4
 )
 
 type testCase struct {
 	// name is a descriptive name for this test suitable as a first argument to t.Run()
 	name string
 
-	// payload contains the DockerHub event payload
-	payload interface{}
+	// buildPayload contains the DockerHub event buildPayload
+	buildPayload interface{}
+
+	// httpMethod is the method to emit http request
+	httpMethod string
 
 	// eventType is the DockerHub event type
 	eventType string
+
+	// cloudEventSendExpected is whether event is transferred
+	cloudEventSendExpected bool
 
 	// wantEventType is the expected CloudEvent EventType
 	wantCloudEventType string
 
 	// wantCloudEventSubject is the expected CloudEvent subject
-	wantCloudEventSubject string
+	//wantCloudEventSubject string
 
-	//wantCallback is whether callback is expected
-	wantCallback bool
+	//wantCallbackExpected is whether callback is expected
+	wantCallbackExpected bool
 
 	//wantCallbackStatus is the expected resources.Status
 	wantCallbackStatus resources.Status
@@ -58,37 +64,111 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		name: "valid build payload",
-		payload: func() interface{} {
+		name: "valid build buildPayload",
+		buildPayload: func() interface{} {
 			bp := &dh.BuildPayload{}
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
 			return bp
 		}(),
-		eventType:             "push",
-		//wantCloudEventSubject: testSubject,
-		wantCallbackStatus: resources.StatusSuccess,
-		wantCallback: true,
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: true,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   true,
+		wantCallbackStatus:     resources.StatusSuccess,
+	},
+	{
+		name: "invalid callback url",
+		buildPayload: func() interface{} {
+			bp := &dh.BuildPayload{}
+			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", "10000")
+			return bp
+		}(),
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push", //TODO
+		wantCallbackExpected:   false,
+	},
+	{
+		name: "nil buildPayload",
+		buildPayload: func() interface{} {
+			bp := ""
+			return bp
+		}(),
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
+	},
+	{
+		name: "funny payload",
+		buildPayload: func() interface{} {
+			bp := "bazinga"
+			return bp
+		}(),
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
+	},
+	{
+		name: "not buildPayload",
+		buildPayload: func() interface{} {
+			bp := &resources.CallbackPayload{
+				State:       resources.StatusError,
+				Description: "This is attack webhook.",
+				Context:     "",
+				TargetURL:   "",
+			}
+			return bp
+		}(),
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
+	},
+	{
+		name: "httpPatch",
+		buildPayload: func() interface{} {
+			bp := &dh.BuildPayload{}
+			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
+			return bp
+		}(),
+		httpMethod:             http.MethodPatch,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: false,
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCallbackExpected:   false,
 	},
 }
 
+func TestNewEnv(t *testing.T) {
+	want := &envConfig{}
+
+	got := NewEnv()
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Fatalf("unexpected event data (-want, +got) = %v", diff)
+	}
+}
 
 func TestServer(t *testing.T) {
+	ce := adaptertest.NewTestClient()
+	testAdapter := newTestAdapter(t, ce)
+	hook, _ := dh.New()
+	router := testAdapter.newRouter(hook)
+	server := httptest.NewServer(router)
+
+	notify := make(chan resources.Status, 1)
+
+	callbackServer := newCallbackServer(t, testCallbackPort, notify)
+	defer server.Close()
+	defer callbackServer.Close()
+
 	for _, tc := range testCases {
-		ce := adaptertest.NewTestClient()
-		testAdapter := newTestAdapter(t, ce)
-		hook, err := dh.New()
-		if err != nil {
-			t.Fatal(err)
-		}
-		router := testAdapter.newRouter(hook)
-		server := httptest.NewServer(router)
-
-		notify := make(chan resources.Status, 1)
-
-		callbackServer := newCallbackServer(t, testCallbackPort, notify)
-		defer server.Close()
-		defer callbackServer.Close()
-
 		t.Run(tc.name, tc.runner(t, server.URL, ce, notify))
 	}
 }
@@ -132,9 +212,10 @@ func newCallbackServer(t *testing.T, port string, notify chan resources.Status) 
 		t.Log("callback posted")
 		cp, err := resources.Parse(r)
 		if err != nil {
-			t.Fatalf("failed to parse callback payload: %v", err)
+			t.Fatalf("failed to parse callback buildPayload: %v", err)
 		}
-		notify <- cp.State
+		gotState := cp.(resources.CallbackPayload).State
+		notify <- gotState
 	}
 	r := http.NewServeMux()
 	r.HandleFunc("/", h)
@@ -153,13 +234,13 @@ func newCallbackServer(t *testing.T, port string, notify chan resources.Status) 
 }
 
 // runner returns a testing func that can be passed to t.Run.
-func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan resources.Status) func(t *testing.T) {
+func (tc *testCase) runner(_ *testing.T, url string, ceClient *adaptertest.TestCloudEventsClient, nc chan resources.Status) func(t *testing.T) {
 	return func(t *testing.T) {
 		if tc.eventType == "" {
 			t.Fatal("eventType is required for table tests")
 		}
-		body, _ := json.Marshal(tc.payload)
-		req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+		body, _ := json.Marshal(tc.buildPayload)
+		req, err := http.NewRequest(tc.httpMethod, url, bytes.NewReader(body))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -170,15 +251,16 @@ func (tc *testCase) runner(t *testing.T, url string, ceClient *adaptertest.TestC
 		}
 		defer resp.Body.Close()
 
-		if tc.wantCallback {
-			tc.waitCallbackReport(t, nc)
+		if tc.cloudEventSendExpected {
+			if tc.wantCallbackExpected {
+				tc.waitCallbackReport(t, nc)
+			}
+			tc.validateCESentPayload(t, ceClient)
 		}
-
-		tc.validateAcceptedPayload(t, ceClient)
 	}
 }
 
-func (tc *testCase)waitCallbackReport(t *testing.T, notify chan resources.Status) {
+func (tc *testCase) waitCallbackReport(t *testing.T, notify chan resources.Status) {
 	ticker := time.NewTicker(time.Second)
 	th := 0
 	for {
@@ -190,22 +272,23 @@ func (tc *testCase)waitCallbackReport(t *testing.T, notify chan resources.Status
 			return
 		case <-ticker.C:
 			th += 1
-			if th > 4 {
-				t.Fatal("could not receive validation callback")
+			if th > callbackServerWaitThreshold {
+				t.Fatalf("could not receive validation callback in %d seconds.", callbackServerWaitThreshold)
 			}
 		}
 	}
 }
 
-func (tc *testCase) validateAcceptedPayload(t *testing.T, ce *adaptertest.TestCloudEventsClient) {
+func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestCloudEventsClient) {
 	t.Helper()
 	if len(ce.Sent()) != 1 {
 		return
 	}
-	eventSubject := ce.Sent()[0].Subject()
-	if eventSubject != tc.wantCloudEventSubject {
-		t.Fatalf("Expected %q event subject to be sent, got %q", tc.wantCloudEventSubject, eventSubject)
-	}
+	//TODO add subject test if needed
+	//eventSubject := ce.Sent()[0].Subject()
+	//if eventSubject != tc.wantCloudEventSubject {
+	//	t.Fatalf("Expected %q event subject to be sent, got %q", tc.wantCloudEventSubject, eventSubject)
+	//}
 
 	if tc.wantCloudEventType != "" {
 		eventType := ce.Sent()[0].Type()
@@ -223,13 +306,13 @@ func (tc *testCase) validateAcceptedPayload(t *testing.T, ce *adaptertest.TestCl
 	if err != nil {
 		t.Fatalf("Could not unmarshal sent data: %v", err)
 	}
-	payload, err := json.Marshal(tc.payload)
+	payload, err := json.Marshal(tc.buildPayload)
 	if err != nil {
-		t.Fatalf("Could not marshal sent payload: %v", err)
+		t.Fatalf("Could not marshal sent buildPayload: %v", err)
 	}
 	err = json.Unmarshal(payload, &want)
 	if err != nil {
-		t.Fatalf("Could not unmarshal sent payload: %v", err)
+		t.Fatalf("Could not unmarshal sent buildPayload: %v", err)
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Fatalf("unexpected event data (-want, +got) = %v", diff)

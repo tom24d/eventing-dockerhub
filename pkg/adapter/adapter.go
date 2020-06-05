@@ -6,15 +6,14 @@ import (
 	"net/http"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"go.uber.org/zap"
-	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
-
 	//knative.dev imports
 	"knative.dev/eventing/pkg/adapter/v2"
 	"knative.dev/pkg/logging"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
@@ -30,7 +29,6 @@ type envConfig struct {
 
 	// Port to listen incoming connections
 	Port string `envconfig:"PORT" default:"8080"`
-
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
@@ -64,10 +62,7 @@ func (a *Adapter) Start(ctx context.Context) error {
 
 func (a *Adapter) start(stopCh <-chan struct{}) error {
 	done := make(chan bool, 1)
-	hook, err := dockerhub.New()
-	if err != nil {
-		return fmt.Errorf("cannot create gitlab hook: %v", err)
-	}
+	hook, _ := dockerhub.New()
 
 	server := &http.Server{
 		Addr:    ":" + a.port,
@@ -108,22 +103,15 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 		if err != nil {
 			if err == dockerhub.ErrInvalidHTTPMethod {
 				w.Write([]byte("event not send to sink as invalid http method"))
-				return
 			} else if err == dockerhub.ErrParsingPayload {
-				w.Write([]byte("event not send to sink as parsing payload err"))
-				return
+				w.Write([]byte("event not send to sink as parsing buildPayload err"))
 			}
 			a.logger.Errorf("Error processing request: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		bp, ok := payload.(dockerhub.BuildPayload)
-		if !ok {
-			a.logger.Error("type assertion failed for payload")
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+		bp, _ := payload.(dockerhub.BuildPayload)
 
 		// TODO think what is "event processed"?
 		go a.processPayload(bp)
@@ -135,7 +123,7 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 	return router
 }
 
-func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
+func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 
 	a.logger.Info("processing event ...")
 
@@ -145,26 +133,14 @@ func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
 	}
 
 	if a.autoValidation {
+		message := "Event has been sent successfully."
 		if err != nil {
-			a.logger.Info("going to report that sending sink has failed")
-			callbackData := &resources.CallbackPayload{
-				State:       resources.StatusSuccess, // always StatusSuccess to continue receiving webhook.
-				Description: fmt.Sprintf("failed to send event to sink: %v", err),
-				Context:     "",// TODO adapter resource name
-				TargetURL:   "",
-			}
-			err := callbackData.EmitValidationCallback(payload.CallbackURL)
-			if err != nil {
-				a.logger.Errorf("failed to send validation callback: %v", err)
-				return
-			}
-			return
+			message = fmt.Sprintf("failed to send event to sink: %v", err)
 		}
-		a.logger.Info("going to report that sending sink has completed successfully")
 		callbackData := &resources.CallbackPayload{
 			State:       resources.StatusSuccess,
-			Description: "Event has been sent successfully.",
-			Context:     "",// TODO adapter resource name
+			Description: message,
+			Context:     "", // TODO adapter resource name
 			TargetURL:   "",
 		}
 
@@ -175,7 +151,7 @@ func (a *Adapter)processPayload(payload dockerhub.BuildPayload) {
 	}
 }
 
-// sendEventToSink transforms payload to CloudEvent, then try to send to sink.
+// sendEventToSink transforms buildPayload to CloudEvent, then try to send to sink.
 func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
@@ -188,14 +164,17 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetID(uid.String())
 	event.SetType(cloudEventType)
 	event.SetSource(cloudEventSource)
+	// TODO set time
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal buildPayload :%v", err)
 	}
+
+	a.logger.Infof("Sending event: %v", event)
 
 	result := a.client.Send(context.Background(), event)
 	if !cloudevents.IsACK(result) {
-		return result
+		return fmt.Errorf("send() could not get ACK: %v", result)
 	}
 	return nil
 }
