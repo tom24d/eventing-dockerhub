@@ -26,7 +26,7 @@ import (
 )
 
 // +genclient
-// +genreconciler:class=autoscaling.knative.dev/class
+// +genreconciler:class=autoscaling.knative.dev/class,krshapedlogic=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // PodAutoscaler is a Knative abstraction that encapsulates the interface by which Knative
@@ -143,11 +143,6 @@ type PodAutoscalerList struct {
 	metav1.ListMeta `json:"metadata"`
 
 	Items []PodAutoscaler `json:"items"`
-}
-
-// GetTypeMeta retrieves the ObjectMeta of the PodAutoscaler. Implements the KRShaped interface.
-func (t *PodAutoscaler) GetTypeMeta() *metav1.TypeMeta {
-	return &t.TypeMeta
 }
 
 // GetStatus retrieves the status of the PodAutoscaler. Implements the KRShaped interface.
