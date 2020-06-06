@@ -41,7 +41,7 @@ func MakeService(args *ServiceArgs) *v1.Service {
 		Value: args.Source.Namespace,
 	}, {
 		Name:  "AUTO_CALLBACK",
-		Value: strconv.FormatBool(args.Source.Spec.EnableAutoCallback),
+		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
 	}}
 
 	ksvc := &v1.Service{

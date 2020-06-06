@@ -30,7 +30,7 @@ type envConfig struct {
 	// Port to listen incoming connections
 	Port string `envconfig:"PORT" default:"8080"`
 
-	// EnableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
+	// DisableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
 	EnableAutoCallback bool `envconfig:"AUTO_CALLBACK" default:"true"`
 }
 

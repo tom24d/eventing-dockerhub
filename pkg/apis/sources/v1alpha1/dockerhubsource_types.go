@@ -51,9 +51,9 @@ func DockerHubEventSource(repoName string) string {
 }
 
 type DockerHubSourceSpec struct {
-	// EnableAutoCallback flag allows users to make it automatically send result of cloudevents emission
-	// to the callbackUrl. If unspecified this will default to true.
-	EnableAutoCallback bool `json:"enableAutoCallback,omitempty"`
+	// DisableAutoCallback flag allows users to make their own validation callback.
+	//If unspecified this will default to false.
+	DisableAutoCallback bool `json:"disableAutoCallback,omitempty"`
 
 	// inherits duck/v1 SourceSpec, which currently provides:
 	//  Sink - a reference to an object that will resolve to a domain name or
