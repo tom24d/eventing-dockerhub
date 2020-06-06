@@ -6,6 +6,7 @@ import (
 	"knative.dev/pkg/apis"
 )
 
+// TODO
 // Validate validates SampleSource.
 func (s *DockerHubSource) Validate(ctx context.Context) *apis.FieldError {
 	var errs *apis.FieldError

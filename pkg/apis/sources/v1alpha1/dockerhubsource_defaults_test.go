@@ -5,5 +5,5 @@ import (
 )
 
 func TestDockerhubSourceDefaults(t *testing.T) {
-	// None yet
+	// TODO None yet
 }
