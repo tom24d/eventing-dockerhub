@@ -29,7 +29,6 @@ type DockerHubSource struct {
 
 	//Status
 	Status DockerHubSourceStatus `json:"status,omitempty"`
-
 }
 
 func (s *DockerHubSource) GetGroupVersionKind() schema.GroupVersionKind {
@@ -42,7 +41,6 @@ var _ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
 const (
 	dockerHubEventTypePrefix   = "dev.knative.source.dockerhub"
 	dockerHubEventSourcePrefix = "https://hub.docker.com"
-	//owner and repo?
 )
 
 func DockerHubCloudEventsEventType (dhEventType string) string {
@@ -54,16 +52,9 @@ func DockerHubEventSource(repoName string) string {
 }
 
 type DockerHubSourceSpec struct {
-	// OwnerAndRepository contains DockerHub owner/org and repository to
-	// receive events from. The repository may be left off to receive
-	// events from an entire organization.
-	// Examples:
-	//  myuser/project
-	// +kubebuilder:validation:MinLength=1
-	OwnerAndRepository string `json:"ownerAndRepository"`
-
-	// +optional
-	ServiceAccountName string `json:"serviceAccountName,omitempty"`
+	// EnableAutoCallback flag allows users to make it automatically send result of cloudevents emission
+	// to the callbackUrl. If unspecified this will default to true.
+	EnableAutoCallback bool `json:"enableAutoCallback,omitempty"`
 
 	// inherits duck/v1 SourceSpec, which currently provides:
 	//  Sink - a reference to an object that will resolve to a domain name or
