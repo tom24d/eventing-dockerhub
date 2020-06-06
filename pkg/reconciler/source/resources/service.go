@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"context"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +39,9 @@ func MakeService(args *ServiceArgs) *v1.Service {
 	}, {
 		Name: "NAMESPACE",
 		Value: args.Source.Namespace,
+	}, {
+		Name: "AUTO_CALLBACK",
+		Value: strconv.FormatBool(args.Source.Spec.EnableAutoCallback),
 	}}
 
 	ksvc := &v1.Service{

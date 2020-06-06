@@ -29,6 +29,9 @@ type envConfig struct {
 
 	// Port to listen incoming connections
 	Port string `envconfig:"PORT" default:"8080"`
+
+	// EnableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
+	EnableAutoCallback bool `envconfig:"AUTO_CALLBACK" default:"true"`
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
@@ -50,7 +53,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 		client:         ceClient,
 		logger:         logger,
 		port:           env.Port,
-		autoValidation: true, //TODO
+		autoValidation: env.EnableAutoCallback,
 	}
 }
 

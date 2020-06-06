@@ -3,6 +3,7 @@ kind: DockerHubSource
 metadata:
   name: dockerhub-source
 spec:
+  enableAutoCallback: true
   sink:
     ref:
       apiVersion: serving.knative.dev/v1
