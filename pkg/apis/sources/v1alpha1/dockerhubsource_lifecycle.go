@@ -39,14 +39,14 @@ func (s *DockerHubSourceStatus) MarkSink(uri *apis.URL) {
 	s.SinkURI = uri
 	if len(uri.String()) > 0 {
 		dockerHubCondSet.Manage(s).MarkTrue(DockerHubSourceConditionSinkProvided)
-	}else {
+	} else {
 		dockerHubCondSet.Manage(s).MarkUnknown(DockerHubSourceConditionSinkProvided,
 			"SinkEmpty", "Sink has resolved to empty.%s", "")
 	}
 }
 
 // MarkNoSink sets the condition that the source does not have a sink configured.
-func (s *DockerHubSourceStatus) MarkNoSink(reason, messageFormat  string, messageA ...interface{}){
+func (s *DockerHubSourceStatus) MarkNoSink(reason, messageFormat string, messageA ...interface{}) {
 	dockerHubCondSet.Manage(s).MarkFalse(DockerHubSourceConditionSinkProvided, reason, messageFormat, messageA...)
 }
 

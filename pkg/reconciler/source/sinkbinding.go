@@ -4,18 +4,24 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
-	"go.uber.org/zap"
+	// k8s.io imports
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	// knative.dev/eventing imports
 	"knative.dev/eventing/pkg/apis/sources/v1alpha2"
+
+	// knative.dev/pkg imports
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/kmeta"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/tracker"
+
+	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
+	"go.uber.org/zap"
 )
 
 // newSinkBindingCreated makes a new reconciler event with event type Normal, and

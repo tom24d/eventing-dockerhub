@@ -22,6 +22,5 @@ func (sspec *DockerHubSourceSpec) Validate(ctx context.Context) *apis.FieldError
 	//Add code for validation webhook for SampleSourceSpec.
 	var errs *apis.FieldError
 
-
 	return errs
 }

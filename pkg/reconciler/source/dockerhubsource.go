@@ -69,7 +69,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			Source:              src,
 			ReceiveAdapterImage: r.receiveAdapterImage,
 			EventSource:         src.Namespace + "/" + src.Name,
-			Context: ctx,
+			Context:             ctx,
 			AdditionalEnvs:      r.configAccessor.ToEnvVars(), // Grab config envs for tracing/logging/metrics
 		})
 		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Create(ksvc)

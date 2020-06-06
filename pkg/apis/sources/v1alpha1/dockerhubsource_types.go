@@ -20,8 +20,7 @@ import (
 // +kubebuilder:subresource:status
 // +kubebuilder:categories=all,knative,eventing,sources
 type DockerHubSource struct {
-
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	//Spec
@@ -43,7 +42,7 @@ const (
 	dockerHubEventSourcePrefix = "https://hub.docker.com"
 )
 
-func DockerHubCloudEventsEventType (dhEventType string) string {
+func DockerHubCloudEventsEventType(dhEventType string) string {
 	return fmt.Sprintf("%s.%s", dockerHubEventTypePrefix, dhEventType)
 }
 
@@ -75,10 +74,9 @@ type DockerHubSourceStatus struct {
 	duckv1.SourceStatus `json:",inline"`
 }
 
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type DockerHubSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items []DockerHubSource `json:"items"`
+	Items           []DockerHubSource `json:"items"`
 }
