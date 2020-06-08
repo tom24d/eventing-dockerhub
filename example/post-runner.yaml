@@ -4,5 +4,5 @@ metadata:
   name: test
 spec:
   containers:
-    - name: curl-runner
+    - name: post-runner
       image: docker.io/tom24d/postwebhook
