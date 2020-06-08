@@ -40,7 +40,7 @@ func MakeService(args *ServiceArgs) *v1.Service {
 		Name:  "NAMESPACE",
 		Value: args.Source.Namespace,
 	}, {
-		Name:  "AUTO_CALLBACK",
+		Name:  "DISABLE_AUTO_CALLBACK",
 		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
 	}}
 

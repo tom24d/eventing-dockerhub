@@ -31,7 +31,7 @@ type envConfig struct {
 	Port string `envconfig:"PORT" default:"8080"`
 
 	// DisableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
-	DisableAutoCallback bool `envconfig:"AUTO_CALLBACK" default:"false"`
+	DisableAutoCallback bool `envconfig:"DISABLE_AUTO_CALLBACK" default:"false"`
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
