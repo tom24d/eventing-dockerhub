@@ -64,6 +64,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	src.Status.InitializeConditions()
 
 	ksvc, err := r.getOwnedService(ctx, src)
+	// TODO add serving.Update
 	if apierrors.IsNotFound(err) {
 		ksvc = resources.MakeService(&resources.ServiceArgs{
 			Source:              src,
