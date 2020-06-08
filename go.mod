@@ -9,7 +9,7 @@ require (
 	go.uber.org/zap v1.15.0
 	gopkg.in/go-playground/webhooks.v5 v5.14.0
 	k8s.io/api v0.17.6
-	k8s.io/apimachinery v0.17.6
+	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	knative.dev/eventing v0.15.1-0.20200604191718-15796e01add2
 	knative.dev/pkg v0.0.0-20200603222317-b79e4a24ca50
