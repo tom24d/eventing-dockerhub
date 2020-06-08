@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.0.0
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.4.1
 	github.com/google/uuid v1.1.1
 	go.uber.org/zap v1.15.0
 	gopkg.in/go-playground/webhooks.v5 v5.14.0
