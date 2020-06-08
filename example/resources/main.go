@@ -1,4 +1,4 @@
-package resources
+package main
 
 import (
 	"context"
@@ -11,6 +11,8 @@ import (
 )
 
 func display(event cloudevents.Event) {
+	fmt.Printf("--- callback display ---")
+
 	data := &resources.CallbackPayload{}
 	if err := event.DataAs(data); err != nil {
 		fmt.Printf("Got Data Error: %s\n", err.Error())
@@ -31,6 +33,7 @@ func display(event cloudevents.Event) {
 			fmt.Printf("failed to send validation callback: %v", err)
 		}
 	}
+	fmt.Printf("--- the end of callback display ---")
 }
 
 func main() {

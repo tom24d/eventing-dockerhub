@@ -3,9 +3,9 @@ kind: DockerHubSource
 metadata:
   name: dockerhub-source
 spec:
-  disableAutoCallback: false
+  disableAutoCallback: true
   sink:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
-      name: normal-display
+      name: callback-display
