@@ -150,6 +150,8 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 		err := callbackData.EmitValidationCallback(payload.CallbackURL)
 		if err != nil {
 			a.logger.Errorf("failed to send validation callback: %v", err)
+		} else {
+			a.logger.Info("http request for callbackUrl done.")
 		}
 	}
 }
