@@ -22,7 +22,7 @@ func display(event cloudevents.Event) {
 	if callbackURL != "" {
 		message := "Event has been sent successfully to the sink."
 		callbackData := &resources.CallbackPayload{
-			State:       resources.StatusSuccess,
+			State:       resources.StatusFailure,
 			Description: message,
 			Context:     "from sink display",
 			TargetURL:   "",

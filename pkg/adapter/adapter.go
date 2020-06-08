@@ -153,6 +153,8 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 		} else {
 			a.logger.Info("http request for callbackUrl done.")
 		}
+	} else {
+		a.logger.Info("Auto Callback does not work as specified in the spec.")
 	}
 }
 
