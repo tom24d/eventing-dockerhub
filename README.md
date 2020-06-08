@@ -21,10 +21,11 @@ Make sure that you have `ko`. If you don't have it, see [link](https://github.co
 ko apply -f config
 ```
 
-2. apply example.yaml
+2. apply example
 
 ```bash
-kubectl apply -f example.yaml
+kubectl apply -f ./example/normal-display.yaml
+kubectl apply -f ./example/source.yaml
 ```
 
 <!-- TODO write with better style -->

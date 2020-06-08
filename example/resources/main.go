@@ -11,8 +11,6 @@ import (
 )
 
 func display(event cloudevents.Event) {
-	fmt.Printf("--- callback display ---")
-
 	data := &resources.CallbackPayload{}
 	if err := event.DataAs(data); err != nil {
 		fmt.Printf("Got Data Error: %s\n", err.Error())
@@ -22,7 +20,7 @@ func display(event cloudevents.Event) {
 	if callbackURL != "" {
 		message := "Event has been sent successfully to the sink."
 		callbackData := &resources.CallbackPayload{
-			State:       resources.StatusFailure,
+			State:       resources.StatusSuccess,
 			Description: message,
 			Context:     "from sink display",
 			TargetURL:   "",
@@ -31,9 +29,10 @@ func display(event cloudevents.Event) {
 		err := callbackData.EmitValidationCallback(callbackURL)
 		if err != nil {
 			fmt.Printf("failed to send validation callback: %v", err)
+		} else {
+			fmt.Printf("callback is sent from callback-display: %v", callbackData)
 		}
 	}
-	fmt.Printf("--- the end of callback display ---")
 }
 
 func main() {
