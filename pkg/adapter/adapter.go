@@ -116,7 +116,6 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 
 		bp, _ := payload.(dockerhub.BuildPayload)
 
-		// TODO think what is "event processed"?
 		go a.processPayload(bp)
 
 		a.logger.Infof("event accepted")
