@@ -1,0 +1,40 @@
+name: Update Deps
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  update-deps:
+    name: Auto Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install hub cli
+        uses: geertvdc/setup-hub@v1.0.0
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Run update sh
+        run: |
+          git config user.email "tom.24d.en@gmail.com"
+          git config user.name "Tomoya Nishide bot"
+          git checkout -b update-deps
+          export PATH=$PATH:/home/runner/work/bin
+          ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh
+          git add .
+          git commit -m "./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh"
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: Create Pull Request
+        run: |
+          hub push origin update-deps
+          hub pull-request -b master -a tom24d --file ./.github/template/update-deps.md
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
