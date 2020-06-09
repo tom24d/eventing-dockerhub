@@ -17,8 +17,6 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
-      with:
-        ref: update-deps
 
     - name: install hub cli
       uses: geertvdc/setup-hub@v1.0.0
@@ -30,4 +28,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         GITHUB_USER: tom24d
-      run: hub pull-request -b master -m "[CI] Auto Update Dependencies"
+      run: hub pull-request -b master -a tom24d -m "[CI] Auto Update Dependencies"
