@@ -87,7 +87,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	// make sinkBinding for created kservice.
 	if ksvc != nil {
 		logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
-		// TODO something is wrong here
 		sb, event := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
 			APIVersion: v1.SchemeGroupVersion.String(),
 			Kind:       "Service",
