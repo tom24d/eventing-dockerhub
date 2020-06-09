@@ -16,22 +16,20 @@ jobs:
       id: go
 
     - name: export PATH
-      run: |
-        export PATH=$PATH:$(go env GOPATH)/bin
-        export GOPATH=$(go env GOPATH)
+      run: export PATH=$PATH:$(go env GOPATH)/bin
     
-    - name: echo necessary PATH
-      run: |
-        echo $GOPATH
-
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
+      with:
+        path: go/src/github.com/tom24d/eventing-dockerhub
 
-    - name: install hub cli
+    - name: Install hub cli
       uses: geertvdc/setup-hub@v1.0.0
 
     - name: Run update sh
       run: ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh
+      env:
+        GOPATH: /home/runner/work/eventing-dockerhub/go
 
     - name: Create Pull Request
       env:
