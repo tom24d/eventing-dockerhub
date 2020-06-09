@@ -29,6 +29,9 @@ type envConfig struct {
 
 	// Port to listen incoming connections
 	Port string `envconfig:"PORT" default:"8080"`
+
+	// DisableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
+	DisableAutoCallback bool `envconfig:"DISABLE_AUTO_CALLBACK" default:"false"`
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
@@ -50,7 +53,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 		client:         ceClient,
 		logger:         logger,
 		port:           env.Port,
-		autoValidation: true, //TODO
+		autoValidation: !env.DisableAutoCallback,
 	}
 }
 
@@ -147,7 +150,11 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 		err := callbackData.EmitValidationCallback(payload.CallbackURL)
 		if err != nil {
 			a.logger.Errorf("failed to send validation callback: %v", err)
+		} else {
+			a.logger.Info("http request for callbackUrl done.")
 		}
+	} else {
+		a.logger.Info("Auto Callback does not work as specified in the spec.")
 	}
 }
 

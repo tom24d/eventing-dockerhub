@@ -20,8 +20,7 @@ import (
 // +kubebuilder:subresource:status
 // +kubebuilder:categories=all,knative,eventing,sources
 type DockerHubSource struct {
-
-	metav1.TypeMeta `json:",inline"`
+	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	//Spec
@@ -29,7 +28,6 @@ type DockerHubSource struct {
 
 	//Status
 	Status DockerHubSourceStatus `json:"status,omitempty"`
-
 }
 
 func (s *DockerHubSource) GetGroupVersionKind() schema.GroupVersionKind {
@@ -42,10 +40,9 @@ var _ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
 const (
 	dockerHubEventTypePrefix   = "dev.knative.source.dockerhub"
 	dockerHubEventSourcePrefix = "https://hub.docker.com"
-	//owner and repo?
 )
 
-func DockerHubCloudEventsEventType (dhEventType string) string {
+func DockerHubCloudEventsEventType(dhEventType string) string {
 	return fmt.Sprintf("%s.%s", dockerHubEventTypePrefix, dhEventType)
 }
 
@@ -54,16 +51,9 @@ func DockerHubEventSource(repoName string) string {
 }
 
 type DockerHubSourceSpec struct {
-	// OwnerAndRepository contains DockerHub owner/org and repository to
-	// receive events from. The repository may be left off to receive
-	// events from an entire organization.
-	// Examples:
-	//  myuser/project
-	// +kubebuilder:validation:MinLength=1
-	OwnerAndRepository string `json:"ownerAndRepository"`
-
-	// +optional
-	ServiceAccountName string `json:"serviceAccountName,omitempty"`
+	// DisableAutoCallback flag allows users to make their own validation callback.
+	//If unspecified this will default to false.
+	DisableAutoCallback bool `json:"disableAutoCallback,omitempty"`
 
 	// inherits duck/v1 SourceSpec, which currently provides:
 	//  Sink - a reference to an object that will resolve to a domain name or
@@ -84,10 +74,9 @@ type DockerHubSourceStatus struct {
 	duckv1.SourceStatus `json:",inline"`
 }
 
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type DockerHubSourceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items []DockerHubSource `json:"items"`
+	Items           []DockerHubSource `json:"items"`
 }

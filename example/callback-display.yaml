@@ -1,0 +1,9 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: callback-display
+spec:
+  template:
+    spec:
+      containers:
+        - image: ko://github.com/tom24d/eventing-dockerhub/example/resources

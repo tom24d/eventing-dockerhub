@@ -3,8 +3,9 @@ kind: DockerHubSource
 metadata:
   name: dockerhub-source
 spec:
+  disableAutoCallback: false
   sink:
     ref:
       apiVersion: serving.knative.dev/v1
       kind: Service
-      name: event-display
+      name: normal-display

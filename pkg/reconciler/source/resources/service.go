@@ -1,8 +1,9 @@
 package resources
 
 import (
-	"fmt"
 	"context"
+	"fmt"
+	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +20,7 @@ type ServiceArgs struct {
 	Source              *sourcesv1alpha1.DockerHubSource
 	EventSource         string
 	AdditionalEnvs      []corev1.EnvVar
-	Context context.Context
+	Context             context.Context
 }
 
 // MakeService generates, but does not create, a Service for the given
@@ -33,11 +34,14 @@ func MakeService(args *ServiceArgs) *v1.Service {
 		Name:  "EVENT_SOURCE",
 		Value: args.EventSource,
 	}, {
-		Name:  "METRICS_DOMAIN",
+		Name: "METRICS_DOMAIN",
 		//Value: "knative.dev/eventing",
 	}, {
-		Name: "NAMESPACE",
+		Name:  "NAMESPACE",
 		Value: args.Source.Namespace,
+	}, {
+		Name:  "DISABLE_AUTO_CALLBACK",
+		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
 	}}
 
 	ksvc := &v1.Service{

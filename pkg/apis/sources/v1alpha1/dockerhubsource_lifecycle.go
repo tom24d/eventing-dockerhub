@@ -19,16 +19,10 @@ const (
 	// DockerHubSourceConditionSinkProvided has status True when the
 	// DockerHubSource has been configured with a sink target.
 	DockerHubSourceConditionSinkProvided apis.ConditionType = "SinkProvided"
-
-	// DockerHubSourceConditionWebhookChainActivated has status when
-	// first webhook from Docker Hub is successfully received.
-	DockerHubSourceConditionWebhookChainActivated apis.ConditionType = "WebhookChainActivated"
-
 )
 
 var dockerHubCondSet = apis.NewLivingConditionSet(
-	DockerHubSourceConditionSinkProvided,
-	DockerHubSourceConditionWebhookChainActivated)
+	DockerHubSourceConditionSinkProvided)
 
 // GetCondition returns the condition currently associated with the given type, or nil.
 func (s *DockerHubSourceStatus) GetCondition(t apis.ConditionType) *apis.Condition {
@@ -45,13 +39,14 @@ func (s *DockerHubSourceStatus) MarkSink(uri *apis.URL) {
 	s.SinkURI = uri
 	if len(uri.String()) > 0 {
 		dockerHubCondSet.Manage(s).MarkTrue(DockerHubSourceConditionSinkProvided)
-	}else {
-		dockerHubCondSet.Manage(s).MarkUnknown(DockerHubSourceConditionSinkProvided, "SinkEmpty", "Sink has resolved to empty.%s", "")
+	} else {
+		dockerHubCondSet.Manage(s).MarkUnknown(DockerHubSourceConditionSinkProvided,
+			"SinkEmpty", "Sink has resolved to empty.%s", "")
 	}
 }
 
 // MarkNoSink sets the condition that the source does not have a sink configured.
-func (s *DockerHubSourceStatus) MarkNoSink(reason, messageFormat  string, messageA ...interface{}){
+func (s *DockerHubSourceStatus) MarkNoSink(reason, messageFormat string, messageA ...interface{}) {
 	dockerHubCondSet.Manage(s).MarkFalse(DockerHubSourceConditionSinkProvided, reason, messageFormat, messageA...)
 }
 
