@@ -162,6 +162,10 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
+	cloudEventTime, err := time.Parse(time.RFC3339, fmt.Sprintf("%f", payload.PushData.PushedAt))
+	if err != nil {
+		return err
+	}
 	uid, err := uuid.NewRandom()
 	if err != nil {
 		return err
@@ -171,7 +175,7 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetID(uid.String())
 	event.SetType(cloudEventType)
 	event.SetSource(cloudEventSource)
-	// TODO set time
+	event.SetTime(cloudEventTime)
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal buildPayload :%v", err)
