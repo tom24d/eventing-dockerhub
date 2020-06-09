@@ -32,6 +32,9 @@ type envConfig struct {
 
 	// DisableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
 	DisableAutoCallback bool `envconfig:"DISABLE_AUTO_CALLBACK" default:"false"`
+
+	// EventSource is namespace/name of backing ksvc resource.
+	EventSource string `envconfig:"EVENT_SOURCE"`
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
@@ -42,6 +45,7 @@ type Adapter struct {
 	logger         *zap.SugaredLogger
 	port           string
 	autoValidation bool
+	eventSource    string
 }
 
 // NewAdapter creates an adapter to convert incoming DockerHub webhook events to CloudEvents and
@@ -54,6 +58,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 		logger:         logger,
 		port:           env.Port,
 		autoValidation: !env.DisableAutoCallback,
+		eventSource:    env.EventSource,
 	}
 }
 
@@ -142,7 +147,7 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 		callbackData := &resources.CallbackPayload{
 			State:       resources.StatusSuccess,
 			Description: message,
-			Context:     "", // TODO adapter resource name
+			Context:     a.eventSource,
 			TargetURL:   "",
 		}
 
