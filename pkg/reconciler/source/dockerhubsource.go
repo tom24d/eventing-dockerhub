@@ -79,10 +79,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 
 	current := ksvc.DeepCopy()
 	expected := r.getExpectedService(ctx, src)
-	if resources.NeedsUpdated(expected.Spec.Template.Spec.PodSpec, current.Spec.Template.Spec.PodSpec) {
-		expected.SetName(current.GetName())
-		expected.SetNamespace(current.GetNamespace())
-		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(expected)
+	if resources.PodSpecImageSync(expected.Spec.Template.Spec.PodSpec, current.Spec.Template.Spec.PodSpec) {
+		// current gets synced if there is diff
+		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(current)
 		if err != nil {
 			return err
 		}

@@ -84,7 +84,7 @@ func getContainer(name string, spec corev1.PodSpec) (int, *corev1.Container) {
 }
 
 // Returns true if an update is needed.
-func NeedsUpdated(expected corev1.PodSpec, now corev1.PodSpec) bool {
+func PodSpecImageSync(expected corev1.PodSpec, now corev1.PodSpec) bool {
 	// got needs all of the containers that want as, but it is allowed to have more.
 	dirty := false
 	for _, ec := range expected.Containers {
