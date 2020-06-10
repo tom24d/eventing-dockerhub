@@ -64,15 +64,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	src.Status.InitializeConditions()
 
 	ksvc, err := r.getOwnedService(ctx, src)
-	// TODO add serving.Update
 	if apierrors.IsNotFound(err) {
-		ksvc = resources.MakeService(&resources.ServiceArgs{
-			Source:              src,
-			ReceiveAdapterImage: r.receiveAdapterImage,
-			EventSource:         src.Namespace + "/" + src.Name,
-			Context:             ctx,
-			AdditionalEnvs:      r.configAccessor.ToEnvVars(), // Grab config envs for tracing/logging/metrics
-		})
+		ksvc = r.getExpectedService(ctx, src)
 		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Create(ksvc)
 		if err != nil {
 			return err
@@ -82,6 +75,17 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		return err
 	} else if !metav1.IsControlledBy(ksvc, src) {
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
+	}
+
+	current := ksvc.DeepCopy()
+	expected := r.getExpectedService(ctx, src)
+	if resources.NeedsUpdated(expected.Spec.Template.Spec.PodSpec, current.Spec.Template.Spec.PodSpec) {
+		expected.SetName(current.GetName())
+		expected.SetNamespace(current.GetNamespace())
+		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(expected)
+		if err != nil {
+			return err
+		}
 	}
 
 	// make sinkBinding for created kservice.
@@ -118,4 +122,14 @@ func (r *Reconciler) getOwnedService(_ context.Context, src *v1alpha1.DockerHubS
 		}
 	}
 	return nil, apierrors.NewNotFound(v1.Resource("services"), "")
+}
+
+func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *v1.Service {
+	return resources.MakeService(&resources.ServiceArgs{
+		Source:              src,
+		ReceiveAdapterImage: r.receiveAdapterImage,
+		EventSource:         src.Namespace + "/" + src.Name,
+		Context:             ctx,
+		AdditionalEnvs:      r.configAccessor.ToEnvVars(), // Grab config envs for tracing/logging/metrics
+	})
 }
