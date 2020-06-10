@@ -87,7 +87,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPost,
 		eventType:              DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push", //TODO
+		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,
 	},
 	{
@@ -284,7 +284,7 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 	if len(ce.Sent()) != 1 {
 		return
 	}
-	//TODO add subject test if needed
+	// TODO add subject test if needed
 	//eventSubject := ce.Sent()[0].Subject()
 	//if eventSubject != tc.wantCloudEventSubject {
 	//	t.Fatalf("Expected %q event subject to be sent, got %q", tc.wantCloudEventSubject, eventSubject)
