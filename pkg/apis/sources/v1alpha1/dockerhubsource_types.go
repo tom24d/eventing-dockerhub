@@ -52,7 +52,7 @@ func DockerHubEventSource(repoName string) string {
 
 type DockerHubSourceSpec struct {
 	// DisableAutoCallback flag allows users to make their own validation callback.
-	//If unspecified this will default to false.
+	//If unspecified this will default to false. This cannot be updated. (TODO)
 	DisableAutoCallback bool `json:"disableAutoCallback,omitempty"`
 
 	// inherits duck/v1 SourceSpec, which currently provides:
