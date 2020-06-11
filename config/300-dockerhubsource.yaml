@@ -9,7 +9,7 @@ metadata:
   annotations:
     registry.knative.dev/eventTypes: |
       [
-        { "type": "dev.knative.source.dockerhub.build" }
+        { "type": "dev.knative.source.dockerhub.push" }
       ]
   name: dockerhubsources.sources.knative.dev
 spec:

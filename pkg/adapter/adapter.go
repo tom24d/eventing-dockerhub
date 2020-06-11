@@ -32,6 +32,9 @@ type envConfig struct {
 
 	// DisableAutoCallback represents whether Receive Adapter always report its result to given callbackUrl.
 	DisableAutoCallback bool `envconfig:"DISABLE_AUTO_CALLBACK" default:"false"`
+
+	// EventSource is namespace/name of backing ksvc resource.
+	EventSource string `envconfig:"EVENT_SOURCE"`
 }
 
 func NewEnv() adapter.EnvConfigAccessor { return &envConfig{} }
@@ -42,6 +45,7 @@ type Adapter struct {
 	logger         *zap.SugaredLogger
 	port           string
 	autoValidation bool
+	eventSource    string
 }
 
 // NewAdapter creates an adapter to convert incoming DockerHub webhook events to CloudEvents and
@@ -54,6 +58,7 @@ func NewAdapter(ctx context.Context, aEnv adapter.EnvConfigAccessor, ceClient cl
 		logger:         logger,
 		port:           env.Port,
 		autoValidation: !env.DisableAutoCallback,
+		eventSource:    env.EventSource,
 	}
 }
 
@@ -116,7 +121,6 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 
 		bp, _ := payload.(dockerhub.BuildPayload)
 
-		// TODO think what is "event processed"?
 		go a.processPayload(bp)
 
 		a.logger.Infof("event accepted")
@@ -143,7 +147,7 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 		callbackData := &resources.CallbackPayload{
 			State:       resources.StatusSuccess,
 			Description: message,
-			Context:     "", // TODO adapter resource name
+			Context:     a.eventSource,
 			TargetURL:   "",
 		}
 
@@ -162,6 +166,10 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
+	cloudEventTime, err := time.Parse(time.RFC3339, fmt.Sprintf("%f", payload.PushData.PushedAt))
+	if err != nil {
+		return err
+	}
 	uid, err := uuid.NewRandom()
 	if err != nil {
 		return err
@@ -171,7 +179,7 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetID(uid.String())
 	event.SetType(cloudEventType)
 	event.SetSource(cloudEventSource)
-	// TODO set time
+	event.SetTime(cloudEventTime)
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal buildPayload :%v", err)
