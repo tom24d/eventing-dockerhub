@@ -75,6 +75,10 @@ type DockerHubSourceStatus struct {
 
 	// AutoCallbackDisabled represents the state of itself.
 	AutoCallbackDisabled bool `json:"autoCallbackDisabled,omitempty"`
+
+	// Address holds the information needed to connect this Addressable up to receive events.
+	// +optional
+	Address *duckv1.Addressable `json:"address,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
