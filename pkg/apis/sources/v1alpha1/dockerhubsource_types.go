@@ -52,7 +52,7 @@ func DockerHubEventSource(repoName string) string {
 
 type DockerHubSourceSpec struct {
 	// DisableAutoCallback flag allows users to make their own validation callback.
-	//If unspecified this will default to false. This cannot be updated. (TODO)
+	//If unspecified this will default to false.
 	DisableAutoCallback bool `json:"disableAutoCallback,omitempty"`
 
 	// inherits duck/v1 SourceSpec, which currently provides:
@@ -72,6 +72,9 @@ type DockerHubSourceStatus struct {
 	// * SinkURI - the current active sink URI that has been configured for the
 	//   Source.
 	duckv1.SourceStatus `json:",inline"`
+
+	// AutoCallbackDisabled represents the state of itself.
+	AutoCallbackDisabled bool `json:"autoCallbackDisabled,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
