@@ -85,6 +85,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		if err != nil {
 			return err
 		}
+		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceUpdated", "Updated Service %q", ksvc.Name)
 	}
 
 	// make sinkBinding for created kservice.
