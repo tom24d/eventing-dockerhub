@@ -73,31 +73,3 @@ func MakeService(args *ServiceArgs) *v1.Service {
 	}
 	return ksvc
 }
-
-func getContainer(name string, spec corev1.PodSpec) (int, *corev1.Container) {
-	for i, c := range spec.Containers {
-		if c.Name == name {
-			return i, &c
-		}
-	}
-	return -1, nil
-}
-
-// Returns true if an update is needed.
-func PodSpecImageSync(expected corev1.PodSpec, now corev1.PodSpec) bool {
-	// got needs all of the containers that want as, but it is allowed to have more.
-	dirty := false
-	for _, ec := range expected.Containers {
-		n, nc := getContainer(ec.Name, now)
-		if nc == nil {
-			now.Containers = append(now.Containers, ec)
-			dirty = true
-			continue
-		}
-		if nc.Image != ec.Image {
-			now.Containers[n].Image = ec.Image
-			dirty = true
-		}
-	}
-	return dirty
-}
