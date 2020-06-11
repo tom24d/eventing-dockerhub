@@ -77,17 +77,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 	}
 
-	current := ksvc.DeepCopy()
-	expected := r.getExpectedService(ctx, src)
-	if resources.PodSpecImageSync(expected.Spec.Template.Spec.PodSpec, current.Spec.Template.Spec.PodSpec) {
-		// current gets synced if there is diff
-		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(current)
-		if err != nil {
-			return err
-		}
-		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceUpdated", "Updated Service %q", ksvc.Name)
-	}
-
 	// make sinkBinding for created kservice.
 	if ksvc != nil {
 		logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
