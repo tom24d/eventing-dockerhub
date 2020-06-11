@@ -70,11 +70,27 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		if err != nil {
 			return err
 		}
+		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceCreated", "Created Service %q", ksvc.Name)
 	} else if err != nil {
 		return err
 	} else if !metav1.IsControlledBy(ksvc, src) {
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
+	}
+
+	// if user modifies DisableAutoCallback field
+	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
+		ksvc = ksvc.DeepCopy()
+		// override env
+		ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+		if err != nil {
+			return err
+		}
+		controller.GetEventRecorder(ctx).
+			Eventf(src, corev1.EventTypeNormal,
+				"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
+		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 	}
 
 	// make sinkBinding for created kservice.
@@ -91,6 +107,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			src.Status.MarkSink(sb.Status.SinkURI)
 		}
 		if event != nil {
+			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", event)
 			return event
 		}
 	}
@@ -114,11 +131,15 @@ func (r *Reconciler) getOwnedService(_ context.Context, src *v1alpha1.DockerHubS
 }
 
 func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *v1.Service {
-	return resources.MakeService(&resources.ServiceArgs{
+	return resources.MakeService(r.getServiceArgs(ctx, src))
+}
+
+func (r *Reconciler) getServiceArgs (ctx context.Context, src *v1alpha1.DockerHubSource) *resources.ServiceArgs {
+	return &resources.ServiceArgs{
 		Source:              src,
 		ReceiveAdapterImage: r.receiveAdapterImage,
 		EventSource:         src.Namespace + "/" + src.Name,
 		Context:             ctx,
 		AdditionalEnvs:      r.configAccessor.ToEnvVars(), // Grab config envs for tracing/logging/metrics
-	})
+	}
 }

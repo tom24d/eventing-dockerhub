@@ -1,7 +1,7 @@
 # [WIP]Knative Eventing Dockerhub Source
 
-Knative Eventing `dockerhub-source` defines a event source that transforms webhook events
-from hub.docker.com into CloudEvents and deliver specified sink in the configuration yaml.
+Knative Eventing `dockerhub-source` defines an event source that transforms webhook events
+from hub.docker.com into CloudEvents and deliver to the specified sink in the configuration yaml.
 
 To learn more about Knative, please visit
 [Knative docs](https://github.com/knative/docs) repository.
@@ -13,7 +13,7 @@ This project is inspired by [the idea of JBoss community](https://docs.jboss.org
 
 # DockerHubSource usage example
 
-Make sure that you have `ko`. If you don't have it, see [link](https://github.com/google/ko).
+Make sure you have `ko`. If you don't, see [link](https://github.com/google/ko).
 
 1. Install DockerHubSource
 
@@ -21,12 +21,15 @@ Make sure that you have `ko`. If you don't have it, see [link](https://github.co
 ko apply -f config
 ```
 
-2. apply example
+2. apply example(autoCallback enabled)
 
 ```bash
 kubectl apply -f ./example/normal-display.yaml
 kubectl apply -f ./example/source.yaml
 ```
+
+The examples have also `callback-display.yaml` to try autoCallback disabled mode.
+Note that you have to apply `callback-display.yaml` with `ko`.
 
 <!-- TODO write with better style -->
 

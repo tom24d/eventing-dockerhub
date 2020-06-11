@@ -26,23 +26,7 @@ type ServiceArgs struct {
 // MakeService generates, but does not create, a Service for the given
 // DockerHubSource.
 func MakeService(args *ServiceArgs) *v1.Service {
-	labels := map[string]string{
-		"receive-adapter": "dockerhub",
-	}
-
-	envs := []corev1.EnvVar{{
-		Name:  "EVENT_SOURCE",
-		Value: args.EventSource,
-	}, {
-		Name: "METRICS_DOMAIN",
-		//Value: "knative.dev/eventing",
-	}, {
-		Name:  "NAMESPACE",
-		Value: args.Source.Namespace,
-	}, {
-		Name:  "DISABLE_AUTO_CALLBACK",
-		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
-	}}
+	labels := Labels(args.Source.Name)
 
 	ksvc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -60,10 +44,7 @@ func MakeService(args *ServiceArgs) *v1.Service {
 						PodSpec: corev1.PodSpec{
 							Containers: []corev1.Container{{
 								Image: args.ReceiveAdapterImage,
-								Env: append(
-									envs,
-									args.AdditionalEnvs...,
-								),
+								Env: args.GetEnv(),
 							}},
 						},
 					},
@@ -72,4 +53,27 @@ func MakeService(args *ServiceArgs) *v1.Service {
 		},
 	}
 	return ksvc
+}
+
+// GetEnv return EnvVar used by the ksvc.
+func (args *ServiceArgs) GetEnv() []corev1.EnvVar {
+
+	envs := []corev1.EnvVar{{
+		Name:  "EVENT_SOURCE",
+		Value: args.EventSource,
+	}, {
+		Name: "METRICS_DOMAIN",
+		//Value: "knative.dev/eventing",
+	}, {
+		Name:  "NAMESPACE",
+		Value: args.Source.Namespace,
+	}, {
+		Name:  "DISABLE_AUTO_CALLBACK",
+		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
+	}}
+
+	return append(
+		envs,
+		args.AdditionalEnvs...,
+	)
 }
