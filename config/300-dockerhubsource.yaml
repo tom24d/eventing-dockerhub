@@ -28,9 +28,9 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      # TODO add validation
+      # admission webhook does this instead.
       type: object
-      # this is a work around so we don't need to flesh out the
+      # (from SampleSource)this is a work around so we don't need to flesh out the
       # schema for each version at this time
       #
       # see issue: https://github.com/knative/serving/issues/912
@@ -42,9 +42,12 @@ spec:
     - name: Reason
       type: string
       JSONPath: ".status.conditions[?(@.type=='Ready')].reason"
-    - name: Sink
+    - name: URL
       type: string
-      JSONPath: .status.sinkUri
+      JSONPath: .status.url
+    - name: SinkProvided
+      type: string
+      JSONPath: ".status.conditions[?(@.type=='SinkProvided')].status"
     - name: Age
       type: date
       JSONPath: .metadata.creationTimestamp

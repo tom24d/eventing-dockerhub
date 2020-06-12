@@ -19,10 +19,16 @@ const (
 	// DockerHubSourceConditionSinkProvided has status True when the
 	// DockerHubSource has been configured with a sink target.
 	DockerHubSourceConditionSinkProvided apis.ConditionType = "SinkProvided"
+
+	// DockerHubSourceConditionEndpointProvided has status True when the
+	// backing knative service gets ready.
+	DockerHubSourceConditionEndpointProvided apis.ConditionType = "EndpointProvided"
 )
 
 var dockerHubCondSet = apis.NewLivingConditionSet(
-	DockerHubSourceConditionSinkProvided)
+	DockerHubSourceConditionSinkProvided,
+	DockerHubSourceConditionEndpointProvided,
+)
 
 // GetCondition returns the condition currently associated with the given type, or nil.
 func (s *DockerHubSourceStatus) GetCondition(t apis.ConditionType) *apis.Condition {
@@ -48,6 +54,22 @@ func (s *DockerHubSourceStatus) MarkSink(uri *apis.URL) {
 // MarkNoSink sets the condition that the source does not have a sink configured.
 func (s *DockerHubSourceStatus) MarkNoSink(reason, messageFormat string, messageA ...interface{}) {
 	dockerHubCondSet.Manage(s).MarkFalse(DockerHubSourceConditionSinkProvided, reason, messageFormat, messageA...)
+}
+
+// MarkEndpoint sets the URL endpoint that the source has been provided.
+func (s *DockerHubSourceStatus) MarkEndpoint(uri *apis.URL) {
+	s.URL = uri
+	if len(uri.String()) > 0 {
+		dockerHubCondSet.Manage(s).MarkTrue(DockerHubSourceConditionEndpointProvided)
+	} else {
+		dockerHubCondSet.Manage(s).MarkUnknown(DockerHubSourceConditionEndpointProvided,
+			"EndpointEmpty", "Endpoint URL has resolved to empty.%s", "")
+	}
+}
+
+// MarkNoSink sets the condition that the source does not have a sink configured.
+func (s *DockerHubSourceStatus) MarkNoEndpoint(reason, messageFormat string, messageA ...interface{}) {
+	dockerHubCondSet.Manage(s).MarkFalse(DockerHubSourceConditionEndpointProvided, reason, messageFormat, messageA...)
 }
 
 // IsReady returns true if the resource is ready overall.

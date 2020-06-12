@@ -25,7 +25,6 @@ import (
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
 
-	// knative.dev/pkg imports
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -73,8 +72,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceCreated", "Created Service %q", ksvc.Name)
 	} else if err != nil {
+		src.Status.MarkNoEndpoint("ServiceUnavailable", "%v", err)
 		return err
 	} else if !metav1.IsControlledBy(ksvc, src) {
+		src.Status.MarkNoEndpoint("ServiceNotOwned", "Service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 	}
 
@@ -85,6 +86,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
 		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
 		if err != nil {
+			src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
 			return err
 		}
 		controller.GetEventRecorder(ctx).
@@ -112,6 +114,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		}
 	}
 
+	if ksvc.Status.IsReady() && ksvc.Status.URL != nil {
+		src.Status.MarkEndpoint(ksvc.Status.URL)
+	}
+
 	src.Status.ObservedGeneration = src.Generation
 	return nil
 }
@@ -134,7 +140,7 @@ func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.Docke
 	return resources.MakeService(r.getServiceArgs(ctx, src))
 }
 
-func (r *Reconciler) getServiceArgs (ctx context.Context, src *v1alpha1.DockerHubSource) *resources.ServiceArgs {
+func (r *Reconciler) getServiceArgs(ctx context.Context, src *v1alpha1.DockerHubSource) *resources.ServiceArgs {
 	return &resources.ServiceArgs{
 		Source:              src,
 		ReceiveAdapterImage: r.receiveAdapterImage,

@@ -28,19 +28,17 @@ kubectl apply -f ./example/normal-display.yaml
 kubectl apply -f ./example/source.yaml
 ```
 
-The examples have also `callback-display.yaml` to try autoCallback disabled mode.
-Note that you have to apply `callback-display.yaml` with `ko`.
+The examples have also `callback-display.yaml` to try autoCallback disabled mode.  
+Note that you have to apply `callback-display.yaml` with `ko`.  
 
 <!-- TODO write with better style -->
 
 3. You can see the resource is created via: `kubectl get dockerhubsource`.  
-The endpoint should be available via: `kubectl get ksvc`. The output should be like:
-```bash
- % k get ksvc
-NAME                     URL                                                          LATESTCREATED                  LATESTREADY                   READY     REASON
-dockerhub-source-jd6rq   http://<your-domain-for-DockerHubSource>   dockerhub-source-jd6rq-8kqrt                                 Unknown   RevisionMissing
-event-display            http://<your-domain-for-event-display>            event-display-w58d4            event-display-w58d4           True      
+```
+ % k get dockerhubsource
+NAME               READY   REASON   URL                                                          SINK                                              AGE
+dockerhub-source   True             http://dockerhub-source-xfhz8.default......tld   http://normal-display.default.svc.cluster.local   9s
 
 ```  
 
-4. Copy `http://<your-domain-for-DockerHubSource>` to use to configure hub.docker.com webhook. See [Link](https://docs.docker.com/docker-hub/webhooks/).  
+4. Copy `http://<your-domain-for-DockerHubSource>` to configure hub.docker.com webhook. See [Link](https://docs.docker.com/docker-hub/webhooks/).  

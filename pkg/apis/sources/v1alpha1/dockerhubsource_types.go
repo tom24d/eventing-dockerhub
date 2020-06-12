@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/pkg/apis"
 
 	"knative.dev/pkg/webhook/resourcesemantics"
 
@@ -75,6 +76,10 @@ type DockerHubSourceStatus struct {
 
 	// AutoCallbackDisabled represents the state of itself.
 	AutoCallbackDisabled bool `json:"autoCallbackDisabled,omitempty"`
+
+	// URL holds the information needed to connect this up to receive events.
+	// +optional
+	URL *apis.URL `json:"url,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
