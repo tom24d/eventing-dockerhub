@@ -58,7 +58,7 @@ func (s *DockerHubSourceStatus) MarkNoSink(reason, messageFormat string, message
 
 // MarkEndpoint sets the URL endpoint that the source has been provided.
 func (s *DockerHubSourceStatus) MarkEndpoint(uri *apis.URL) {
-	s.Url = uri
+	s.URL = uri
 	if len(uri.String()) > 0 {
 		dockerHubCondSet.Manage(s).MarkTrue(DockerHubSourceConditionEndpointProvided)
 	} else {

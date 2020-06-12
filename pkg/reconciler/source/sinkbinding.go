@@ -27,7 +27,7 @@ import (
 // newSinkBindingCreated makes a new reconciler event with event type Normal, and
 // reason SinkBindingCreated.
 func newSinkBindingCreated(namespace, name string) pkgreconciler.Event {
-	return pkgreconciler.NewEvent(corev1.EventTypeNormal, "SinkBindingCreated", "created SinkBinding: \"%s/%s\"", namespace, name)
+	return pkgreconciler.NewEvent(corev1.EventTypeNormal, "SinkBindingCreated", "Created SinkBinding: \"%s/%s\"", namespace, name)
 }
 
 // newSinkBindingFailed makes a new reconciler event with event type Warning, and

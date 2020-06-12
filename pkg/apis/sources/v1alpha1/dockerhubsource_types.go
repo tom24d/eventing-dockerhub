@@ -77,9 +77,9 @@ type DockerHubSourceStatus struct {
 	// AutoCallbackDisabled represents the state of itself.
 	AutoCallbackDisabled bool `json:"autoCallbackDisabled,omitempty"`
 
-	// Url holds the information needed to connect this up to receive events.
+	// URL holds the information needed to connect this up to receive events.
 	// +optional
-	Url *apis.URL `json:"url,omitempty"`
+	URL *apis.URL `json:"url,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
