@@ -45,9 +45,9 @@ spec:
     - name: URL
       type: string
       JSONPath: .status.url
-    - name: Sink
+    - name: SinkProvided
       type: string
-      JSONPath: .status.sinkUri
+      JSONPath: ".status.conditions[?(@.type=='SinkProvided')].status"
     - name: Age
       type: date
       JSONPath: .metadata.creationTimestamp
