@@ -30,6 +30,11 @@ var dockerHubCondSet = apis.NewLivingConditionSet(
 	DockerHubSourceConditionEndpointProvided,
 )
 
+// GetConditionSet retrieves the condition set for this resource. Implements the KRShaped interface.
+func (*DockerHubSource) GetConditionSet() apis.ConditionSet {
+	return dockerHubCondSet
+}
+
 // GetCondition returns the condition currently associated with the given type, or nil.
 func (s *DockerHubSourceStatus) GetCondition(t apis.ConditionType) *apis.Condition {
 	return dockerHubCondSet.Manage(s).GetCondition(t)
