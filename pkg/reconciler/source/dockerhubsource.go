@@ -25,15 +25,11 @@ import (
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
 
-	// knative.dev/pkg imports
-	"knative.dev/pkg/apis"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
-	duckv1 "knative.dev/pkg/apis/duck/v1"
 	pkgreconciler "knative.dev/pkg/reconciler"
 	"knative.dev/pkg/resolver"
 	"knative.dev/pkg/tracker"
-	"knative.dev/pkg/network"
 )
 
 const (
@@ -116,7 +112,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	}
 
 	if ksvc.Status.IsReady() && ksvc.Status.URL != nil {
-		src.Status.Address = ksvc.Status.Address
+		src.Status.MarkEndpoint(ksvc.Status.URL)
 	}
 
 	src.Status.ObservedGeneration = src.Generation
