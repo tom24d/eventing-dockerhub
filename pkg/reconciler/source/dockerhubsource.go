@@ -140,7 +140,7 @@ func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.Docke
 	return resources.MakeService(r.getServiceArgs(ctx, src))
 }
 
-func (r *Reconciler) getServiceArgs (ctx context.Context, src *v1alpha1.DockerHubSource) *resources.ServiceArgs {
+func (r *Reconciler) getServiceArgs(ctx context.Context, src *v1alpha1.DockerHubSource) *resources.ServiceArgs {
 	return &resources.ServiceArgs{
 		Source:              src,
 		ReceiveAdapterImage: r.receiveAdapterImage,

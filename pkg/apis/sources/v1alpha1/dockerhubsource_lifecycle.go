@@ -28,7 +28,7 @@ const (
 var dockerHubCondSet = apis.NewLivingConditionSet(
 	DockerHubSourceConditionSinkProvided,
 	DockerHubSourceConditionEndpointProvided,
-	)
+)
 
 // GetCondition returns the condition currently associated with the given type, or nil.
 func (s *DockerHubSourceStatus) GetCondition(t apis.ConditionType) *apis.Condition {

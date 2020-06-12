@@ -316,7 +316,7 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 		}(),
 		condQuery: DockerHubSourceConditionReady,
 		want: &apis.Condition{
-			Type:   DockerHubSourceConditionReady,
+			Type:    DockerHubSourceConditionReady,
 			Status:  corev1.ConditionFalse,
 			Reason:  "Testing",
 			Message: "hi",
@@ -333,7 +333,7 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 		}(),
 		condQuery: DockerHubSourceConditionReady,
 		want: &apis.Condition{
-			Type:   DockerHubSourceConditionReady,
+			Type:    DockerHubSourceConditionReady,
 			Status:  corev1.ConditionFalse,
 			Reason:  "Testing",
 			Message: "hi",
