@@ -44,7 +44,7 @@ spec:
       JSONPath: ".status.conditions[?(@.type=='Ready')].reason"
     - name: URL
       type: string
-      JSONPath: .status.address
+      JSONPath: .status.url
     - name: Sink
       type: string
       JSONPath: .status.sinkUri
