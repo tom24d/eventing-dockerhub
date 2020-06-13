@@ -37,4 +37,4 @@ jobs:
           hub push origin update-deps
           hub pull-request -b master -a tom24d -l dependencies --file ./.github/template/update-deps.md
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{secrets.UPDATE_BOT_TOKEN}}
