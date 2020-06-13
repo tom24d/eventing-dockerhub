@@ -13,7 +13,7 @@ import (
 )
 
 // +genclient
-// +genreconciler
+// +genreconciler:krshapedlogic=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // DockerHubSource is the Schema for the dockerhubsources API
@@ -31,12 +31,15 @@ type DockerHubSource struct {
 	Status DockerHubSourceStatus `json:"status,omitempty"`
 }
 
-func (s *DockerHubSource) GetGroupVersionKind() schema.GroupVersionKind {
+func (*DockerHubSource) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("DockerHubSource")
 }
 
-var _ runtime.Object = (*DockerHubSource)(nil)
-var _ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
+var (
+	_ runtime.Object               = (*DockerHubSource)(nil)
+	_ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
+	_ duckv1.KRShaped              = (*DockerHubSource)(nil)
+)
 
 const (
 	dockerHubEventTypePrefix   = "dev.knative.source.dockerhub"
@@ -80,6 +83,11 @@ type DockerHubSourceStatus struct {
 	// URL holds the information needed to connect this up to receive events.
 	// +optional
 	URL *apis.URL `json:"url,omitempty"`
+}
+
+// GetStatus retrieves the status of the DockerHubSource. Implements the KRShaped interface.
+func (d *DockerHubSource) GetStatus() *duckv1.Status {
+	return &d.Status.Status
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

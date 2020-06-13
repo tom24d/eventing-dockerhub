@@ -118,7 +118,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		src.Status.MarkEndpoint(ksvc.Status.URL)
 	}
 
-	src.Status.ObservedGeneration = src.Generation
 	return nil
 }
 

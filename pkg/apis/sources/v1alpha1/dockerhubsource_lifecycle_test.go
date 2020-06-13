@@ -351,3 +351,11 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 		})
 	}
 }
+
+func TestDockerHubSource_GetConditionSet(t *testing.T) {
+	r := &DockerHubSource{}
+
+	if got, want := r.GetConditionSet().GetTopLevelConditionType(), apis.ConditionReady; got != want {
+		t.Errorf("GetTopLevelCondition=%v, want=%v", got, want)
+	}
+}
