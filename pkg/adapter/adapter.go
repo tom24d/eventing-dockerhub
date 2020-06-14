@@ -180,6 +180,8 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetType(cloudEventType)
 	event.SetSource(cloudEventSource)
 	event.SetTime(cloudEventTime)
+	event.SetSubject(payload.PushData.Pusher)
+	event.SetExtension("tag", payload.PushData.Tag)
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal buildPayload :%v", err)
