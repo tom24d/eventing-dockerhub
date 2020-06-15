@@ -80,24 +80,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 	}
 
-	// if user modifies DisableAutoCallback field
-	// TODO this causes a bug
-	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
-		ksvc = ksvc.DeepCopy()
-		// override env
-		ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
-		if err != nil {
-			src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
-			return err
-		}
-		controller.GetEventRecorder(ctx).
-			Eventf(src, corev1.EventTypeNormal,
-				"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
-		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
-	}
-
-	// make sinkBinding for created kservice.
+	// reconcile SinkBinding for the kservice.
 	if ksvc != nil {
 		logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
 		sb, event := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
@@ -114,10 +97,26 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", event)
 			return event
 		}
-	}
 
-	if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
-		src.Status.MarkEndpoint(ksvc.Status.URL)
+		// if user modifies DisableAutoCallback field
+		if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
+			ksvc = ksvc.DeepCopy()
+			// override env
+			ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+			if err != nil {
+				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+				return err
+			}
+			controller.GetEventRecorder(ctx).
+				Eventf(src, corev1.EventTypeNormal,
+					"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
+			src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
+		}
+
+		if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
+			src.Status.MarkEndpoint(ksvc.Status.URL)
+		}
 	}
 
 	return nil
