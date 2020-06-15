@@ -95,10 +95,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			if s.IsTrue() {
 				src.Status.MarkSink(sb.Status.SinkURI)
 			} else if s.IsFalse() {
+				// SinkBindingReconcileFailed is a propagated status from SinkBinding controller.
 				src.Status.MarkNoSink("SinkBindingReconcileFailed", "%s", s.GetMessage())
 			}
 		}
 		if event != nil {
+			// FailedReconcileSinkBinding represents this controller itself failed to reconcile SinkBinding resource.
 			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", event)
 			return event
 		}
