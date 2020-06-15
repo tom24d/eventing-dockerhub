@@ -80,27 +80,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 	}
 
-	// if user modifies DisableAutoCallback field
-	// TODO this causes a bug
-	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
-		ksvc = ksvc.DeepCopy()
-		// override env
-		ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
-		if err != nil {
-			src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
-			return err
-		}
-		controller.GetEventRecorder(ctx).
-			Eventf(src, corev1.EventTypeNormal,
-				"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
-		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
-	}
-
-	// make sinkBinding for created kservice.
+	// reconcile SinkBinding for the kservice.
 	if ksvc != nil {
 		logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
-		sb, event := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
+		sb, errEvent := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
 			APIVersion: v1.SchemeGroupVersion.String(),
 			Kind:       "Service",
 			Namespace:  ksvc.Namespace,
@@ -108,18 +91,42 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		})
 		logging.FromContext(ctx).Infof("ReconcileSinkBinding returned %#v", sb)
 		if sb != nil {
-			src.Status.MarkSink(sb.Status.SinkURI)
+			s := sb.Status.GetCondition(apis.ConditionReady)
+			if s.IsTrue() {
+				src.Status.MarkSink(sb.Status.SinkURI)
+			} else if s.IsFalse() {
+				// SinkBindingReconcileFailed is a propagated status from SinkBinding controller.
+				src.Status.MarkNoSink("SinkBindingReconcileFailed", "%s", s.GetMessage())
+			}
 		}
-		if event != nil {
-			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", event)
-			return event
+		if errEvent != nil {
+			// FailedReconcileSinkBinding represents this controller itself failed to reconcile SinkBinding resource.
+			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", errEvent)
+			return errEvent
+		}
+
+		// if user modifies DisableAutoCallback field
+		if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
+			ksvc = ksvc.DeepCopy()
+			// override env
+			ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+			if err != nil {
+				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+				return err
+			}
+			controller.GetEventRecorder(ctx).
+				Eventf(src, corev1.EventTypeNormal,
+					"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
+			src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
+		}
+
+		if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
+			src.Status.MarkEndpoint(ksvc.Status.URL)
 		}
 	}
 
-	if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
-		src.Status.MarkEndpoint(ksvc.Status.URL)
-	}
-
+	src.Status.ObservedGeneration = src.Generation
 	return nil
 }
 

@@ -13,7 +13,7 @@ import (
 )
 
 // +genclient
-// +genreconciler:krshapedlogic=true
+// +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // DockerHubSource is the Schema for the dockerhubsources API

@@ -52,7 +52,8 @@ func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.Owner
 		if err != nil {
 			return nil, newSinkBindingFailed(expected.Namespace, expected.Name, err)
 		}
-		return sb, newSinkBindingCreated(sb.Namespace, sb.Name)
+		//return sb, newSinkBindingCreated(sb.Namespace, sb.Name)
+		return sb, nil
 	} else if err != nil {
 		return nil, fmt.Errorf("error getting SinkBinding %q: %v", expected.Name, err)
 	} else if !metav1.IsControlledBy(sb, owner.GetObjectMeta()) {
@@ -63,7 +64,8 @@ func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.Owner
 		if sb, err = r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Update(sb); err != nil {
 			return sb, err
 		}
-		return sb, newSinkBindingUpdated(sb.Namespace, sb.Name)
+		//return sb, newSinkBindingUpdated(sb.Namespace, sb.Name)
+		return sb, nil
 	} else {
 		logging.FromContext(ctx).Debugw("Reusing existing sink binding", zap.Any("sinkBinding", sb))
 	}
