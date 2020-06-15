@@ -91,7 +91,12 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		})
 		logging.FromContext(ctx).Infof("ReconcileSinkBinding returned %#v", sb)
 		if sb != nil {
-			src.Status.MarkSink(sb.Status.SinkURI)
+			s := sb.Status.GetCondition(apis.ConditionReady)
+			if s.IsTrue() {
+				src.Status.MarkSink(sb.Status.SinkURI)
+			} else if s.IsFalse() {
+				src.Status.MarkNoSink("SinkBindingReconcileFailed", "%s", s.GetMessage())
+			}
 		}
 		if event != nil {
 			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", event)
