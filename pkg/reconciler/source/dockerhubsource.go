@@ -83,7 +83,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	// reconcile SinkBinding for the kservice.
 	if ksvc != nil {
 		logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
-		sb, event := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
+		sb, errEvent := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
 			APIVersion: v1.SchemeGroupVersion.String(),
 			Kind:       "Service",
 			Namespace:  ksvc.Namespace,
@@ -99,10 +99,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 				src.Status.MarkNoSink("SinkBindingReconcileFailed", "%s", s.GetMessage())
 			}
 		}
-		if event != nil {
+		if errEvent != nil {
 			// FailedReconcileSinkBinding represents this controller itself failed to reconcile SinkBinding resource.
-			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", event)
-			return event
+			src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", errEvent)
+			return errEvent
 		}
 
 		// if user modifies DisableAutoCallback field
