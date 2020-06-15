@@ -81,6 +81,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	}
 
 	// if user modifies DisableAutoCallback field
+	// TODO this causes a bug
 	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
 		ksvc = ksvc.DeepCopy()
 		// override env

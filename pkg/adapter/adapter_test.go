@@ -27,8 +27,9 @@ import (
 
 const (
 	testSubject                 = "1234"
-	testOwnerRepo               = "test-user/test-repo"
+	testRepoName                = "test-repo/test-name"
 	testCallbackPort            = "4320"
+	testTime                    = 1.5910874e+09
 	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
 )
@@ -49,31 +50,35 @@ type testCase struct {
 	// cloudEventSendExpected is whether event is transferred
 	cloudEventSendExpected bool
 
-	// wantEventType is the expected CloudEvent EventType
+	// wantEventType is the expected CloudEvent EventType if cloudEventSendExpected is true
 	wantCloudEventType string
 
-	// wantCloudEventSubject is the expected CloudEvent subject
-	//wantCloudEventSubject string
+	// wantCloudEventSubject is the expected CloudEvent subject if cloudEventSendExpected is true
+	wantCloudEventSubject string
 
 	//wantCallbackExpected is whether callback is expected
 	wantCallbackExpected bool
 
-	//wantCallbackStatus is the expected resources.Status
+	//wantCallbackStatus is the expected resources.Status if wantCallbackExpected is true
 	wantCallbackStatus resources.Status
 }
 
 var testCases = []testCase{
 	{
-		name: "valid build buildPayload",
+		name: "valid buildPayload",
 		buildPayload: func() interface{} {
 			bp := &dh.BuildPayload{}
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
+			bp.PushData.PushedAt = testTime
+			bp.PushData.Pusher = testSubject
+			bp.Repository.RepoName = testRepoName
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
 		eventType:              DockerHubEventType,
 		cloudEventSendExpected: true,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventSubject:  testSubject,
 		wantCallbackExpected:   true,
 		wantCallbackStatus:     resources.StatusSuccess,
 	},
@@ -89,6 +94,20 @@ var testCases = []testCase{
 		cloudEventSendExpected: false,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,
+	},
+	{
+		name: "invalid time",
+		buildPayload: func() interface{} {
+			bp := &dh.BuildPayload{}
+			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
+			bp.PushData.PushedAt = -1
+			return bp
+		}(),
+		httpMethod:             http.MethodPost,
+		eventType:              DockerHubEventType,
+		cloudEventSendExpected: true,
+		wantCallbackExpected:   true,
+		wantCallbackStatus:     resources.StatusSuccess,
 	},
 	{
 		name: "nil buildPayload",
@@ -284,11 +303,10 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 	if len(ce.Sent()) != 1 {
 		return
 	}
-	// TODO add subject test if needed
-	//eventSubject := ce.Sent()[0].Subject()
-	//if eventSubject != tc.wantCloudEventSubject {
-	//	t.Fatalf("Expected %q event subject to be sent, got %q", tc.wantCloudEventSubject, eventSubject)
-	//}
+	eventSubject := ce.Sent()[0].Subject()
+	if eventSubject != tc.wantCloudEventSubject {
+		t.Fatalf("Expected %q event subject to be sent, got %q", tc.wantCloudEventSubject, eventSubject)
+	}
 
 	if tc.wantCloudEventType != "" {
 		eventType := ce.Sent()[0].Type()

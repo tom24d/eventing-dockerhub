@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	//knative.dev imports
@@ -110,9 +111,9 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 
 		if err != nil {
 			if err == dockerhub.ErrInvalidHTTPMethod {
-				w.Write([]byte("event not send to sink as invalid http method"))
+				a.logger.Error("event not send to sink as invalid http method")
 			} else if err == dockerhub.ErrParsingPayload {
-				w.Write([]byte("event not send to sink as parsing buildPayload err"))
+				a.logger.Error("event not send to sink as parsing buildPayload err")
 			}
 			a.logger.Errorf("Error processing request: %v", err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -123,9 +124,8 @@ func (a *Adapter) newRouter(hook *dockerhub.Webhook) *http.ServeMux {
 
 		go a.processPayload(bp)
 
-		a.logger.Infof("event accepted")
-		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte("accepted"))
+		a.logger.Infof("event accepted: %v", bp)
+		w.WriteHeader(http.StatusOK)
 	})
 	return router
 }
@@ -145,6 +145,7 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 			message = fmt.Sprintf("failed to send event to sink: %v", err)
 		}
 		callbackData := &resources.CallbackPayload{
+			// always StatusSuccess to continue to receive webhook
 			State:       resources.StatusSuccess,
 			Description: message,
 			Context:     a.eventSource,
@@ -164,11 +165,12 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 
 // sendEventToSink transforms buildPayload to CloudEvent, then try to send to sink.
 func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
+	fmt.Println(payload)
 	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
-	cloudEventTime, err := time.Parse(time.RFC3339, fmt.Sprintf("%f", payload.PushData.PushedAt))
+	cloudEventTime, err := getTime(payload.PushData.PushedAt)
 	if err != nil {
-		return err
+		a.logger.Warnf("failed to parse pushedAt field. Use time.Now(): %v", err)
 	}
 	uid, err := uuid.NewRandom()
 	if err != nil {
@@ -180,6 +182,8 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	event.SetType(cloudEventType)
 	event.SetSource(cloudEventSource)
 	event.SetTime(cloudEventTime)
+	event.SetSubject(payload.PushData.Pusher)
+	event.SetExtension("tag", payload.PushData.Tag)
 	err = event.SetData(cloudevents.ApplicationJSON, payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal buildPayload :%v", err)
@@ -192,4 +196,20 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 		return fmt.Errorf("send() could not get ACK: %v", result)
 	}
 	return nil
+}
+
+// This is precise, but definitely there should be a better way :(
+// If the operation failed, use time.Now()
+func getTime(pushedAt float32) (time.Time, error) {
+	pt := pushedAt
+	if pt < 0 {
+		return time.Now(), fmt.Errorf("pushedAt should not be negative: %f", pt)
+	}
+	ft := strconv.FormatFloat(float64(pt), 'f', -1, 64)
+	u, err := strconv.ParseInt(ft, 10, 64)
+	if err != nil {
+		return time.Now(), fmt.Errorf("failed to process pushedAt field: %v", err)
+	}
+	ans := time.Unix(u, 0)
+	return ans, nil
 }
