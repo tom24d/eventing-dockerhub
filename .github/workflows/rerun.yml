@@ -1,0 +1,44 @@
+name: Re Update Deps
+
+on:
+  repository_dispatch:
+    types: [rerun-command]
+
+jobs:
+  update-deps:
+    name: Rerun Auto Update Dependencies
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.client_payload.pull_request.labels, 'dependencies') && startsWith( github.event.client_payload.pull_request.title, "[scheduled]" ) }}
+    steps:
+      - name: Install hub cli
+        uses: geertvdc/setup-hub@v1.0.0
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Run update sh
+        run: |
+          git config user.email "tom.24d.en@gmail.com"
+          git config user.name "Tomoya Nishide bot"
+          git checkout -b update-deps
+          export PATH=$PATH:/home/runner/work/bin
+          ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh
+          git add .
+          git commit --amend --no-edit
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: force-push commit
+        run: |
+          hub push -f origin update-deps
+        env:
+          GITHUB_TOKEN: ${{ secrets.UPDATE_BOT_TOKEN }}
