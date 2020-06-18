@@ -24,22 +24,10 @@ import (
 	"go.uber.org/zap"
 )
 
-// newSinkBindingCreated makes a new reconciler event with event type Normal, and
-// reason SinkBindingCreated.
-func newSinkBindingCreated(namespace, name string) pkgreconciler.Event {
-	return pkgreconciler.NewEvent(corev1.EventTypeNormal, "SinkBindingCreated", "Created SinkBinding: \"%s/%s\"", namespace, name)
-}
-
 // newSinkBindingFailed makes a new reconciler event with event type Warning, and
 // reason SinkBindingFailed.
 func newSinkBindingFailed(namespace, name string, err error) pkgreconciler.Event {
 	return pkgreconciler.NewEvent(corev1.EventTypeWarning, "SinkBindingFailed", "failed to create SinkBinding: \"%s/%s\", %w", namespace, name, err)
-}
-
-// newSinkBindingUpdated makes a new reconciler event with event type Normal, and
-// reason SinkBindingUpdated.
-func newSinkBindingUpdated(namespace, name string) pkgreconciler.Event {
-	return pkgreconciler.NewEvent(corev1.EventTypeNormal, "SinkBindingUpdated", "updated SinkBinding: \"%s/%s\"", namespace, name)
 }
 
 func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.OwnerRefable, source duckv1.SourceSpec, subject tracker.Reference) (*v1alpha2.SinkBinding, pkgreconciler.Event) {
@@ -52,7 +40,6 @@ func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.Owner
 		if err != nil {
 			return nil, newSinkBindingFailed(expected.Namespace, expected.Name, err)
 		}
-		//return sb, newSinkBindingCreated(sb.Namespace, sb.Name)
 		return sb, nil
 	} else if err != nil {
 		return nil, fmt.Errorf("error getting SinkBinding %q: %v", expected.Name, err)
@@ -64,7 +51,6 @@ func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.Owner
 		if sb, err = r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Update(sb); err != nil {
 			return sb, err
 		}
-		//return sb, newSinkBindingUpdated(sb.Namespace, sb.Name)
 		return sb, nil
 	} else {
 		logging.FromContext(ctx).Debugw("Reusing existing sink binding", zap.Any("sinkBinding", sb))
