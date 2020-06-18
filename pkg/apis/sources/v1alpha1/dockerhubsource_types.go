@@ -17,9 +17,6 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // DockerHubSource is the Schema for the dockerhubsources API
-// +k8s:openapi-gen=true
-// +kubebuilder:subresource:status
-// +kubebuilder:categories=all,knative,eventing,sources
 type DockerHubSource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
