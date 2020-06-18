@@ -6,12 +6,12 @@ on:
   pull_request:
     branches: [ master ]
   repository_dispatch:
-    types: [retest-command]
+    types: [unit-test-command, retest-command]
 
 jobs:
 
-  build:
-    name: Verify-codegen
+  test:
+    name: Unit Test
     runs-on: ubuntu-latest
     steps:
 
@@ -20,13 +20,12 @@ jobs:
       with:
         go-version: 1.14
       id: go
-    
+
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Verify codegen
-      run: |
-        export PATH=$PATH:/home/runner/work/bin
-        ./hack/verify-codegen.sh
-      env:
-        GOPATH: /home/runner/work/
+    - name: Unit test for v1alpha1
+      run: go test ./pkg/apis/sources/v1alpha1
+
+    - name: Unit test for adapter
+      run: go test -race ./pkg/adapter/...

@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  repository_dispatch:
+    types: [integration-test-command, retest-command]
+
+jobs:
+  e2e:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Get google/ko
+        run: GO111MODULE=on go get github.com/google/ko/cmd/ko
+
+      - name: Create KinD Cluster
+        uses: helm/kind-action@v1.0.0-rc.1
+
+      - uses: actions/checkout@v2
+
+      - name: Install Knative Serving & Eventing
+        run: ./test/install-knative.sh
+
+      - name: Run integration test
+        run: ./test/integration-test.sh
+        env:
+          KO_DOCKER_REPO: ko.local
