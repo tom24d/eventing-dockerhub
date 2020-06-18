@@ -44,7 +44,7 @@ func MakeService(args *ServiceArgs) *v1.Service {
 						PodSpec: corev1.PodSpec{
 							Containers: []corev1.Container{{
 								Image: args.ReceiveAdapterImage,
-								Env: args.GetEnv(),
+								Env:   args.GetEnv(),
 							}},
 						},
 					},
