@@ -15,7 +15,9 @@ func display(event cloudevents.Event) {
 	data := &dockerhub.BuildPayload{}
 	if err := event.DataAs(data); err != nil {
 		fmt.Printf("Got Data Error: %s\n", err.Error())
+		return
 	}
+	fmt.Printf("Got Data: %+v\n", data)
 
 	if data.CallbackURL != "" {
 		message := "Event has been sent successfully to the sink."
