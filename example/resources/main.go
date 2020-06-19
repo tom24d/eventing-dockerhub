@@ -6,18 +6,20 @@ import (
 	"log"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 )
 
 func display(event cloudevents.Event) {
-	data := &resources.CallbackPayload{}
+	data := &dockerhub.BuildPayload{}
 	if err := event.DataAs(data); err != nil {
 		fmt.Printf("Got Data Error: %s\n", err.Error())
+		return
 	}
+	fmt.Printf("Got Data: %+v\n", data)
 
-	callbackURL := data.TargetURL
-	if callbackURL != "" {
+	if data.CallbackURL != "" {
 		message := "Event has been sent successfully to the sink."
 		callbackData := &resources.CallbackPayload{
 			State:       resources.StatusSuccess,
@@ -26,7 +28,7 @@ func display(event cloudevents.Event) {
 			TargetURL:   "",
 		}
 
-		err := callbackData.EmitValidationCallback(callbackURL)
+		err := callbackData.EmitValidationCallback(data.CallbackURL)
 		if err != nil {
 			fmt.Printf("failed to send validation callback: %v", err)
 		} else {
