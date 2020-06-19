@@ -62,3 +62,47 @@ Copy `http://<your-endpoint-for-DockerHubSource>` to configure dockerhub webhook
 |`metadata` <br> [Kubernetes<br>meta/v1.metadata](https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.CloudEventOverrides)| Refer to the Kubernetes API documentation for the fields of the `metadata` field.|
 |`Spec` <br> DockerHubSourceSpec| <table> <tr> <td><code> disableAutoCallback </code> <br> bool</td> <td> (Optional) <br> DisableAutoCallback configures whether the adapter works with automatic callback feature. Docker Hub webhook needs validation callback to receive continually its chain. If the field is false, the adapter automatically sends a corresponding callback. When the event gets delivered successfully, callback status is `success`. Otherwise the status is `failure`.  If unspecified, this will default to false.</td> </tr> <tr> <td><code> SourceSpec </code> <br> <a href="https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.SourceSpec">SourceSpec</a></td> <td>(Members of SourceSpec are embedded into this type.)</td> </tr> </table>|
 |`Status` <br> DockerHubSourceStatus| <table>  <tr> <td><code> SourceStatus </code> <br> <a href="https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.SourceStatus">SourceStatus</a></td> <td>(Members of SourceStatus are embedded into this type.)</td> </tr> <tr> <td><code> AutoCallbackDisabled </code> <br> bool</td> <td>  AutoCallbackDisabled is the status whether automatic callback is disabled.</td> </tr> <tr> <td><code> URL </code> <br> knative.dev/pkg/apis.URL</td> <td> (Optional) <br> URL is the current active allocated URL that has been configured for the Source endpoint.</td> </tr> <tr> <td><code> FirstServiceName </code> <br> string</td> <td> (Optional) <br> FirstServiceName holds the information of knative service name to recreate service when accidentally deleted. </td> </tr> </table>|
+
+---
+### Example CloudEvent payload
+
+```
+Validation: valid
+Context Attributes,
+  specversion: 1.0
+  type: dev.knative.source.dockerhub.push
+  source: https://hub.docker.com/r/tom24d/postwebhook
+  subject: tom24d
+  id: fd4c1670-b126-4289-b025-61579ceeee3d
+  time: 2020-06-19T05:32:48Z
+  datacontenttype: application/json
+Extensions,
+  tag: latest
+Data,
+  {
+    "callback_url": "https://registry.hub.docker.com/u/tom24d/postwebhook/hook/2g51gffa2h1b4eh3ed355je0bc4g0e2h/",
+    "push_data": {
+      "images": [],
+      "pushed_at": 1592544800,
+      "pusher": "tom24d",
+      "tag": "latest"
+    },
+    "repository": {
+      "comment_count": 0,
+      "date_created": 1591154200,
+      "description": "[test] dockerhub website description.",
+      "dockerfile": "",
+      "full_description": "",
+      "is_official": false,
+      "is_private": false,
+      "is_trusted": false,
+      "name": "postwebhook",
+      "namespace": "tom24d",
+      "owner": "tom24d",
+      "repo_name": "tom24d/postwebhook",
+      "repo_url": "https://hub.docker.com/r/tom24d/postwebhook",
+      "star_count": 0,
+      "status": "Active"
+    }
+  }
+```
