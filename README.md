@@ -9,7 +9,7 @@ To learn more about Knative, please visit
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
 and [DEVELOPMENT.md](./DEVELOPMENT.md).
 
-This project is inspired by [the idea of JBoss community](https://docs.jboss.org/display/GSOC/Google+Summer+of+Code+2020+ideas#GoogleSummerofCode2020ideas-Knative-Eventsourcesforcontainerregistries,pipelinesandbuilds).
+This project is inspired [JBoss community](https://docs.jboss.org/display/GSOC/Google+Summer+of+Code+2020+ideas#GoogleSummerofCode2020ideas-Knative-Eventsourcesforcontainerregistries,pipelinesandbuilds).
 
 
 ## Before you begin
@@ -38,8 +38,8 @@ kubectl apply -f ./example/normal-display.yaml
 kubectl apply -f ./example/source.yaml
 ```
 
-The examples have also `callback-display.yaml` to try `disableAutoCallback=true` mode.  
-Note that `callback-display.yaml` needs `ko` to apply whereas appropriate sink is in the `source.yaml`.  
+The examples also have `callback-display.yaml` to try `disableAutoCallback=true` mode.  
+Under the circumstance that the appropriate sink is in the `source.yaml`, `callback-display.yaml` needs `ko` in order to apply.  
 
 You can see the resource is created via: `kubectl get dockerhubsource`.  
 ```
@@ -60,7 +60,7 @@ Copy `http://<your-endpoint-for-DockerHubSource>` to configure dockerhub webhook
 |`apiVersion`  <br>string| `sources.knative.dev/v1alpha1`|
 |`kind` <br> string| `DockerHubSource`|
 |`metadata` <br> [Kubernetes<br>meta/v1.metadata](https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.CloudEventOverrides)| Refer to the Kubernetes API documentation for the fields of the `metadata` field.|
-|`Spec` <br> DockerHubSourceSpec| <table> <tr> <td><code> disableAutoCallback </code> <br> bool</td> <td> (Optional) <br> DisableAutoCallback configures whether the adapter works with automatic callback feature. Docker Hub webhook needs validation callback to receive continually its chain. If the field is false, the adapter automatically sends a corresponding callback. When the event gets delivered successfully, callback status is `success`. Otherwise the status is `failure`.  If unspecified, this will default to false.</td> </tr> <tr> <td><code> SourceSpec </code> <br> <a href="https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.SourceSpec">SourceSpec</a></td> <td>(Members of SourceSpec are embedded into this type.)</td> </tr> </table>|
+|`Spec` <br> DockerHubSourceSpec| <table> <tr> <td><code> disableAutoCallback </code> <br> bool</td> <td> (Optional) <br> DisableAutoCallback configures whether the adapter works with automatic callback feature. Docker Hub webhook needs validation callback to continually receive its chain. If the field is false, the adapter automatically sends a corresponding callback. When the event gets delivered successfully, callback status is `success`. Otherwise the status is `failure`.  If unspecified, this will default to false.</td> </tr> <tr> <td><code> SourceSpec </code> <br> <a href="https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.SourceSpec">SourceSpec</a></td> <td>(Members of SourceSpec are embedded into this type.)</td> </tr> </table>|
 |`Status` <br> DockerHubSourceStatus| <table>  <tr> <td><code> SourceStatus </code> <br> <a href="https://github.com/knative/docs/blob/master/docs/reference/eventing/eventing-contrib.md#duck.knative.dev/v1.SourceStatus">SourceStatus</a></td> <td>(Members of SourceStatus are embedded into this type.)</td> </tr> <tr> <td><code> AutoCallbackDisabled </code> <br> bool</td> <td>  AutoCallbackDisabled is the status whether automatic callback is disabled.</td> </tr> <tr> <td><code> URL </code> <br> knative.dev/pkg/apis.URL</td> <td> (Optional) <br> URL is the current active allocated URL that has been configured for the Source endpoint.</td> </tr> <tr> <td><code> FirstServiceName </code> <br> string</td> <td> (Optional) <br> FirstServiceName holds the information of knative service name to recreate service when accidentally deleted. </td> </tr> </table>|
 
 ---
