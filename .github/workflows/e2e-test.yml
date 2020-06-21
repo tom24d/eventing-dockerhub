@@ -22,16 +22,55 @@ jobs:
 
       - name: Get google/ko
         run: GO111MODULE=on go get github.com/google/ko/cmd/ko
+        env:
+          GOPATH: /home/runner/work/
 
       - name: Create KinD Cluster
-        uses: helm/kind-action@v1.0.0-rc.1
+        run: |
+          GO111MODULE="on" go get sigs.k8s.io/kind@v0.8.1
+          export PATH=$PATH:/home/runner/work/bin
+          cat <<EOF | kind create cluster --config=-
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
+            kubeadmConfigPatches:
+            - |
+              kind: InitConfiguration
+              nodeRegistration:
+                kubeletExtraArgs:
+                  node-labels: "ingress-ready=true"
+            extraPortMappings:
+            - containerPort: 80
+              hostPort: 80
+              protocol: TCP
+              listenAddress: "127.0.0.1"
+            - containerPort: 443
+              hostPort: 443
+              protocol: TCP
+              listenAddress: "127.0.0.1"
+          - role: worker
+            image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
+            kubeadmConfigPatches:
+              - |
+                kind: JoinConfiguration
+                nodeRegistration:
+                  kubeletExtraArgs:
+                    system-reserved: memory=6Gi
+          EOF
+        env:
+          GOPATH: /home/runner/work/
 
       - uses: actions/checkout@v2
 
       - name: Install Knative Serving & Eventing
-        run: ./test/install-knative.sh
+        run: export PATH=$PATH:/home/runner/work/bin && ./test/install-knative.sh
+        env:
+          GOPATH: /home/runner/work/
 
       - name: Run integration test
-        run: ./test/integration-test.sh
+        run: export PATH=$PATH:/home/runner/work/bin && ./test/integration-test.sh
         env:
           KO_DOCKER_REPO: ko.local
+          GOPATH: /home/runner/work/
