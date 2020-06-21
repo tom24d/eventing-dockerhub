@@ -7,7 +7,7 @@ on:
 jobs:
   debug-steps:
     name: Show condition
-    runs-on: ubuntu latest
+    runs-on: ubuntu-latest
     steps:
       - name: Print condition
         run: |
