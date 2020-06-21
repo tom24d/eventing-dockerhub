@@ -10,12 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print condition
-        run: |
-          echo "$LABELS"
-          echo "$TITLE"
-        env:
-          LABELS: ${{ github.event.client_payload.pull_request.labels }}
-          TITLE:  ${{ github.event.client_payload.pull_request.title }}
+        run: echo ${{ toJson(github.event.client_payload) }}
 
   update-deps:
     name: Rerun Auto Update Dependencies
