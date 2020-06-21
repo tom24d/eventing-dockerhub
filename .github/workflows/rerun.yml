@@ -8,7 +8,7 @@ jobs:
   update-deps:
     name: Rerun Auto Update Dependencies
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.client_payload.pull_request.labels, 'dependencies') && startsWith( github.event.client_payload.pull_request.title, "[scheduled]" ) }}
+    if: ${{ contains(github.event.client_payload.pull_request.labels, 'dependencies') && startsWith( github.event.client_payload.pull_request.title, '[scheduled]' ) }}
     steps:
       - name: Install hub cli
         uses: geertvdc/setup-hub@v1.0.0
