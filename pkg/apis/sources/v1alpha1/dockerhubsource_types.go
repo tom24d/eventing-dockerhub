@@ -33,6 +33,8 @@ func (*DockerHubSource) GetGroupVersionKind() schema.GroupVersionKind {
 }
 
 var (
+	_ apis.Validatable             = (*DockerHubSource)(nil)
+	_ apis.Defaultable             = (*DockerHubSource)(nil)
 	_ runtime.Object               = (*DockerHubSource)(nil)
 	_ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
 	_ duckv1.KRShaped              = (*DockerHubSource)(nil)
