@@ -83,13 +83,6 @@ spec:
   - port: 5678
 EOF
 
-# Knative Eventing
-kubectl apply  --selector knative.dev/crd-install=true \
---filename https://github.com/knative/eventing/releases/download/v${VERSION}/eventing.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v${VERSION}/eventing.yaml
-
-#wait_until_pods_running knative-serving|| fail_test "Knative Serving did not come up"
-#wait_until_pods_running knative-eventing || fail_test "Knative Eventing did not come up"
 sleep 120
 kubectl --namespace ambassador get service ambassador
 #kubectl --namespace contour-external get service envoy
