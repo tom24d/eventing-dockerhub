@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webhook-sender
+spec:
+  containers:
+    - name: webhook-sender
+      image: ko://github.com/tom24d/eventing-dockerhub/test/test_images/webhook-sender

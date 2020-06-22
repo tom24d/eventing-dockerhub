@@ -75,7 +75,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: true,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCloudEventSubject:  testSubject,
@@ -90,7 +90,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,
@@ -104,7 +104,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: true,
 		wantCallbackExpected:   true,
 		wantCallbackStatus:     resources.StatusSuccess,
@@ -116,7 +116,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,
@@ -128,7 +128,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,
@@ -145,7 +145,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPost,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,
@@ -158,7 +158,7 @@ var testCases = []testCase{
 			return bp
 		}(),
 		httpMethod:             http.MethodPatch,
-		eventType:              DockerHubEventType,
+		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCallbackExpected:   false,

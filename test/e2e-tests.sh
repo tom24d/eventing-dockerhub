@@ -14,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 export GO111MODULE=on
+source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
+
+readonly DOCKERHUB_INSTALLATION_CONFIG="./config/"
 
 function knative_setup() {
   start_latest_knative_serving
@@ -25,9 +27,29 @@ function knative_setup() {
   wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"
 }
 
+function test_setup() {
+  dockerhub_setup || return 1
+}
+
+function test_teardown() {
+  dockerhub_teardown
+}
+
+function dockerhub_setup() {
+  echo "Installing DockerHubSource"
+  kubectl create namespace dockerhub
+  kubectl apply -f "${DOCKERHUB_INSTALLATION_CONFIG}" -n dockerhub
+}
+
+function dockerhub_teardown() {
+  echo "Uninstalling DockerHubSource"
+  kubectl delete -f "${DOCKERHUB_INSTALLATION_CONFIG}" -n dockerhub
+  kubectl delete namespace dockerhub
+}
+
 # Script entry point.
 initialize $@
 
-go_test_e2e -timeout=2m -parallel=4 ./test/e2e || fail_test
+go_test_e2e -timeout=2m -parallel=1 ./test/e2e || fail_test
 
 success

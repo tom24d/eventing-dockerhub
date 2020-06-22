@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: callback-display
+spec:
+  containers:
+    - name: callback-display
+      image: ko://github.com/tom24d/eventing-dockerhub/test/test_images/callback-display
