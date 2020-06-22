@@ -17,10 +17,15 @@
 
 export GO111MODULE=on
 
-source "$(dirname "$0")/e2e-common.sh"
+function knative_setup() {
+  start_latest_knative_serving
+  wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
+
+  start_latest_knative_eventing
+  wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"
+}
 
 # Script entry point.
-
 initialize $@
 
 go_test_e2e -timeout=2m -parallel=4 ./test/e2e || fail_test
