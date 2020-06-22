@@ -11,5 +11,5 @@ jobs:
         uses: peter-evans/slash-command-dispatch@v1
         with:
           token: ${{ secrets.UPDATE_BOT_TOKEN }}
-          commands: unit-test, integration-test, build-test, retest, rerun, hello
+          commands: unit-test, build-test, retest, rerun, hello
           issue-type: pull-request
