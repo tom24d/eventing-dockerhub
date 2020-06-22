@@ -106,6 +106,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 
 		// if user modifies DisableAutoCallback field
 		if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
+			// Fetch ksvc in case ReconcileSinkBinding might update ksvc above.
+			ksvc, err = r.getOwnedService(ctx, src)
+			if err != nil {
+				return err
+			}
 			ksvc = ksvc.DeepCopy()
 			// override env
 			ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
