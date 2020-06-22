@@ -21,6 +21,7 @@ package dockerhubsource
 import (
 	context "context"
 	json "encoding/json"
+	fmt "fmt"
 	reflect "reflect"
 
 	v1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
@@ -161,12 +162,16 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 		// Set and update the finalizer on resource if r.reconciler
 		// implements Finalizer.
 		if resource, err = r.setFinalizerIfFinalizer(ctx, resource); err != nil {
-			logger.Warnw("Failed to set finalizers", zap.Error(err))
+			return fmt.Errorf("failed to set finalizers: %w", err)
 		}
+
+		reconciler.PreProcessReconcile(ctx, resource)
 
 		// Reconcile this copy of the resource and then write back any status
 		// updates regardless of whether the reconciliation errored out.
 		reconcileEvent = r.reconciler.ReconcileKind(ctx, resource)
+
+		reconciler.PostProcessReconcile(ctx, resource, original)
 
 	} else if fin, ok := r.reconciler.(Finalizer); ok {
 		// Append the target method to the logger.
@@ -176,7 +181,7 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 		// and reconciled cleanly (nil or normal event), remove the finalizer.
 		reconcileEvent = fin.FinalizeKind(ctx, resource)
 		if resource, err = r.clearFinalizer(ctx, resource, reconcileEvent); err != nil {
-			logger.Warnw("Failed to clear finalizers", zap.Error(err))
+			return fmt.Errorf("failed to clear finalizers: %w", err)
 		}
 	}
 
