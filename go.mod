@@ -16,10 +16,12 @@ require (
 	knative.dev/serving v0.15.1-0.20200620001725-0258654c4657
 )
 
-replace k8s.io/api => k8s.io/api v0.17.5
+replace k8s.io/api => k8s.io/api v0.17.6
 
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.17.5
+replace k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 
-replace k8s.io/client-go => k8s.io/client-go v0.17.5
+replace k8s.io/client-go => k8s.io/client-go v0.17.6
 
-replace k8s.io/code-generator => k8s.io/code-generator v0.17.5
+replace k8s.io/code-generator => k8s.io/code-generator v0.17.6
+
+replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.6
