@@ -69,7 +69,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			return err
 		}
 		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
-		src.Status.FirstServiceName = ksvc.GetName()
+		src.Status.ReceiveAdapterServiceName = ksvc.GetName()
 		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceCreated", "Created Service %q", ksvc.Name)
 	} else if err != nil {
 		src.Status.MarkNoEndpoint("ServiceUnavailable", "%v", err)
@@ -149,7 +149,7 @@ func (r *Reconciler) getOwnedService(_ context.Context, src *v1alpha1.DockerHubS
 
 func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *v1.Service {
 	ksvc := resources.MakeService(r.getServiceArgs(ctx, src))
-	if firstName := src.Status.FirstServiceName; firstName != "" {
+	if firstName := src.Status.ReceiveAdapterServiceName; firstName != "" {
 		ksvc.ObjectMeta.SetGenerateName("")
 		ksvc.ObjectMeta.SetName(firstName)
 	}
