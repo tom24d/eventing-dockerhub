@@ -21,18 +21,26 @@ jobs:
         id: go
 
       - name: Get google/ko
-        run: |
-          GO111MODULE=on go get github.com/google/ko/cmd/ko
+        run: GO111MODULE=on go get github.com/google/ko/cmd/ko
+
+#      - name: Get kntest
+#        run: GO111MODULE=on go get knative.dev/test-infra/kntest/cmd/kntest
 
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
 
-      - name: Build test for controller
+      - name: Build test for controller with ko
         run: ko publish ./cmd/controller -L
 
-      - name: Build test for webhook
+      - name: Build test for webhook with ko
         run: ko publish ./cmd/webhook -L
 
-      - name: Build test for receive adapter
+      - name: Build test for receive adapter with ko
         run: ko publish ./cmd/receive_adapter -L
+
+      - name: Build test for entire repo
+        run: ./test/presubmit-tests.sh --build-tests
+
+      - name: Build test for e2e code
+        run: go build -tags e2e ./test/...

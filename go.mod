@@ -14,6 +14,7 @@ require (
 	knative.dev/eventing v0.15.1-0.20200619221325-e8ca69f837c7
 	knative.dev/pkg v0.0.0-20200619214325-bfb590781363
 	knative.dev/serving v0.15.1-0.20200620001725-0258654c4657
+	knative.dev/test-infra v0.0.0-20200619200026-0b0587234302
 )
 
 replace k8s.io/api => k8s.io/api v0.17.6

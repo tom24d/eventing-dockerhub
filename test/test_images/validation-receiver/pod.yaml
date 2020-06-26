@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: validation-receiver
+spec:
+  containers:
+    - name: vaidation-receiver
+      image: ko://github.com/tom24d/eventing-dockerhub/test/test_images/validation-receiver

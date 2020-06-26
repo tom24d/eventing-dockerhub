@@ -20,10 +20,6 @@ import (
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
-const (
-	DockerHubEventType = "push"
-)
-
 type envConfig struct {
 	// Include the standard adapter.EnvConfig used by all adapters.
 	adapter.EnvConfig
@@ -166,7 +162,7 @@ func (a *Adapter) processPayload(payload dockerhub.BuildPayload) {
 // sendEventToSink transforms buildPayload to CloudEvent, then try to send to sink.
 func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	fmt.Println(payload)
-	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(DockerHubEventType)
+	cloudEventType := v1alpha1.DockerHubCloudEventsEventType(resources.DockerHubEventType)
 	cloudEventSource := v1alpha1.DockerHubEventSource(payload.Repository.RepoName)
 	cloudEventTime, err := getTime(payload.PushData.PushedAt)
 	if err != nil {
