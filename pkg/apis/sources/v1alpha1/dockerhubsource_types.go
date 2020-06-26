@@ -83,9 +83,9 @@ type DockerHubSourceStatus struct {
 	// +optional
 	URL *apis.URL `json:"url,omitempty"`
 
-	// FirstServiceName holds the information of knative service name to recreate service when accidentally deleted.
+	// ReceiveAdapterServiceName holds the information of knative service name to recreate service when accidentally deleted.
 	// +optional
-	FirstServiceName string `json:"firstServiceName,omitempty"`
+	ReceiveAdapterServiceName string `json:"receiveAdapterServiceName,omitempty"`
 }
 
 // GetStatus retrieves the status of the DockerHubSource. Implements the KRShaped interface.
