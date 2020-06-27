@@ -30,8 +30,8 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	cehttp "github.com/cloudevents/sdk-go/v2/protocol/http"
 	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.uber.org/zap"
+	"knative.dev/pkg/tracing/propagation/tracecontextb3"
 
 	"knative.dev/eventing/pkg/tracing"
 )
@@ -44,6 +44,7 @@ var (
 	delayStr          string
 	maxMsgStr         string
 	addTracing        bool
+	addSequence       bool
 	incrementalId     bool
 	additionalHeaders string
 )
@@ -56,6 +57,7 @@ func init() {
 	flag.StringVar(&delayStr, "delay", "5", "The number of seconds to wait before sending messages.")
 	flag.StringVar(&maxMsgStr, "max-messages", "1", "The number of messages to attempt to send. 0 for unlimited.")
 	flag.BoolVar(&addTracing, "add-tracing", false, "Should tracing be added to events sent.")
+	flag.BoolVar(&addSequence, "add-sequence-extension", false, "Should add extension 'sequence' identifying the sequence number.")
 	flag.BoolVar(&incrementalId, "incremental-id", false, "Override the event id with an incremental id.")
 	flag.StringVar(&additionalHeaders, "additional-headers", "", "Additional non-CloudEvents headers to send")
 }
@@ -114,7 +116,7 @@ func main() {
 			httpOpts,
 			cloudevents.WithRoundTripper(&ochttp.Transport{
 				Base:        nethttp.DefaultTransport,
-				Propagation: &tracecontext.HTTPFormat{},
+				Propagation: tracecontextb3.TraceContextEgress,
 			}),
 		)
 	}
@@ -139,15 +141,10 @@ func main() {
 		}
 
 		c, err = cloudevents.NewClientObserved(t,
-			cloudevents.WithTimeNow(),
-			cloudevents.WithUUIDs(),
 			cloudevents.WithTracePropagation,
 		)
 	} else {
-		c, err = cloudevents.NewClient(t,
-			cloudevents.WithTimeNow(),
-			cloudevents.WithUUIDs(),
-		)
+		c, err = cloudevents.NewClient(t)
 	}
 
 	if err != nil {
@@ -166,8 +163,9 @@ func main() {
 		event := baseEvent.Clone()
 
 		sequence++
-		event.SetExtension("sequence", sequence)
-
+		if addSequence {
+			event.SetExtension("sequence", sequence)
+		}
 		if incrementalId {
 			event.SetID(fmt.Sprintf("%d", sequence))
 		}

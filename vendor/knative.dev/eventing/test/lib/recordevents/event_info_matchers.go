@@ -46,6 +46,16 @@ func AllOf(matchers ...EventInfoMatcher) EventInfoMatcher {
 	}
 }
 
+// Matcher that fails if there is an error in the EventInfo
+func NoError() EventInfoMatcher {
+	return func(ei EventInfo) error {
+		if ei.Error != "" {
+			return fmt.Errorf("not expecting an error in event info: %s", ei.Error)
+		}
+		return nil
+	}
+}
+
 // Convert a matcher that checks valid messages to a function
 // that checks EventInfo structures, returning an error for any that don't
 // contain valid events.
@@ -90,15 +100,4 @@ func MatchHeartBeatsImageMessage(expectedMsg string) cetest.EventMatcher {
 			return nil
 		},
 	)
-}
-
-// DataContains matches that the data field of the event, converted to a string, contains the provided string
-func DataContains(expectedContainedString string) cetest.EventMatcher {
-	return func(have cloudevents.Event) error {
-		dataAsString := string(have.Data())
-		if !strings.Contains(dataAsString, expectedContainedString) {
-			return fmt.Errorf("data '%s' doesn't contain '%s'", dataAsString, expectedContainedString)
-		}
-		return nil
-	}
 }
