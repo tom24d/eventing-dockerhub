@@ -70,6 +70,9 @@ func (args *ServiceArgs) GetEnv() []corev1.EnvVar {
 	}, {
 		Name:  "DISABLE_AUTO_CALLBACK",
 		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
+	}, {
+		Name: "METRICS_PROMETHEUS_PORT",
+		Value: "9089",
 	}}
 
 	return append(
