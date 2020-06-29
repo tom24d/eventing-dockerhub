@@ -9,8 +9,8 @@ on:
     types: [build-test-command, retest-command]
 
 jobs:
-  build:
-    name: Build Test
+  build-ko:
+    name: Build Test with ko
     runs-on: ubuntu-latest
     steps:
 
@@ -22,9 +22,6 @@ jobs:
 
       - name: Get google/ko
         run: GO111MODULE=on go get github.com/google/ko/cmd/ko
-
-#      - name: Get kntest
-#        run: GO111MODULE=on go get knative.dev/test-infra/kntest/cmd/kntest
 
 
       - name: Check out code into the Go module directory
@@ -39,8 +36,36 @@ jobs:
       - name: Build test for receive adapter with ko
         run: ko publish ./cmd/receive_adapter -L
 
-      - name: Build test for entire repo
-        run: ./test/presubmit-tests.sh --build-tests
-
       - name: Build test for e2e code
         run: go build -tags e2e ./test/...
+
+  build-presubmit:
+    name: Presubmit Build Test
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Check out test-infra
+        uses: actions/checkout@v2
+        with:
+          repository: knative/test-infra
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: Install kntest
+        run: go install ./kntest/cmd/kntest
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: Check out code
+        uses: actions/checkout@v2
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: Run presubmit-test.sh
+        run: export PATH=$PATH:/home/runner/work/bin && ./test/presubmit-tests.sh --build-tests
