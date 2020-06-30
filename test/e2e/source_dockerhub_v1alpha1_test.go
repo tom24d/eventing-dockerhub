@@ -46,7 +46,8 @@ func TestDockerHubSource(t *testing.T) {
 	for name, test := range tests {
 		testData := test
 		t.Run(name, func(t *testing.T) {
-			helpers.DockerHubSourceV1Alpha1EnabledAutoCallback(t, &testData.webhookPayload, testData.matcherGen)
+			helpers.DockerHubSourceV1Alpha1(t, &testData.webhookPayload, false, testData.matcherGen)
+			helpers.DockerHubSourceV1Alpha1(t, &testData.webhookPayload, true, testData.matcherGen)
 		})
 	}
 }

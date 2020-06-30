@@ -28,3 +28,9 @@ func WithSinkV1A1(sink duckv1.Destination) DockerHubSourceV1Alpha1Option {
 		dhs.Spec.Sink = sink
 	}
 }
+
+func DisabledAutoCallback(flag bool) DockerHubSourceV1Alpha1Option {
+	return func(dhs *sourcev1alpha1.DockerHubSource) {
+		dhs.Spec.DisableAutoCallback = flag
+	}
+}

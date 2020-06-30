@@ -2,19 +2,21 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/cloudevents/sdk-go/v2/test"
-	testing2 "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/eventing/test/lib/recordevents"
-	"knative.dev/eventing/test/lib/resources"
-	"knative.dev/pkg/apis/duck/v1"
 	"testing"
 
+	"github.com/cloudevents/sdk-go/v2/test"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	eventingtestlib "knative.dev/eventing/test/lib"
+	"knative.dev/eventing/test/lib/recordevents"
+	"knative.dev/eventing/test/lib/resources"
+
+	"knative.dev/pkg/apis/duck/v1"
 	pkgTest "knative.dev/pkg/test"
 
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
+	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 	dhtestresources "github.com/tom24d/eventing-dockerhub/test/resources"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
@@ -36,10 +38,10 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
-				Name:  SenderImageName,
-				Image: pkgTest.ImagePath(SenderImageName),
+				Name:            SenderImageName,
+				Image:           pkgTest.ImagePath(SenderImageName),
 				ImagePullPolicy: corev1.PullAlways,
-				Args:  args,
+				Args:            args,
 			}},
 			RestartPolicy: corev1.RestartPolicyNever,
 		},
@@ -81,11 +83,13 @@ func SetCallbackURLOrFail(c *eventingtestlib.Client, data *dockerhub.BuildPayloa
 	data.CallbackURL = url
 }
 
-func DockerHubSourceV1Alpha1EnabledAutoCallback(t *testing.T, payload *dockerhub.BuildPayload, matcherGen func(namespace string) test.EventMatcher) {
+func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) test.EventMatcher) {
 	const (
 		dockerHubSourceName = "e2e-dockerhub-source"
 		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
 	)
+
+	notify := make(chan bool)
 
 	client := eventingtestlib.Setup(t, true)
 	defer eventingtestlib.TearDown(client)
@@ -94,10 +98,11 @@ func DockerHubSourceV1Alpha1EnabledAutoCallback(t *testing.T, payload *dockerhub
 	eventTracker, _ := recordevents.StartEventRecordOrFail(client, recordEventPodName)
 	defer eventTracker.Cleanup()
 
-	dockerHubSource := testing2.NewDockerHubSourceV1Alpha1(
+	dockerHubSource := dhsOptions.NewDockerHubSourceV1Alpha1(
 		dockerHubSourceName,
 		client.Namespace,
-		testing2.WithSinkV1A1(v1.Destination{
+		dhsOptions.DisabledAutoCallback(disableAutoCallback),
+		dhsOptions.WithSinkV1A1(v1.Destination{
 			Ref: resources.KnativeRefForService(recordEventPodName, client.Namespace)},
 		),
 	)
@@ -111,26 +116,30 @@ func DockerHubSourceV1Alpha1EnabledAutoCallback(t *testing.T, payload *dockerhub
 	// set URL
 	allocatedURL := GetURLOrFail(client, createdDHS)
 
-	validationReceiverPod := CreateValidationReceiverOrFail(client)
+	if !disableAutoCallback {
+		validationReceiverPod := CreateValidationReceiverOrFail(client)
 
-	dhtestresources.WaitForAllTestResourcesReadyOrFail(client)
+		dhtestresources.WaitForAllTestResourcesReadyOrFail(client)
 
-	t.Log("Setting CallbackURL to its payload")
-	t.Log(validationReceiverPod.GetObjectMeta())
-	// set callbackURL
-	SetCallbackURLOrFail(client, payload, validationReceiverPod.GetName())
+		t.Log("Setting CallbackURL to its payload")
+		t.Log(validationReceiverPod.GetObjectMeta())
+		// set callbackURL
+		SetCallbackURLOrFail(client, payload, validationReceiverPod.GetName())
 
-	// wait for validation webhook received
-	notify := make(chan bool)
-	t.Log("Waiting for validation started...")
-	go WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod, notify)
+		// wait for validation webhook received
+		t.Log("Waiting for validation started...")
+		go WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod, notify)
+	}
 
 	t.Log("Send webhook to DockerHubSource")
 	MustSendWebhook(client, allocatedURL, payload)
 
-	t.Log("Waiting for validation receiver report...")
-	if n := <-notify; !n {
-		t.Fatal("Failed to wait for validation receiver report")
+	if !disableAutoCallback {
+		t.Log("Waiting for validation receiver report...")
+		if n := <-notify; !n {
+			t.Fatal("Failed to wait for validation receiver report")
+		}
 	}
+
 	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 }
