@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
 	"net"
 	"net/http"
@@ -20,6 +19,7 @@ import (
 	pkgtesting "knative.dev/pkg/reconciler/testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"github.com/google/go-cmp/cmp"
 	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
