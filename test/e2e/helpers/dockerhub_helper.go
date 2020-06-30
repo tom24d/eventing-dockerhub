@@ -2,11 +2,14 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"strconv"
-
+	"github.com/cloudevents/sdk-go/v2/test"
+	testing2 "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"knative.dev/eventing/test/lib/recordevents"
+	"knative.dev/eventing/test/lib/resources"
+	"knative.dev/pkg/apis/duck/v1"
+	"testing"
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 	pkgTest "knative.dev/pkg/test"
@@ -57,65 +60,6 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}
 }
 
-func CreateValidationReceiverOrFail(client *eventingtestlib.Client) *corev1.Pod {
-	const receiverImageName = "validation-receiver"
-	args := []string{"--patient", strconv.Itoa(60)}
-
-	receiverPod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: client.Namespace,
-			Name:      receiverImageName,
-			Labels: map[string]string{"e2etest": uuid.New().String()},
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{{
-				Name:  receiverImageName,
-				Image: pkgTest.ImagePath(receiverImageName),
-				ImagePullPolicy: corev1.PullAlways,
-				Args:  args,
-				Ports: []corev1.ContainerPort{
-					{
-						ContainerPort: 8080,
-					},
-				},
-			}},
-			RestartPolicy: corev1.RestartPolicyNever,
-		},
-	}
-
-	client.CreatePodOrFail(receiverPod, eventingtestlib.WithService(receiverPod.GetName()))
-
-	err := pkgTest.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
-		if pod.Status.Phase == corev1.PodFailed {
-			return true, fmt.Errorf("validation receiver pod failed to get up with message %s", pod.Status.Message)
-		} else if pod.Status.Phase != corev1.PodRunning {
-			return false, nil
-		}
-		return true, nil
-	}, receiverPod.Name, receiverPod.Namespace)
-
-	if err != nil {
-		client.T.Fatalf("Failed waiting for pod running %q: %v", receiverPod.Name, receiverPod)
-	}
-	return receiverPod
-}
-
-func WaitForValidationReceiverPodSuccessOrFail(client *eventingtestlib.Client, receiverPod *corev1.Pod, notify chan bool) {
-	err := pkgTest.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
-		if pod.Status.Phase == corev1.PodFailed {
-			return true, fmt.Errorf("validation receiver pod failed with message %s", pod.Status.Message)
-		} else if pod.Status.Phase != corev1.PodSucceeded {
-			return false, nil
-		}
-		return true, nil
-	}, receiverPod.Name, receiverPod.Namespace)
-
-	if err != nil {
-		client.T.Fatalf("Failed waiting for pod for completeness %q: %v", receiverPod.Name, receiverPod)
-	}
-	notify <- true
-}
-
 func GetURLOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
 	dhs, err := GetSourceClient(client).SourcesV1alpha1().
 		DockerHubSources(client.Namespace).Get(source.Name, metav1.GetOptions{})
@@ -135,4 +79,58 @@ func SetCallbackURLOrFail(c *eventingtestlib.Client, data *dockerhub.BuildPayloa
 	// TODO use lib if exists
 	url := fmt.Sprintf("http://%s.%s.svc.cluster.local", svcName, c.Namespace)
 	data.CallbackURL = url
+}
+
+func DockerHubSourceV1Alpha1EnabledAutoCallback(t *testing.T, payload *dockerhub.BuildPayload, matcherGen func(namespace string) test.EventMatcher) {
+	const (
+		dockerHubSourceName = "e2e-dockerhub-source"
+		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
+	)
+
+	client := eventingtestlib.Setup(t, true)
+	defer eventingtestlib.TearDown(client)
+
+	// create event logger eventSender and service
+	eventTracker, _ := recordevents.StartEventRecordOrFail(client, recordEventPodName)
+	defer eventTracker.Cleanup()
+
+	dockerHubSource := testing2.NewDockerHubSourceV1Alpha1(
+		dockerHubSourceName,
+		client.Namespace,
+		testing2.WithSinkV1A1(v1.Destination{
+			Ref: resources.KnativeRefForService(recordEventPodName, client.Namespace)},
+		),
+	)
+
+	t.Log("Creating DockerHubSource")
+	createdDHS := CreateDockerHubSourceOrFail(client, dockerHubSource)
+
+	// wait for DockerHubSource to be URL allocated
+	dhtestresources.WaitForAllTestResourcesReadyOrFail(client)
+
+	// set URL
+	allocatedURL := GetURLOrFail(client, createdDHS)
+
+	validationReceiverPod := CreateValidationReceiverOrFail(client)
+
+	dhtestresources.WaitForAllTestResourcesReadyOrFail(client)
+
+	t.Log("Setting CallbackURL to its payload")
+	t.Log(validationReceiverPod.GetObjectMeta())
+	// set callbackURL
+	SetCallbackURLOrFail(client, payload, validationReceiverPod.GetName())
+
+	// wait for validation webhook received
+	notify := make(chan bool)
+	t.Log("Waiting for validation started...")
+	go WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod, notify)
+
+	t.Log("Send webhook to DockerHubSource")
+	MustSendWebhook(client, allocatedURL, payload)
+
+	t.Log("Waiting for validation receiver report...")
+	if n := <-notify; !n {
+		t.Fatal("Failed to wait for validation receiver report")
+	}
+	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 }
