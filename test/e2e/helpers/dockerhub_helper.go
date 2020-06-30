@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/cloudevents/sdk-go/v2/test"
+	"github.com/google/go-cmp/cmp"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -18,6 +20,7 @@ import (
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 	dhtestresources "github.com/tom24d/eventing-dockerhub/test/resources"
+
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 )
@@ -83,6 +86,26 @@ func SetCallbackURLOrFail(c *eventingtestlib.Client, data *dockerhub.BuildPayloa
 	data.CallbackURL = url
 }
 
+func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
+	before := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
+	if before == "" {
+		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
+	}
+	DeleteKServiceOrFail(c, before, c.Namespace)
+
+	// wait for DockerHubSource to be URL allocated
+	dhtestresources.WaitForAllTestResourcesReadyOrFail(c)
+
+	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
+	if before == "" {
+		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
+	}
+
+	if diff := cmp.Diff(before, after); diff != "" {
+		c.T.Fatalf("Source Service name should be same: (-want, +got) = %v", diff)
+	}
+}
+
 func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) test.EventMatcher) {
 	const (
 		dockerHubSourceName = "e2e-dockerhub-source"
@@ -91,7 +114,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 
 	notify := make(chan bool)
 
-	client := eventingtestlib.Setup(t, true)
+	client := eventingtestlib.Setup(t, false)
 	defer eventingtestlib.TearDown(client)
 
 	// create event logger eventSender and service
@@ -142,4 +165,6 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	}
 
 	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+
+	MustHasSameServiceName(t, client, dockerHubSource)
 }
