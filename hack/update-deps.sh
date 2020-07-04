@@ -51,6 +51,7 @@ readonly GO_GET
 
 if (( GO_GET )); then
   go get -d ${FLOATING_DEPS[@]}
+  go get -u ./...
 fi
 
 # Prune modules.
