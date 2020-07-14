@@ -1,76 +1,65 @@
-#name: Test
-#
-#on:
-#  push:
-#    branches: [ master ]
-#  pull_request:
-#    branches: [ master ]
-#  repository_dispatch:
-#    types: [integration-test-command, retest-command]
-#
-#jobs:
-#  e2e:
-#    name: Integration Test
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Set up Go 1.14
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.14
-#        id: go
-#
-#      - name: Get google/ko
-#        run: GO111MODULE=on go get github.com/google/ko/cmd/ko
-#        env:
-#          GOPATH: /home/runner/work/
-#
-#      - name: Create KinD Cluster
-#        run: |
-#          GO111MODULE="on" go get sigs.k8s.io/kind@v0.8.1
-#          export PATH=$PATH:/home/runner/work/bin
-#          cat <<EOF | kind create cluster --config=-
-#          kind: Cluster
-#          apiVersion: kind.x-k8s.io/v1alpha4
-#          nodes:
-#          - role: control-plane
-#            image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
-#            kubeadmConfigPatches:
-#            - |
-#              kind: InitConfiguration
-#              nodeRegistration:
-#                kubeletExtraArgs:
-#                  node-labels: "ingress-ready=true"
-#            extraPortMappings:
-#            - containerPort: 80
-#              hostPort: 80
-#              protocol: TCP
-#              listenAddress: "127.0.0.1"
-#            - containerPort: 443
-#              hostPort: 443
-#              protocol: TCP
-#              listenAddress: "127.0.0.1"
-#          - role: worker
-#            image: kindest/node:v1.16.4@sha256:b91a2c2317a000f3a783489dfb755064177dbc3a0b2f4147d50f04825d016f55
-#            kubeadmConfigPatches:
-#              - |
-#                kind: JoinConfiguration
-#                nodeRegistration:
-#                  kubeletExtraArgs:
-#                    system-reserved: memory=6Gi
-#          EOF
-#        env:
-#          GOPATH: /home/runner/work/
-#
-#      - uses: actions/checkout@v2
-#
-#      - name: Install Knative Serving & Eventing
-#        run: export PATH=$PATH:/home/runner/work/bin && ./test/install-knative.sh
-#        env:
-#          GOPATH: /home/runner/work/
-#
-#      - name: Run integration test
-#        run: export PATH=$PATH:/home/runner/work/bin && ./test/integration-test.sh
-#        env:
-#          KO_DOCKER_REPO: ko.local
-#          GOPATH: /home/runner/work/
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  repository_dispatch:
+    types: [integration-test-command, retest-command]
+
+jobs:
+  e2e:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Get google/ko
+        run: GO111MODULE=on go get github.com/google/ko/cmd/ko
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: Create KinD Cluster
+        run: |
+          GO111MODULE="on" go get sigs.k8s.io/kind@v0.8.1
+          export PATH=$PATH:/home/runner/work/bin
+          cat <<EOF | kind create cluster --config=-
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
+            extraPortMappings:
+            - containerPort: 31080
+              hostPort: 80
+              protocol: TCP
+            - containerPort: 31443
+              hostPort: 443
+              protocol: TCP
+          EOF
+        env:
+          GOPATH: /home/runner/work/
+
+      - uses: actions/checkout@v2
+
+      - name: Install Knative Serving & Eventing
+        run: |
+          export PATH=$PATH:/home/runner/work/bin
+          ./test/KinD-setup.sh
+        env:
+          GOPATH: /home/runner/work/
+
+      - name: Run integration test
+        run: |
+          export PATH=$PATH:/home/runner/work/bin
+          echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
+          ./test/e2e-tests.sh --run-tests --skip-knative-setup --skip-teardowns
+        env:
+          KO_DOCKER_REPO: ${{ github.repository_owner }}
+          GOPATH: /home/runner/work/

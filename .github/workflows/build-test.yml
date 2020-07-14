@@ -37,7 +37,7 @@ jobs:
         run: ko publish ./cmd/receive_adapter -L
 
       - name: Build test for e2e code
-        run: go build -tags e2e ./test/...
+        run: go build -race -tags e2e ./test/...
 
   build-presubmit:
     name: Presubmit Build Test
