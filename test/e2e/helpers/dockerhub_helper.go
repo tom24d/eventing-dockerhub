@@ -113,6 +113,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	)
 
 	notify := make(chan bool)
+	defer close(notify)
 
 	client := eventingtestlib.Setup(t, false)
 	defer eventingtestlib.TearDown(client)
