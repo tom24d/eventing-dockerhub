@@ -36,20 +36,19 @@ function test_teardown() {
 }
 
 function dockerhub_setup() {
-  echo "Installing DockerHubSource"
-  kubectl create namespace dockerhub
-  kubectl apply -f "${DOCKERHUB_INSTALLATION_CONFIG}" -n dockerhub
+  header "Installing DockerHubSource"
+  ko apply -f "${DOCKERHUB_INSTALLATION_CONFIG}"
+  wait_until_pods_running knative-sources || fail_test "DockerHubSource controller not up"
 }
 
 function dockerhub_teardown() {
-  echo "Uninstalling DockerHubSource"
-  kubectl delete -f "${DOCKERHUB_INSTALLATION_CONFIG}" -n dockerhub
-  kubectl delete namespace dockerhub
+  header "Uninstalling DockerHubSource"
+  kubectl delete -f "${DOCKERHUB_INSTALLATION_CONFIG}"
 }
 
 # Script entry point.
 initialize $@
 
-go_test_e2e -timeout=2m -parallel=1 ./test/e2e || fail_test
+go_test_e2e -timeout=5m ./test/e2e || fail_test
 
 success
