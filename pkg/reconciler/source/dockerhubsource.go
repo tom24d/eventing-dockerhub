@@ -2,6 +2,7 @@ package source
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	//k8s.io imports
@@ -9,6 +10,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
 	//knative.dev/serving imports
@@ -110,8 +112,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			}
 			ksvc = ksvc.DeepCopy()
 			// override env
-			ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+			ksvcPatch := v1.Service{}
+			ksvcPatch.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+			data, _ := json.Marshal(ksvcPatch)
+			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).
+				Patch(ksvc.Name, types.MergePatchType, data)
 			if err != nil {
 				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
 				return err
