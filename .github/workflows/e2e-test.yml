@@ -51,8 +51,10 @@ jobs:
       - name: Install Knative Serving & Eventing
         run: |
           export PATH=$PATH:/home/runner/work/bin
+          echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
           ./test/KinD-setup.sh
         env:
+          KO_DOCKER_REPO: ${{ github.repository_owner }}
           GOPATH: /home/runner/work/
 
       - name: Run integration test
