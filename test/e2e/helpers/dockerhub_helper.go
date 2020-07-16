@@ -3,9 +3,7 @@ package helpers
 import (
 	"fmt"
 	"testing"
-
-	"github.com/cloudevents/sdk-go/v2/test"
-	"github.com/google/go-cmp/cmp"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -21,8 +19,10 @@ import (
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 	dhtestresources "github.com/tom24d/eventing-dockerhub/test/resources"
 
-
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
+
+	"github.com/cloudevents/sdk-go/v2/test"
+	"github.com/google/go-cmp/cmp"
 )
 
 const (
@@ -67,17 +67,30 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 }
 
 func GetURLOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
+	// TODO there is a lag to status.RAName be populated. remove this if possible
+	time.Sleep(10*time.Second)
+
 	dhs, err := GetSourceClient(client).SourcesV1alpha1().
 		DockerHubSources(client.Namespace).Get(source.Name, metav1.GetOptions{})
 	if err != nil {
 		client.T.Fatalf("failed to get DockerHubSource: %v", source.Name)
 	}
 
-	allocatedURL := dhs.Status.URL.String()
-	if allocatedURL == "" {
-		client.T.Fatalf("DockerHubSource URL is nil: %v", source.GetName())
+
+	ksvcName := dhs.Status.ReceiveAdapterServiceName
+	if ksvcName == "" {
+		client.T.Fatalf("DockerHubSource ReceiveAdapterServiceName is nil: %v", source.GetName())
 	}
-	return allocatedURL
+	//endpoints, err := pkgTest.GetEndpointAddresses(client.Kube, ksvcName, source.Namespace)
+	//if err != nil {
+	//	client.T.Fatalf("failed to get endpoints: %v", err)
+	//}
+	//if len(endpoints) < 1 {
+	//	client.T.Fatalf("endpoints have 0 available endpoint")
+	//}
+	//return endpoints[0]
+	// TODO use lib if exists
+	return fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, source.Namespace)
 }
 
 // TODO Get and return URL might be better
@@ -156,8 +169,9 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 		go WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod, notify)
 	}
 
+	// access test from cluster inside
 	t.Log("Send webhook to DockerHubSource")
-	MustSendWebhook(client, allocatedURL, payload)
+	MustSendWebhook(client, allocatedURL, payload) // TODO add test from cluster outside
 
 	if !disableAutoCallback {
 		t.Log("Waiting for validation receiver report...")
