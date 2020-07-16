@@ -61,7 +61,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}, eventSender.Name, eventSender.Namespace)
 
 	if err != nil {
-		client.T.Fatalf("Failed waiting for pod for completeness %q: %v", eventSender.Name, eventSender)
+		client.T.Fatalf("Failed sending webhook %q: %v", eventSender.Name, err)
 	}
 }
 
@@ -113,6 +113,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	)
 
 	notify := make(chan bool)
+	defer close(notify)
 
 	client := eventingtestlib.Setup(t, false)
 	defer eventingtestlib.TearDown(client)
