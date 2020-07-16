@@ -19,6 +19,20 @@ source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 readonly DOCKERHUB_INSTALLATION_CONFIG="./config/"
 
+# Vendored eventing test image.
+readonly VENDOR_EVENTING_TEST_IMAGES="vendor/knative.dev/eventing/test/test_images/"
+# HEAD eventing test images.
+readonly HEAD_EVENTING_TEST_IMAGES="${GOPATH}/src/knative.dev/eventing/test/test_images/"
+
+# Publish test images.
+echo ">> Publishing test images from eventing-dockerhub"
+$(dirname $0)/upload-test-images.sh "test/test_images" e2e || fail_test "Error uploading test images"
+echo ">> Publishing test images from eventing"
+# We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
+# path has to be a GOPATH.
+sed -i 's@knative.dev/eventing/test/test_images@github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
+$(dirname $0)/upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
+
 function knative_setup() {
   start_latest_knative_serving
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
@@ -36,20 +50,19 @@ function test_teardown() {
 }
 
 function dockerhub_setup() {
-  echo "Installing DockerHubSource"
-  kubectl create namespace dockerhub
-  kubectl apply -f "${DOCKERHUB_INSTALLATION_CONFIG}" -n dockerhub
+  header "Installing DockerHubSource"
+  ko apply -f "${DOCKERHUB_INSTALLATION_CONFIG}"
+  wait_until_pods_running knative-sources || fail_test "DockerHubSource controller not up"
 }
 
 function dockerhub_teardown() {
-  echo "Uninstalling DockerHubSource"
-  kubectl delete -f "${DOCKERHUB_INSTALLATION_CONFIG}" -n dockerhub
-  kubectl delete namespace dockerhub
+  header "Uninstalling DockerHubSource"
+  kubectl delete -f "${DOCKERHUB_INSTALLATION_CONFIG}"
 }
 
 # Script entry point.
 initialize $@
 
-go_test_e2e -timeout=2m -parallel=1 ./test/e2e || fail_test
+go_test_e2e -timeout=5m ./test/e2e -tag e2e || fail_test
 
 success
