@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"log"
 	"net/http"
 	"os"
 
@@ -32,12 +33,15 @@ func send() int {
 
 	resp, err := http.Post(sink, "application/json", bytes.NewBufferString(payload))
 	if err != nil {
+		log.Fatalf("httpPost error: %v", err)
 		return 1
 	}
 	if c := resp.StatusCode; http.StatusOK <= c && c < http.StatusBadRequest {
 		return 0
+	} else {
+		log.Fatalf("exit with status code: %d", c)
+		return 1
 	}
-	return 1
 }
 
 func main() {

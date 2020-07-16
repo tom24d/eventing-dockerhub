@@ -53,7 +53,8 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 
 	err := pkgTest.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
 		if pod.Status.Phase == corev1.PodFailed {
-			return true, fmt.Errorf("event sender pod failed with message %s", pod.Status.Message)
+			log, _ := client.Kube.PodLogs(pod.Name, SenderImageName, client.Namespace)
+			return true, fmt.Errorf("event sender pod failed with log %s", log)
 		} else if pod.Status.Phase != corev1.PodSucceeded {
 			return false, nil
 		}
