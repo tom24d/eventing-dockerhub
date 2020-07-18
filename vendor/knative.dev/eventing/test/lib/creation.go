@@ -19,8 +19,6 @@ package lib
 import (
 	"fmt"
 
-	sourcesv1alpha2 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
-
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -38,6 +36,8 @@ import (
 	messagingv1 "knative.dev/eventing/pkg/apis/messaging/v1"
 	messagingv1beta1 "knative.dev/eventing/pkg/apis/messaging/v1beta1"
 	sourcesv1alpha1 "knative.dev/eventing/pkg/apis/sources/v1alpha1"
+	sourcesv1alpha2 "knative.dev/eventing/pkg/apis/sources/v1alpha2"
+	sourcesv1beta1 "knative.dev/eventing/pkg/apis/sources/v1beta1"
 	"knative.dev/eventing/pkg/utils"
 	"knative.dev/eventing/test/lib/duck"
 	"knative.dev/eventing/test/lib/resources"
@@ -322,10 +322,32 @@ func (c *Client) CreateSinkBindingV1Alpha2OrFail(sb *sourcesv1alpha2.SinkBinding
 	c.Tracker.AddObj(sb)
 }
 
-// CreateApiServerSourceOrFail will create an ApiServerSource
-func (c *Client) CreateApiServerSourceOrFail(apiServerSource *sourcesv1alpha2.ApiServerSource) {
+// CreateSinkBindingV1Beta1OrFail will create a SinkBinding or fail the test if there is an error.
+func (c *Client) CreateSinkBindingV1Beta1OrFail(sb *sourcesv1beta1.SinkBinding) {
+	c.T.Logf("Creating sinkbinding %+v", sb)
+	sbInterface := c.Eventing.SourcesV1beta1().SinkBindings(c.Namespace)
+	_, err := sbInterface.Create(sb)
+	if err != nil {
+		c.T.Fatalf("Failed to create sinkbinding %q: %v", sb.Name, err)
+	}
+	c.Tracker.AddObj(sb)
+}
+
+// CreateApiServerSourceV1Alpha2OrFail will create an v1alpha2 ApiServerSource
+func (c *Client) CreateApiServerSourceV1Alpha2OrFail(apiServerSource *sourcesv1alpha2.ApiServerSource) {
 	c.T.Logf("Creating apiserversource %+v", apiServerSource)
 	apiServerInterface := c.Eventing.SourcesV1alpha2().ApiServerSources(c.Namespace)
+	_, err := apiServerInterface.Create(apiServerSource)
+	if err != nil {
+		c.T.Fatalf("Failed to create apiserversource %q: %v", apiServerSource.Name, err)
+	}
+	c.Tracker.AddObj(apiServerSource)
+}
+
+// CreateApiServerSourceV1Beta1OrFail will create an v1beta1 ApiServerSource
+func (c *Client) CreateApiServerSourceV1Beta1OrFail(apiServerSource *sourcesv1beta1.ApiServerSource) {
+	c.T.Logf("Creating apiserversource %+v", apiServerSource)
+	apiServerInterface := c.Eventing.SourcesV1beta1().ApiServerSources(c.Namespace)
 	_, err := apiServerInterface.Create(apiServerSource)
 	if err != nil {
 		c.T.Fatalf("Failed to create apiserversource %q: %v", apiServerSource.Name, err)
