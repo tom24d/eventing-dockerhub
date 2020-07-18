@@ -17,17 +17,14 @@ spec:
         contrib.eventing.knative.dev/release: devel
     spec:
       serviceAccountName: dockerhub-source-controller
-
       containers:
       - name: dockerhub-source-controller
         terminationMessagePolicy: FallbackToLogsOnError
         image: ko://github.com/tom24d/eventing-dockerhub/cmd/controller
-
         resources:
           requests:
             cpu: 100m
             memory: 100Mi
-
         env:
           - name: SYSTEM_NAMESPACE
             valueFrom:
@@ -43,7 +40,6 @@ spec:
             value: knative.dev/sources
           - name: DH_RA_IMAGE
             value: ko://github.com/tom24d/eventing-dockerhub/cmd/receive_adapter
-
         securityContext:
           allowPrivilegeEscalation: false
       terminationGracePeriodSeconds: 10
