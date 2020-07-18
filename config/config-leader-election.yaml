@@ -61,5 +61,5 @@ data:
     # enabledComponents is a comma-delimited list of component names for which
     # leader election is enabled. Valid values are:
     #
-    # - github-controller
-    enabledComponents: "github-controller"
+    # - dockerhub-controller
+    enabledComponents: "dockerhub-controller"
