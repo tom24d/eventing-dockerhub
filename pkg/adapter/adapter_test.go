@@ -27,13 +27,14 @@ import (
 )
 
 const (
-	testSubject                 = "1234"
-	testRepoName                = "test-repo/test-name"
-	testCallbackPort            = "4320"
-	testTime                    = float32(1595525500)
+	testSubject      = "1234"
+	testRepoName     = "test-repo/test-name"
+	testCallbackPort = "4320"
 	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
 )
+
+var testTime, _ = cetypes.ParseTime("2018-04-05T17:31:00Z")
 
 type testCase struct {
 	// name is a descriptive name for this test suitable as a first argument to t.Run()
@@ -67,15 +68,13 @@ type testCase struct {
 	wantCallbackStatus resources.Status
 }
 
-var testCETime, _ = cetypes.ParseTime(string(testTime))
-
 var testCases = []testCase{
 	{
 		name: "valid buildPayload",
 		buildPayload: func() interface{} {
 			bp := &dh.BuildPayload{}
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
-			bp.PushData.PushedAt = testTime
+			bp.PushData.PushedAt = float32(testTime.Unix())
 			bp.PushData.Pusher = testSubject
 			bp.Repository.RepoName = testRepoName
 			return bp
@@ -85,9 +84,12 @@ var testCases = []testCase{
 		cloudEventSendExpected: true,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCloudEventSubject:  testSubject,
-		wantCloudEventTime:     &testCETime,
-		wantCallbackExpected:   true,
-		wantCallbackStatus:     resources.StatusSuccess,
+		wantCloudEventTime: func() *time.Time {
+			var testCETime = time.Unix(testTime.Unix(), 0)
+			return &testCETime
+		}(),
+		wantCallbackExpected: true,
+		wantCallbackStatus:   resources.StatusSuccess,
 	},
 	{
 		name: "invalid callback url",
@@ -325,7 +327,7 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 	if tc.wantCloudEventTime != nil {
 		eventTime := ce.Sent()[0].Time()
 		if !tc.wantCloudEventTime.Equal(eventTime) {
-			t.Fatalf("Expected %q event time to be sent, got %q", tc.wantCloudEventTime, eventTime)
+			t.Fatalf("Expected %q event time to be sent, got %q", *tc.wantCloudEventTime, eventTime)
 		}
 	}
 
@@ -348,5 +350,33 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Fatalf("unexpected event data (-want, +got) = %v", diff)
+	}
+}
+
+func Test_getTime(t *testing.T) {
+	testTimeUnixint64 := int64(1595525500)                    // These
+	testTimeUnixfloat32 := float32(1595525500)                // are
+	testTimeUnixRFC1123Z := "Fri, 24 Jul 2020 02:31:40 +0900" //same
+	tmA, err := time.Parse(time.RFC1123Z, testTimeUnixRFC1123Z)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmB := time.Unix(testTimeUnixint64, 0)
+	if !tmA.Equal(tmB) {
+		t.Fail()
+	}
+	if tmA.Unix() - testTimeUnixint64 != 0 {
+		t.Fail()
+	}
+	if float32(testTimeUnixint64)-testTimeUnixfloat32 != 0.0 {
+		t.Fail()
+	}
+
+	tm, err := getTime(testTimeUnixfloat32)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !tm.Equal(tmB) {
+		t.Fatalf("Expected %q event time to be sent, got %q", tmB, tm)
 	}
 }
