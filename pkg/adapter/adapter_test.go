@@ -19,6 +19,7 @@ import (
 	pkgtesting "knative.dev/pkg/reconciler/testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	cetypes "github.com/cloudevents/sdk-go/v2/types"
 	"github.com/google/go-cmp/cmp"
 	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
@@ -29,7 +30,7 @@ const (
 	testSubject                 = "1234"
 	testRepoName                = "test-repo/test-name"
 	testCallbackPort            = "4320"
-	testTime                    = 1.5910874e+09
+	testTime                    = float32(1595525500)
 	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
 )
@@ -56,12 +57,17 @@ type testCase struct {
 	// wantCloudEventSubject is the expected CloudEvent subject if cloudEventSendExpected is true
 	wantCloudEventSubject string
 
+	// wantCloudEventTime is the expected CloudEvent time if cloudEventSendExpected is true
+	wantCloudEventTime *time.Time
+
 	//wantCallbackExpected is whether callback is expected
 	wantCallbackExpected bool
 
 	//wantCallbackStatus is the expected resources.Status if wantCallbackExpected is true
 	wantCallbackStatus resources.Status
 }
+
+var testCETime, _ = cetypes.ParseTime(string(testTime))
 
 var testCases = []testCase{
 	{
@@ -79,6 +85,7 @@ var testCases = []testCase{
 		cloudEventSendExpected: true,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCloudEventSubject:  testSubject,
+		wantCloudEventTime:     &testCETime,
 		wantCallbackExpected:   true,
 		wantCallbackStatus:     resources.StatusSuccess,
 	},
@@ -312,6 +319,13 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 		eventType := ce.Sent()[0].Type()
 		if eventType != tc.wantCloudEventType {
 			t.Fatalf("Expected %q event type to be sent, got %q", tc.wantCloudEventType, eventType)
+		}
+	}
+
+	if tc.wantCloudEventTime != nil {
+		eventTime := ce.Sent()[0].Time()
+		if !tc.wantCloudEventTime.Equal(eventTime) {
+			t.Fatalf("Expected %q event time to be sent, got %q", tc.wantCloudEventTime, eventTime)
 		}
 	}
 
