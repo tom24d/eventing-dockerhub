@@ -35,7 +35,7 @@ func TestDockerHubSource(t *testing.T) {
 				return cetestv2.AllOf(
 					cetestv2.HasSource(sourcev1alpha1.DockerHubEventSource(helpers.RepoName)), //TODO add more
 					cetestv2.HasType(sourcev1alpha1.DockerHubCloudEventsEventType(adapterresource.DockerHubEventType)),
-					//cetestv2.HasTime(timeNow),
+					cetestv2.HasTime(timeNow),
 					cetestv2.HasSubject(helpers.Pusher),
 					cetestv2.HasExtension("tag", helpers.Tag),
 				)
