@@ -31,7 +31,6 @@ const (
 	StatusError   Status = "error"
 )
 
-// TODO vocabulary check
 func (callback *CallbackPayload) EmitValidationCallback(callbackURL string) error {
 	if callbackURL == "" {
 		return fmt.Errorf("callbackURL is not set")

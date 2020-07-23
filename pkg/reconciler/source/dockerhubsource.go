@@ -140,7 +140,6 @@ func (r *Reconciler) getOwnedService(_ context.Context, src *v1alpha1.DockerHubS
 	}
 	for _, ksvc := range serviceList {
 		if metav1.IsControlledBy(ksvc, src) {
-			//TODO if there are >1 controlled, delete all but first?
 			return ksvc, nil
 		}
 	}
