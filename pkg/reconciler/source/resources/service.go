@@ -63,7 +63,7 @@ func (args *ServiceArgs) GetEnv() []corev1.EnvVar {
 		Value: args.EventSource,
 	}, {
 		Name: "METRICS_DOMAIN",
-		//Value: "knative.dev/eventing",
+		Value: "knative.dev/eventing",
 	}, {
 		Name:  "NAMESPACE",
 		Value: args.Source.Namespace,
