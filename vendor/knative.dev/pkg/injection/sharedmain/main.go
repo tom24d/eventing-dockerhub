@@ -18,8 +18,8 @@ package sharedmain
 
 import (
 	"context"
+	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -35,7 +35,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/transport"
 	"k8s.io/klog"
 
 	"go.uber.org/zap"
@@ -69,26 +68,16 @@ func GetConfig(masterURL, kubeconfig string) (*rest.Config, error) {
 	// We produce configs a bunch of ways, this gives us a single place
 	// to "decorate" them with common useful things (e.g. for debugging)
 	decorate := func(cfg *rest.Config) *rest.Config {
-
-		// Augment the rest.Config with a "wrapper" around the transport that
-		// will emit varying levels of debug logging when -v is passed with
-		// levels 6 to 9.
-		wt := transport.DebugWrappers
-		if cfg.WrapTransport != nil {
-			wt = transport.Wrappers(wt, cfg.WrapTransport)
-		}
-		cfg.WrapTransport = wt
-
 		return cfg
 	}
 
 	// If we have an explicit indication of where the kubernetes config lives, read that.
 	if kubeconfig != "" {
-		if c, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfig); err != nil {
+		c, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfig)
+		if err != nil {
 			return nil, err
-		} else {
-			return decorate(c), nil
 		}
+		return decorate(c), nil
 	}
 	// If not, try the in-cluster config.
 	if c, err := rest.InClusterConfig(); err == nil {
@@ -101,7 +90,7 @@ func GetConfig(masterURL, kubeconfig string) (*rest.Config, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("could not create a valid kubeconfig")
+	return nil, errors.New("could not create a valid kubeconfig")
 }
 
 // GetLoggingConfig gets the logging config from either the file system if present
