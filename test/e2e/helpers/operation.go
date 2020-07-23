@@ -2,6 +2,7 @@ package helpers
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	batchv1 "k8s.io/api/batch/v1"
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 
@@ -34,4 +35,26 @@ func DeleteKServiceOrFail(c *eventingtestlib.Client, name, namespace string) {
 	if err != nil {
 		c.T.Fatalf("Failed to delete backed knative service %q: %c", name, err)
 	}
+}
+
+// TODO consider move this to eventing test lib
+func CreateJobOrFail(c *eventingtestlib.Client, job *batchv1.Job, options ...func(*batchv1.Job, *eventingtestlib.Client) error) {
+	// set namespace for the job in case it's empty
+	namespace := c.Namespace
+	job.Namespace = namespace
+
+	// apply options on the cronjob before creation
+	for _, option := range options {
+		if err := option(job, c); err != nil {
+			c.T.Fatalf("Failed to configure job %q: %v", job.Name, err)
+		}
+	}
+
+	// c.applyTracingEnv(&job.Spec.Template.Spec)
+
+	c.T.Logf("Creating job %+v", job)
+	if _, err := c.Kube.Kube.BatchV1().Jobs(job.Namespace).Create(job); err != nil {
+		c.T.Fatalf("Failed to create job %q: %v", job.Name, err)
+	}
+	c.Tracker.Add("batch", "v1", "jobs", namespace, job.Name)
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -50,6 +51,26 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 		},
 	}
 	client.CreatePodOrFail(eventSender)
+
+	_ = &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: client.Namespace,
+			Name: SenderImageName,
+		},
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name:            SenderImageName,
+						Image:           pkgTest.ImagePath(SenderImageName),
+						ImagePullPolicy: corev1.PullAlways,
+						Args:            args,
+					}},
+					RestartPolicy: corev1.RestartPolicyNever,
+				},
+			},
+		},
+	}
 
 	err := pkgTest.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
 		if pod.Status.Phase == corev1.PodFailed {
