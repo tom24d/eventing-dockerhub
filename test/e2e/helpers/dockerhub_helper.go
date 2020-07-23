@@ -161,6 +161,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 		if n := <-notify; !n {
 			t.Fatal("Failed to wait for validation receiver report")
 		}
+		t.Log("Validation receiver confirmed its callback.")
 	}
 
 	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
