@@ -143,10 +143,9 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 
 		client.WaitForAllTestResourcesReadyOrFail()
 
-		t.Log("Setting CallbackURL to its payload")
-		t.Log(validationReceiverPod.GetObjectMeta())
 		// set callbackURL
-		payload.CallbackURL = client.GetServiceHost(validationReceiverPod.GetName())
+		payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
+		t.Logf("Webhook payload: %v", payload)
 
 		// wait for validation webhook received
 		t.Log("Waiting for validation started...")
