@@ -8,6 +8,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/lib/recordevents"
@@ -73,19 +74,25 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 }
 
 func GetURLOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
-	// TODO there is a lag to status.RAName be populated. remove this if possible
-	time.Sleep(10*time.Second)
 
-	dhs, err := GetSourceClient(client).SourcesV1alpha1().
-		DockerHubSources(client.Namespace).Get(source.Name, metav1.GetOptions{})
+	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
+	ksvcName := ""
+
+	err := wait.PollImmediate(1*time.Second, 30*time.Second, func() (bool,error) {
+		dhs, err := dhCli.Get(source.Name, metav1.GetOptions{})
+		if err != nil {
+			return true, fmt.Errorf("failed to get DockerHubSource: %v", source.Name)
+		}
+		ksvcName = dhs.Status.ReceiveAdapterServiceName
+		if ksvcName == "" {
+			return false, nil
+		}
+	return true, nil
+	})
 	if err != nil {
-		client.T.Fatalf("failed to get DockerHubSource: %v", source.Name)
+		client.T.Fatalf("failed to get ReceiveAdapterServiceName: %v", err)
 	}
 
-	ksvcName := dhs.Status.ReceiveAdapterServiceName
-	if ksvcName == "" {
-		client.T.Fatalf("DockerHubSource ReceiveAdapterServiceName is nil: %v", source.GetName())
-	}
 	// TODO use lib if exists
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, source.Namespace)
 }
