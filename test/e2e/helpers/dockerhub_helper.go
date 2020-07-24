@@ -35,6 +35,8 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	args := []string{fmt.Sprintf("--%s=%s", dhtestresources.ArgSink, targetURL),
 		fmt.Sprintf("--%s=%s", dhtestresources.ArgPayload, dhtestresources.MarshalPayload(data))}
 
+	retryBackoff := int32(1)
+
 	// create webhook sender
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -53,6 +55,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 					RestartPolicy: corev1.RestartPolicyNever,
 				},
 			},
+			BackoffLimit: &retryBackoff,
 		},
 	}
 	CreateJobOrFail(client, job)
