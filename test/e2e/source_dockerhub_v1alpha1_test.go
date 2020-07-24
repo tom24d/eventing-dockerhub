@@ -35,7 +35,7 @@ func TestDockerHubSource(t *testing.T) {
 				return cetestv2.AllOf(
 					cetestv2.HasSource(sourcev1alpha1.DockerHubEventSource(helpers.RepoName)),
 					cetestv2.HasType(sourcev1alpha1.DockerHubCloudEventsEventType(adapterresource.DockerHubEventType)),
-					//cetestv2.HasTime(time),
+					//cetestv2.HasTime(time), 	// temporary disabled: https://github.com/go-playground/webhooks/issues/116
 					cetestv2.HasSubject(helpers.Pusher),
 					cetestv2.HasExtension("tag", helpers.Tag),
 				)

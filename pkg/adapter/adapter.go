@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	//knative.dev imports
@@ -195,14 +194,17 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 
 // If the operation failed, use time.Now()
 func getTime(pushedAt float32) (time.Time, error) {
-	if pushedAt < 0 {
-		return time.Now(), fmt.Errorf("pushedAt should not be negative: %f", pushedAt)
-	}
-	ft := fmt.Sprintf("%.0f", pushedAt)
-	u, err := strconv.ParseInt(ft, 10, 0)
-	if err != nil {
-		return time.Now(), fmt.Errorf("failed to process pushedAt field: %v", err)
-	}
-	ans := time.Unix(u-4, 0) // This is precise, but definitely there should be a better way :(
-	return ans, nil
+	// temporary disabled: https://github.com/go-playground/webhooks/issues/116
+	//if pushedAt < 0 {
+	//	return time.Now(), fmt.Errorf("pushedAt should not be negative: %f", pushedAt)
+	//}
+	//ft := fmt.Sprintf("%.0f", pushedAt)
+	//u, err := strconv.ParseInt(ft, 10, 0)
+	//if err != nil {
+	//	return time.Now(), fmt.Errorf("failed to process pushedAt field: %v", err)
+	//}
+	//ans := time.Unix(u, 0)
+	//return ans, nil
+
+	return time.Now(), nil
 }

@@ -327,6 +327,7 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 		}
 	}
 
+	// temporary disabled: https://github.com/go-playground/webhooks/issues/116
 	//if !tc.wantCloudEventTime.IsZero() {
 	//	eventTime := ce.Sent()[0].Time()
 	//	if !tc.wantCloudEventTime.Equal(eventTime) {
@@ -375,6 +376,7 @@ func Test_getTime(t *testing.T) {
 		t.Fail()
 	}
 
+	// temporary disabled: https://github.com/go-playground/webhooks/issues/116
 	//tm, err := getTime(testTimeUnixfloat32)
 	//if err != nil {
 	//	t.Fatal(err)
