@@ -78,7 +78,7 @@ func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1al
 	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
 	ksvcName := ""
 
-	err := wait.PollImmediate(1*time.Second, 30*time.Second, func() (bool,error) {
+	err := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool,error) {
 		dhs, err := dhCli.Get(source.Name, metav1.GetOptions{})
 		if err != nil {
 			return true, fmt.Errorf("failed to get DockerHubSource: %v", source.Name)
