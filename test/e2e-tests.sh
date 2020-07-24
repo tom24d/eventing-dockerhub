@@ -24,15 +24,6 @@ readonly VENDOR_EVENTING_TEST_IMAGES="vendor/knative.dev/eventing/test/test_imag
 # HEAD eventing test images.
 readonly HEAD_EVENTING_TEST_IMAGES="${GOPATH}/src/knative.dev/eventing/test/test_images/"
 
-# Publish test images.
-echo ">> Publishing test images from eventing-dockerhub"
-$(dirname $0)/upload-test-images.sh "test/test_images" e2e || fail_test "Error uploading test images"
-echo ">> Publishing test images from eventing"
-# We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
-# path has to be a GOPATH.
-sed -i 's@knative.dev/eventing/test/test_images@github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
-$(dirname $0)/upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
-
 function knative_setup() {
   start_latest_knative_serving
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
@@ -43,6 +34,15 @@ function knative_setup() {
 
 function test_setup() {
   dockerhub_setup || return 1
+
+  # Publish test images.
+  echo ">> Publishing test images from eventing-dockerhub"
+  $(dirname $0)/upload-test-images.sh "test/test_images" e2e || fail_test "Error uploading test images"
+  echo ">> Publishing test images from eventing"
+  # We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
+  # path has to be a GOPATH.
+  sed -i 's@knative.dev/eventing/test/test_images@github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
+  $(dirname $0)/upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
 }
 
 function test_teardown() {
