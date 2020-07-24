@@ -43,7 +43,7 @@ func main() {
 
 	ticker := time.NewTicker(time.Second)
 	for {
-		<- ticker.C
+		<-ticker.C
 		counter += 1
 		if counter > patient {
 			os.Exit(1)

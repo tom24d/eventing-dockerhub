@@ -1,7 +1,15 @@
 package helpers
 
 import (
+	"context"
+	"time"
+
+	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+
+	pkgTest "knative.dev/pkg/test"
+	"knative.dev/pkg/test/logging"
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 
@@ -34,4 +42,39 @@ func DeleteKServiceOrFail(c *eventingtestlib.Client, name, namespace string) {
 	if err != nil {
 		c.T.Fatalf("Failed to delete backed knative service %q: %c", name, err)
 	}
+}
+
+func CreateJobOrFail(c *eventingtestlib.Client, job *batchv1.Job, options ...func(*batchv1.Job, *eventingtestlib.Client) error) {
+	// set namespace for the job in case it's empty
+	namespace := c.Namespace
+	job.Namespace = namespace
+
+	// apply options on the cronjob before creation
+	for _, option := range options {
+		if err := option(job, c); err != nil {
+			c.T.Fatalf("Failed to configure job %q: %v", job.Name, err)
+		}
+	}
+
+	// c.applyTracingEnv(&job.Spec.Template.Spec)
+
+	c.T.Logf("Creating job %+v", job)
+	if _, err := c.Kube.Kube.BatchV1().Jobs(job.Namespace).Create(job); err != nil {
+		c.T.Fatalf("Failed to create job %q: %v", job.Name, err)
+	}
+	c.Tracker.Add("batch", "v1", "jobs", namespace, job.Name)
+}
+
+func WaitForJobState(client *pkgTest.KubeClient, inState func(p *batchv1.Job) (bool, error), name string, namespace string) error {
+	p := client.Kube.BatchV1().Jobs(namespace)
+	span := logging.GetEmitableSpan(context.Background(), "WaitForJobState/"+name)
+	defer span.End()
+
+	return wait.PollImmediate(1*time.Second, 8*time.Minute, func() (bool, error) {
+		p, err := p.Get(name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+		return inState(p)
+	})
 }

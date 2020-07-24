@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	raImageEnvVar       = "DH_RA_IMAGE"
+	raImageEnvVar = "DH_RA_IMAGE"
 )
 
 // Reconciler reconciles a DockerHubSource object

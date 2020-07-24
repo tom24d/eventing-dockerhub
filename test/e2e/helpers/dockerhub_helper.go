@@ -5,8 +5,10 @@ import (
 	"testing"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/lib/recordevents"
@@ -33,53 +35,67 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	args := []string{fmt.Sprintf("--%s=%s", dhtestresources.ArgSink, targetURL),
 		fmt.Sprintf("--%s=%s", dhtestresources.ArgPayload, dhtestresources.MarshalPayload(data))}
 
+	retryBackoff := int32(1)
+
 	// create webhook sender
-	eventSender := &corev1.Pod{
+	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
 			Name:      SenderImageName,
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{{
-				Name:            SenderImageName,
-				Image:           pkgTest.ImagePath(SenderImageName),
-				ImagePullPolicy: corev1.PullAlways,
-				Args:            args,
-			}},
-			RestartPolicy: corev1.RestartPolicyNever,
+		Spec: batchv1.JobSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name:            SenderImageName,
+						Image:           pkgTest.ImagePath(SenderImageName),
+						ImagePullPolicy: corev1.PullAlways,
+						Args:            args,
+					}},
+					RestartPolicy: corev1.RestartPolicyNever,
+				},
+			},
+			BackoffLimit: &retryBackoff,
 		},
 	}
-	client.CreatePodOrFail(eventSender)
+	CreateJobOrFail(client, job)
 
-	err := pkgTest.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
-		if pod.Status.Phase == corev1.PodFailed {
-			log, _ := client.Kube.PodLogs(pod.Name, SenderImageName, client.Namespace)
-			return true, fmt.Errorf("event sender pod failed with log %s", log)
-		} else if pod.Status.Phase != corev1.PodSucceeded {
-			return false, nil
+	err := WaitForJobState(client.Kube, func(job *batchv1.Job) (bool, error) {
+		if job.Status.CompletionTime != nil {
+			if job.Status.Failed != 0 {
+				return true, fmt.Errorf("job is failed")
+			} else {
+				return true, nil
+			}
 		}
-		return true, nil
-	}, eventSender.Name, eventSender.Namespace)
+		return false, nil
+	}, job.Name, job.Namespace)
 
 	if err != nil {
-		client.T.Fatalf("Failed sending webhook %q: %v", eventSender.Name, err)
+		client.T.Fatalf("Failed sending webhook %q: %v", job.Name, err)
 	}
 }
 
-func GetURLOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
-	// TODO there is a lag to status.RAName be populated. remove this if possible
-	time.Sleep(10*time.Second)
+func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
 
-	dhs, err := GetSourceClient(client).SourcesV1alpha1().
-		DockerHubSources(client.Namespace).Get(source.Name, metav1.GetOptions{})
+	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
+	ksvcName := ""
+
+	err := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool, error) {
+		dhs, err := dhCli.Get(source.Name, metav1.GetOptions{})
+		if err != nil {
+			return true, fmt.Errorf("failed to get DockerHubSource: %v", source.Name)
+		}
+		ksvcName = dhs.Status.ReceiveAdapterServiceName
+		if ksvcName == "" {
+			return false, nil
+		}
+		return true, nil
+	})
 	if err != nil {
-		client.T.Fatalf("failed to get DockerHubSource: %v", source.Name)
+		client.T.Fatalf("failed to get ReceiveAdapterServiceName: %v", err)
 	}
 
-	ksvcName := dhs.Status.ReceiveAdapterServiceName
-	if ksvcName == "" {
-		client.T.Fatalf("DockerHubSource ReceiveAdapterServiceName is nil: %v", source.GetName())
-	}
 	// TODO use lib if exists
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, source.Namespace)
 }
@@ -136,7 +152,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL
-	allocatedURL := GetURLOrFail(client, createdDHS)
+	allocatedURL := GetServiceAddressOrFail(client, createdDHS)
 
 	if !disableAutoCallback {
 		validationReceiverPod := CreateValidationReceiverOrFail(client)

@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	sink              string
-	payload         string
+	sink    string
+	payload string
 )
 
 func init() {

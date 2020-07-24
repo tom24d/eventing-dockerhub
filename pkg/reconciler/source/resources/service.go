@@ -62,7 +62,7 @@ func (args *ServiceArgs) GetEnv() []corev1.EnvVar {
 		Name:  "EVENT_SOURCE",
 		Value: args.EventSource,
 	}, {
-		Name: "METRICS_DOMAIN",
+		Name:  "METRICS_DOMAIN",
 		Value: "knative.dev/eventing",
 	}, {
 		Name:  "NAMESPACE",
@@ -71,7 +71,7 @@ func (args *ServiceArgs) GetEnv() []corev1.EnvVar {
 		Name:  "DISABLE_AUTO_CALLBACK",
 		Value: strconv.FormatBool(args.Source.Spec.DisableAutoCallback),
 	}, {
-		Name: "METRICS_PROMETHEUS_PORT",
+		Name:  "METRICS_PROMETHEUS_PORT",
 		Value: "9089",
 	}}
 
