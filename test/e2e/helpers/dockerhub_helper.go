@@ -73,7 +73,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}
 }
 
-func GetURLOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
+func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
 
 	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
 	ksvcName := ""
@@ -149,7 +149,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL
-	allocatedURL := GetURLOrFail(client, createdDHS)
+	allocatedURL := GetServiceAddressOrFail(client, createdDHS)
 
 	if !disableAutoCallback {
 		validationReceiverPod := CreateValidationReceiverOrFail(client)
