@@ -44,7 +44,6 @@ func DeleteKServiceOrFail(c *eventingtestlib.Client, name, namespace string) {
 	}
 }
 
-// TODO consider move this to eventing test lib
 func CreateJobOrFail(c *eventingtestlib.Client, job *batchv1.Job, options ...func(*batchv1.Job, *eventingtestlib.Client) error) {
 	// set namespace for the job in case it's empty
 	namespace := c.Namespace
