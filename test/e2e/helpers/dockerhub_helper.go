@@ -35,24 +35,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 		fmt.Sprintf("--%s=%s", dhtestresources.ArgPayload, dhtestresources.MarshalPayload(data))}
 
 	// create webhook sender
-	eventSender := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: client.Namespace,
-			Name:      SenderImageName,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{{
-				Name:            SenderImageName,
-				Image:           pkgTest.ImagePath(SenderImageName),
-				ImagePullPolicy: corev1.PullAlways,
-				Args:            args,
-			}},
-			RestartPolicy: corev1.RestartPolicyNever,
-		},
-	}
-	client.CreatePodOrFail(eventSender)
-
-	_ = &batchv1.Job{
+	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
 			Name: SenderImageName,
@@ -71,19 +54,21 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 			},
 		},
 	}
+	CreateJobOrFail(client, job)
 
-	err := pkgTest.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
-		if pod.Status.Phase == corev1.PodFailed {
-			log, _ := client.Kube.PodLogs(pod.Name, SenderImageName, client.Namespace)
-			return true, fmt.Errorf("event sender pod failed with log %s", log)
-		} else if pod.Status.Phase != corev1.PodSucceeded {
-			return false, nil
+	err := WaitForJobState(client.Kube, func(job *batchv1.Job) (bool, error) {
+		if job.Status.CompletionTime != nil {
+			if job.Status.Failed != 0 {
+				return true, fmt.Errorf("job is failed")
+			} else {
+				return true, nil
+			}
 		}
-		return true, nil
-	}, eventSender.Name, eventSender.Namespace)
+		return false, nil
+	}, job.Name, job.Namespace)
 
 	if err != nil {
-		client.T.Fatalf("Failed sending webhook %q: %v", eventSender.Name, err)
+		client.T.Fatalf("Failed sending webhook %q: %v", job.Name, err)
 	}
 }
 
