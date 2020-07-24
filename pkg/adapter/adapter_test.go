@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"testing"
 	"time"
 
@@ -73,11 +72,9 @@ var testCases = []testCase{
 	{
 		name: "valid buildPayload",
 		buildPayload: func() interface{} {
-			timeStr := fmt.Sprintf("%d", testTime.Unix())
-			tfloat32, _ := strconv.ParseFloat(timeStr, 32)
 			bp := &dh.BuildPayload{}
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
-			bp.PushData.PushedAt = float32(tfloat32)
+			bp.PushData.PushedAt = float64(testTime.Unix())
 			bp.PushData.Pusher = testSubject
 			bp.Repository.RepoName = testRepoName
 			return bp
@@ -327,13 +324,12 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 		}
 	}
 
-	// temporary disabled: https://github.com/go-playground/webhooks/issues/116
-	//if !tc.wantCloudEventTime.IsZero() {
-	//	eventTime := ce.Sent()[0].Time()
-	//	if !tc.wantCloudEventTime.Equal(eventTime) {
-	//		t.Fatalf("Expected %q event time to be sent, got %q", tc.wantCloudEventTime, eventTime)
-	//	}
-	//}
+	if !tc.wantCloudEventTime.IsZero() {
+		eventTime := ce.Sent()[0].Time()
+		if !tc.wantCloudEventTime.Equal(eventTime) {
+			t.Fatalf("Expected %q event time to be sent, got %q", tc.wantCloudEventTime, eventTime)
+		}
+	}
 
 	data := ce.Sent()[0].Data()
 
@@ -358,30 +354,13 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 }
 
 func Test_getTime(t *testing.T) {
-	testTimeUnixint64 := int64(1595525500)                    // These
-	testTimeUnixfloat32 := float32(1595525500)                // are
-	testTimeUnixRFC1123Z := "Fri, 24 Jul 2020 02:31:40 +0900" //same
-	tmA, err := time.Parse(time.RFC1123Z, testTimeUnixRFC1123Z)
+	tmA := time.Unix(time.Now().Unix(), 0)
+	unixT := float64(time.Now().Unix())
+	tmB, err := getTime(unixT)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tmB := time.Unix(testTimeUnixint64, 0)
 	if !tmA.Equal(tmB) {
-		t.Fail()
+		t.Fatalf("Expected %q event time to be sent, got %q", tmA, tmB)
 	}
-	if tmA.Unix() - testTimeUnixint64 != 0 {
-		t.Fail()
-	}
-	if float32(testTimeUnixint64)-testTimeUnixfloat32 != 0.0 {
-		t.Fail()
-	}
-
-	// temporary disabled: https://github.com/go-playground/webhooks/issues/116
-	//tm, err := getTime(testTimeUnixfloat32)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//if !tm.Equal(tmB) {
-	//	t.Fatalf("Expected %q event time to be sent, got %q", tmB, tm)
-	//}
 }
