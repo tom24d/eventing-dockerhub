@@ -23,5 +23,4 @@ import (
 	_ "knative.dev/test-infra/scripts"
 
 	_ "knative.dev/eventing/test/test_images/recordevents"
-	_ "knative.dev/eventing/test/test_images/event-sender"
 )
