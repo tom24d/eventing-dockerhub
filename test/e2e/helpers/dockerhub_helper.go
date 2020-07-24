@@ -76,28 +76,12 @@ func GetURLOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.Docker
 		client.T.Fatalf("failed to get DockerHubSource: %v", source.Name)
 	}
 
-
 	ksvcName := dhs.Status.ReceiveAdapterServiceName
 	if ksvcName == "" {
 		client.T.Fatalf("DockerHubSource ReceiveAdapterServiceName is nil: %v", source.GetName())
 	}
-	//endpoints, err := pkgTest.GetEndpointAddresses(client.Kube, ksvcName, source.Namespace)
-	//if err != nil {
-	//	client.T.Fatalf("failed to get endpoints: %v", err)
-	//}
-	//if len(endpoints) < 1 {
-	//	client.T.Fatalf("endpoints have 0 available endpoint")
-	//}
-	//return endpoints[0]
 	// TODO use lib if exists
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, source.Namespace)
-}
-
-// TODO Get and return URL might be better
-func SetCallbackURLOrFail(c *eventingtestlib.Client, data *dockerhub.BuildPayload, svcName string) {
-	// TODO use lib if exists
-	url := fmt.Sprintf("http://%s.%s.svc.cluster.local", svcName, c.Namespace)
-	data.CallbackURL = url
 }
 
 func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
@@ -108,7 +92,7 @@ func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSo
 	DeleteKServiceOrFail(c, before, c.Namespace)
 
 	// wait for DockerHubSource to be URL allocated
-	dhtestresources.WaitForAllTestResourcesReadyOrFail(c)
+	c.WaitForAllTestResourcesReadyOrFail()
 
 	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if before == "" {
@@ -149,7 +133,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	createdDHS := CreateDockerHubSourceOrFail(client, dockerHubSource)
 
 	// wait for DockerHubSource to be URL allocated
-	dhtestresources.WaitForAllTestResourcesReadyOrFail(client)
+	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL
 	allocatedURL := GetURLOrFail(client, createdDHS)
@@ -157,12 +141,11 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	if !disableAutoCallback {
 		validationReceiverPod := CreateValidationReceiverOrFail(client)
 
-		dhtestresources.WaitForAllTestResourcesReadyOrFail(client)
+		client.WaitForAllTestResourcesReadyOrFail()
 
-		t.Log("Setting CallbackURL to its payload")
-		t.Log(validationReceiverPod.GetObjectMeta())
 		// set callbackURL
-		SetCallbackURLOrFail(client, payload, validationReceiverPod.GetName())
+		payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
+		t.Logf("Webhook payload: %v", payload)
 
 		// wait for validation webhook received
 		t.Log("Waiting for validation started...")
@@ -171,13 +154,14 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 
 	// access test from cluster inside
 	t.Log("Send webhook to DockerHubSource")
-	MustSendWebhook(client, allocatedURL, payload) // TODO add test from cluster outside
+	MustSendWebhook(client, allocatedURL, payload)
 
 	if !disableAutoCallback {
 		t.Log("Waiting for validation receiver report...")
 		if n := <-notify; !n {
 			t.Fatal("Failed to wait for validation receiver report")
 		}
+		t.Log("Validation receiver confirmed its callback.")
 	}
 
 	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))

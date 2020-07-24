@@ -193,14 +193,12 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	return nil
 }
 
-// This is precise, but definitely there should be a better way :(
 // If the operation failed, use time.Now()
-func getTime(pushedAt float32) (time.Time, error) {
-	pt := pushedAt
-	if pt < 0 {
-		return time.Now(), fmt.Errorf("pushedAt should not be negative: %f", pt)
+func getTime(pushedAt float64) (time.Time, error) {
+	if pushedAt < 0 {
+		return time.Now(), fmt.Errorf("pushedAt should not be negative: %f", pushedAt)
 	}
-	ft := strconv.FormatFloat(float64(pt), 'f', -1, 64)
+	ft := fmt.Sprintf("%.0f", pushedAt)
 	u, err := strconv.ParseInt(ft, 10, 64)
 	if err != nil {
 		return time.Now(), fmt.Errorf("failed to process pushedAt field: %v", err)

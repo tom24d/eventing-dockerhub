@@ -24,3 +24,5 @@ replace k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 replace k8s.io/client-go => k8s.io/client-go v0.17.6
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.17.6
+
+replace gopkg.in/go-playground/webhooks.v5 => github.com/tom24d/webhooks v5.15.1-0.20200724062239-a4d0e87c76c3+incompatible

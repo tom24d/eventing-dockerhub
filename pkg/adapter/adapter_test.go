@@ -19,6 +19,7 @@ import (
 	pkgtesting "knative.dev/pkg/reconciler/testing"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	cetypes "github.com/cloudevents/sdk-go/v2/types"
 	"github.com/google/go-cmp/cmp"
 	dh "gopkg.in/go-playground/webhooks.v5/docker"
 
@@ -26,13 +27,14 @@ import (
 )
 
 const (
-	testSubject                 = "1234"
-	testRepoName                = "test-repo/test-name"
-	testCallbackPort            = "4320"
-	testTime                    = 1.5910874e+09
+	testSubject      = "1234"
+	testRepoName     = "test-repo/test-name"
+	testCallbackPort = "4320"
 	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
 )
+
+var testTime, _ = cetypes.ParseTime("2018-04-05T17:31:00Z")
 
 type testCase struct {
 	// name is a descriptive name for this test suitable as a first argument to t.Run()
@@ -56,6 +58,9 @@ type testCase struct {
 	// wantCloudEventSubject is the expected CloudEvent subject if cloudEventSendExpected is true
 	wantCloudEventSubject string
 
+	// wantCloudEventTime is the expected CloudEvent time if cloudEventSendExpected is true
+	wantCloudEventTime time.Time
+
 	//wantCallbackExpected is whether callback is expected
 	wantCallbackExpected bool
 
@@ -69,7 +74,7 @@ var testCases = []testCase{
 		buildPayload: func() interface{} {
 			bp := &dh.BuildPayload{}
 			bp.CallbackURL = fmt.Sprintf("http://127.0.0.1:%s/", testCallbackPort)
-			bp.PushData.PushedAt = testTime
+			bp.PushData.PushedAt = float64(testTime.Unix())
 			bp.PushData.Pusher = testSubject
 			bp.Repository.RepoName = testRepoName
 			return bp
@@ -79,8 +84,12 @@ var testCases = []testCase{
 		cloudEventSendExpected: true,
 		wantCloudEventType:     "dev.knative.source.dockerhub.push",
 		wantCloudEventSubject:  testSubject,
-		wantCallbackExpected:   true,
-		wantCallbackStatus:     resources.StatusSuccess,
+		wantCloudEventTime: func() time.Time {
+			var testCETime = time.Unix(testTime.Unix(), 0)
+			return testCETime
+		}(),
+		wantCallbackExpected: true,
+		wantCallbackStatus:   resources.StatusSuccess,
 	},
 	{
 		name: "invalid callback url",
@@ -315,6 +324,13 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 		}
 	}
 
+	if !tc.wantCloudEventTime.IsZero() {
+		eventTime := ce.Sent()[0].Time()
+		if !tc.wantCloudEventTime.Equal(eventTime) {
+			t.Fatalf("Expected %q event time to be sent, got %q", tc.wantCloudEventTime, eventTime)
+		}
+	}
+
 	data := ce.Sent()[0].Data()
 
 	var got interface{}
@@ -334,5 +350,17 @@ func (tc *testCase) validateCESentPayload(t *testing.T, ce *adaptertest.TestClou
 	}
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Fatalf("unexpected event data (-want, +got) = %v", diff)
+	}
+}
+
+func Test_getTime(t *testing.T) {
+	tmA := time.Unix(time.Now().Unix(), 0)
+	unixT := float64(time.Now().Unix())
+	tmB, err := getTime(unixT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !tmA.Equal(tmB) {
+		t.Fatalf("Expected %q event time to be sent, got %q", tmA, tmB)
 	}
 }

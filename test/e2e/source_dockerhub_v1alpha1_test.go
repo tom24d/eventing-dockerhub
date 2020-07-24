@@ -4,9 +4,9 @@ package e2e
 
 import (
 	"testing"
-	"time"
 
 	cetestv2 "github.com/cloudevents/sdk-go/v2/test"
+	cetypes "github.com/cloudevents/sdk-go/v2/types"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
@@ -16,7 +16,7 @@ import (
 )
 
 func TestDockerHubSource(t *testing.T) {
-	timeNow := time.Now()
+	time, _ := cetypes.ParseTime("2020-07-23T17:31:00Z")
 
 	tests := map[string]struct {
 		webhookPayload dockerhub.BuildPayload
@@ -25,7 +25,7 @@ func TestDockerHubSource(t *testing.T) {
 		"valid_payload": {
 			webhookPayload: func() dockerhub.BuildPayload {
 				p := dockerhub.BuildPayload{}
-				p.PushData.PushedAt = float32(timeNow.Unix())
+				p.PushData.PushedAt = float64(time.Unix())
 				p.PushData.Pusher = helpers.Pusher
 				p.PushData.Tag = helpers.Tag
 				p.Repository.RepoName = helpers.RepoName
@@ -33,9 +33,9 @@ func TestDockerHubSource(t *testing.T) {
 			}(),
 			matcherGen: func(namespace string) cetestv2.EventMatcher {
 				return cetestv2.AllOf(
-					cetestv2.HasSource(sourcev1alpha1.DockerHubEventSource(helpers.RepoName)), //TODO add more
+					cetestv2.HasSource(sourcev1alpha1.DockerHubEventSource(helpers.RepoName)),
 					cetestv2.HasType(sourcev1alpha1.DockerHubCloudEventsEventType(adapterresource.DockerHubEventType)),
-					//cetestv2.HasTime(timeNow),
+					cetestv2.HasTime(time),
 					cetestv2.HasSubject(helpers.Pusher),
 					cetestv2.HasExtension("tag", helpers.Tag),
 				)
@@ -45,10 +45,10 @@ func TestDockerHubSource(t *testing.T) {
 
 	for name, test := range tests {
 		testData := test
-		t.Run(name+"-AutoCallback", func(t *testing.T) {
+		t.Run(name+"-AutoCallbackEnabled", func(t *testing.T) {
 			helpers.DockerHubSourceV1Alpha1(t, &testData.webhookPayload, false, testData.matcherGen)
 		})
-		t.Run(name, func(t *testing.T) {
+		t.Run(name+"-AutoCallbackDisabled", func(t *testing.T) {
 			helpers.DockerHubSourceV1Alpha1(t, &testData.webhookPayload, true, testData.matcherGen)
 		})
 	}
