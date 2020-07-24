@@ -27,9 +27,9 @@ import (
 )
 
 const (
-	testSubject      = "1234"
-	testRepoName     = "test-repo/test-name"
-	testCallbackPort = "4320"
+	testSubject                 = "1234"
+	testRepoName                = "test-repo/test-name"
+	testCallbackPort            = "4320"
 	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
 )

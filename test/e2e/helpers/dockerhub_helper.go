@@ -41,7 +41,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
-			Name: SenderImageName,
+			Name:      SenderImageName,
 		},
 		Spec: batchv1.JobSpec{
 			Template: corev1.PodTemplateSpec{
@@ -81,7 +81,7 @@ func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1al
 	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
 	ksvcName := ""
 
-	err := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool,error) {
+	err := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool, error) {
 		dhs, err := dhCli.Get(source.Name, metav1.GetOptions{})
 		if err != nil {
 			return true, fmt.Errorf("failed to get DockerHubSource: %v", source.Name)
@@ -90,7 +90,7 @@ func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1al
 		if ksvcName == "" {
 			return false, nil
 		}
-	return true, nil
+		return true, nil
 	})
 	if err != nil {
 		client.T.Fatalf("failed to get ReceiveAdapterServiceName: %v", err)

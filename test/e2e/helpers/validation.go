@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"k8s.io/api/core/v1"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/eventing/test/lib"
 	"knative.dev/pkg/test"
 	"strconv"
@@ -15,7 +15,7 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 	args := []string{"--patient", strconv.Itoa(60)}
 
 	receiverPod := &v1.Pod{
-		ObjectMeta: v12.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
 			Name:      receiverImageName,
 			Labels:    map[string]string{"e2etest": uuid.New().String()},
@@ -68,4 +68,3 @@ func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *
 	}
 	notify <- true
 }
-
