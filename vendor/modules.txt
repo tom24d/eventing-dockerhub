@@ -508,7 +508,7 @@ google.golang.org/protobuf/types/known/wrapperspb
 google.golang.org/protobuf/types/pluginpb
 # gopkg.in/alecthomas/kingpin.v2 v2.2.6
 gopkg.in/alecthomas/kingpin.v2
-# gopkg.in/go-playground/webhooks.v5 v5.14.0
+# gopkg.in/go-playground/webhooks.v5 v5.15.0
 ## explicit
 gopkg.in/go-playground/webhooks.v5/docker
 # gopkg.in/inf.v0 v0.9.1

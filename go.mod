@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.5.1
 	github.com/google/uuid v1.1.1
 	go.uber.org/zap v1.15.0
-	gopkg.in/go-playground/webhooks.v5 v5.14.0
+	gopkg.in/go-playground/webhooks.v5 v5.15.0
 	k8s.io/api v0.18.1
 	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
