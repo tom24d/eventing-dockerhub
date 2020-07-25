@@ -71,7 +71,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 					// retry
 					return false, nil
 				}
-				return true, fmt.Errorf("job:%s is failed. Log: %v", job.Name, l)
+				return true, fmt.Errorf("job:%s is failed. Log: %s", job.Name, l)
 			} else {
 				// JobSuccess
 				return true, nil
