@@ -106,14 +106,6 @@ func GetReceiveAdapterServiceNameOrFail(client *eventingtestlib.Client, source *
 	return ksvcName
 }
 
-func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
-
-	ksvcName := GetReceiveAdapterServiceNameOrFail(client, source)
-
-	// TODO use lib if exists
-	return fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, source.Namespace)
-}
-
 func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
 	before := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if before == "" {
@@ -166,7 +158,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL
-	allocatedURL := GetServiceAddressOrFail(client, createdDHS)
+	allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", GetReceiveAdapterServiceNameOrFail(client, createdDHS), createdDHS.Namespace)
 
 	if !disableAutoCallback {
 		validationReceiverPod := CreateValidationReceiverOrFail(client)
