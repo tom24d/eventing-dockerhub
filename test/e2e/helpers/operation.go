@@ -13,6 +13,8 @@ import (
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 
+	"knative.dev/serving/pkg/reconciler/route/resources/labels"
+
 	sourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
@@ -41,6 +43,19 @@ func DeleteKServiceOrFail(c *eventingtestlib.Client, name, namespace string) {
 	err := GetServiceClient(c).ServingV1().Services(namespace).Delete(name, metav1.NewDeleteOptions(0))
 	if err != nil {
 		c.T.Fatalf("Failed to delete backed knative service %q: %c", name, err)
+	}
+}
+
+func LabelClusterLocalVisibilityOrFail(c *eventingtestlib.Client, name, namespace string) {
+	ksvc, err := GetServiceClient(c).ServingV1().Services(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		c.T.Fatalf("Failed to GET knative service: %v", err)
+	}
+	labels.SetVisibility(&ksvc.ObjectMeta, true)
+
+	_, err = GetServiceClient(c).ServingV1().Services(namespace).Update(ksvc)
+	if err != nil {
+		c.T.Fatalf("Failed to UPDATE knative service %q: %c", name, err)
 	}
 }
 

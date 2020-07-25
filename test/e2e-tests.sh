@@ -24,17 +24,43 @@ readonly VENDOR_EVENTING_TEST_IMAGES="vendor/knative.dev/eventing/test/test_imag
 # HEAD eventing test images.
 readonly HEAD_EVENTING_TEST_IMAGES="${GOPATH}/src/knative.dev/eventing/test/test_images/"
 
-# Publish test images.
-echo ">> Publishing test images from eventing-dockerhub"
-$(dirname $0)/upload-test-images.sh "test/test_images" e2e || fail_test "Error uploading test images"
-echo ">> Publishing test images from eventing"
-# We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
-# path has to be a GOPATH.
-sed -i 's@knative.dev/eventing/test/test_images@github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
-$(dirname $0)/upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
+# Istio version for ci
+readonly ISTIO_VERSION="1.5.7"
+# Istio crd yaml
+readonly SERVING_ISTIO_CRD="https://raw.githubusercontent.com/knative/serving/master/third_party/istio-${ISTIO_VERSION}/istio-crds.yaml"
+# istio-ci-no-mesh
+readonly SERVING_ISTIO_CI_NO_MESH="https://raw.githubusercontent.com/knative/serving/master/third_party/istio-${ISTIO_VERSION}/istio-ci-no-mesh.yaml"
+
+# Configure DNS
+readonly SERVING_DNS_SETUP="$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
+
+function start_istio() {
+  header "Starting Istio-${ISTIO_VERSION}"
+
+  subheader "Installing Istio-${ISTIO_VERSION} CRD"
+  echo "Installing Istio CRD from ${SERVING_VENDORED_ISTIO_CRD}"
+  kubectl apply -f ${SERVING_ISTIO_CRD}
+  while [[ $(kubectl get crd gateways.networking.istio.io -o jsonpath='{.status.conditions[?(@.type=="Established")].status}') != 'True' ]]; do
+    echo "Waiting on Istio CRDs"; sleep 1
+  done
+
+  subheader "Installing Istio-${ISTIO_VERSION} YAML"
+  echo "Installing Istio from ${SERVING_VENDORED_ISTIO_CI_NO_MESH}"
+  kubectl apply -f ${SERVING_ISTIO_CI_NO_MESH}
+}
+
+function configure_dns() {
+  subheader "Configuring DNS"
+  echo "Configuring DNS from ${SERVING_DNS_SETUP}"
+  kubectl apply -f ${SERVING_DNS_SETUP}
+}
 
 function knative_setup() {
+  start_istio
+  wait_until_pods_running istio-system || fail_test "Istio not up"
+
   start_latest_knative_serving
+  configure_dns
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
   start_latest_knative_eventing
@@ -43,6 +69,15 @@ function knative_setup() {
 
 function test_setup() {
   dockerhub_setup || return 1
+
+  # Publish test images.
+  echo ">> Publishing test images from eventing-dockerhub"
+  $(dirname $0)/upload-test-images.sh "test/test_images" e2e || fail_test "Error uploading test images"
+  echo ">> Publishing test images from eventing"
+  # We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
+  # path has to be a GOPATH.
+  sed -i 's@knative.dev/eventing/test/test_images@github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
+  $(dirname $0)/upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
 }
 
 function test_teardown() {
@@ -61,7 +96,7 @@ function dockerhub_teardown() {
 }
 
 # Script entry point.
-initialize $@
+initialize $@ --skip-istio-addon
 
 go_test_e2e -timeout=5m ./test/e2e -tag e2e || fail_test
 

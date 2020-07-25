@@ -932,7 +932,6 @@ knative.dev/eventing/test/lib/recordevents
 knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/test_images
-knative.dev/eventing/test/test_images/event-sender
 knative.dev/eventing/test/test_images/recordevents
 # knative.dev/networking v0.0.0-20200724160858-a48770266a29
 knative.dev/networking/pkg/apis/config
@@ -1037,6 +1036,7 @@ knative.dev/serving/pkg/client/listers/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1
 knative.dev/serving/pkg/client/listers/serving/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1beta1
+knative.dev/serving/pkg/reconciler/route/resources/labels
 # knative.dev/test-infra v0.0.0-20200724213858-d5ec9cdc6b33
 ## explicit
 knative.dev/test-infra/scripts

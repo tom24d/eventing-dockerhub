@@ -24,10 +24,12 @@ func send() int {
 	flag.Parse()
 
 	if sink == "" {
+		log.Fatalln("sink is nil.")
 		return 1
 	}
 
 	if payload == "" {
+		log.Fatalln("payload is nil.")
 		return 1
 	}
 
