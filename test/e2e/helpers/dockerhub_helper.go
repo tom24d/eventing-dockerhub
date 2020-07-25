@@ -85,8 +85,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}
 }
 
-func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
-
+func GetReceiveAdapterServiceNameOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
 	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
 	ksvcName := ""
 
@@ -104,6 +103,12 @@ func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1al
 	if err != nil {
 		client.T.Fatalf("failed to get ReceiveAdapterServiceName: %v", err)
 	}
+	return ksvcName
+}
+
+func GetServiceAddressOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
+
+	ksvcName := GetReceiveAdapterServiceNameOrFail(client, source)
 
 	// TODO use lib if exists
 	return fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, source.Namespace)
