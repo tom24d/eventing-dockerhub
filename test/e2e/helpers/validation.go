@@ -2,12 +2,15 @@ package helpers
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/google/uuid"
+
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"knative.dev/eventing/test/lib"
 	"knative.dev/pkg/test"
-	"strconv"
 )
 
 func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
@@ -56,7 +59,7 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *v1.Pod, notify chan bool) {
 	err := test.WaitForPodState(client.Kube, func(pod *v1.Pod) (bool, error) {
 		if pod.Status.Phase == v1.PodFailed {
-			return true, fmt.Errorf("validation receiver pod failed with message %s", pod.Status.Message)
+			return true, fmt.Errorf("validation receiver pod failed: %v", pod)
 		} else if pod.Status.Phase != v1.PodSucceeded {
 			return false, nil
 		}
@@ -64,7 +67,7 @@ func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *
 	}, receiverPod.Name, receiverPod.Namespace)
 
 	if err != nil {
-		client.T.Fatalf("Failed waiting for pod for completeness %q: %v", receiverPod.Name, receiverPod)
+		client.T.Fatalf("Failed waiting for completeness of the pod: %v", err)
 	}
 	notify <- true
 }

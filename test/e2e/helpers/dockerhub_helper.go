@@ -36,6 +36,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 		fmt.Sprintf("--%s=%s", dhtestresources.ArgPayload, dhtestresources.MarshalPayload(data))}
 
 	retryBackoff := int32(1)
+	ttl := int32(30)
 
 	// create webhook sender
 	job := &batchv1.Job{
@@ -55,16 +56,24 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 					RestartPolicy: corev1.RestartPolicyNever,
 				},
 			},
-			BackoffLimit: &retryBackoff,
+			BackoffLimit:            &retryBackoff,
+			TTLSecondsAfterFinished: &ttl,
 		},
 	}
 	CreateJobOrFail(client, job)
 
 	err := WaitForJobState(client.Kube, func(job *batchv1.Job) (bool, error) {
-		if job.Status.CompletionTime != nil {
-			if job.Status.Failed != 0 {
-				return true, fmt.Errorf("job is failed")
+		if len(job.Status.Conditions) >= 1 {
+			if job.Status.Conditions[0].Type == batchv1.JobFailed {
+				// JobFailed. Get log and return them with error.
+				l, err := client.Kube.PodLogs(job.Name, SenderImageName, client.Namespace)
+				if err != nil {
+					// retry
+					return false, nil
+				}
+				return true, fmt.Errorf("job:%s is failed. Log: %v", job.Name, l)
 			} else {
+				// JobSuccess
 				return true, nil
 			}
 		}
@@ -72,7 +81,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}, job.Name, job.Namespace)
 
 	if err != nil {
-		client.T.Fatalf("Failed sending webhook %q: %v", job.Name, err)
+		client.T.Fatalf("Failed sending webhook: %v", err)
 	}
 }
 
