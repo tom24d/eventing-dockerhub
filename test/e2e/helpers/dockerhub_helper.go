@@ -157,8 +157,10 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	// wait for DockerHubSource to be URL allocated
 	client.WaitForAllTestResourcesReadyOrFail()
 
-	// set URL
-	allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", GetReceiveAdapterServiceNameOrFail(client, createdDHS), createdDHS.Namespace)
+	// set URL, visibility
+	ksvcName := GetReceiveAdapterServiceNameOrFail(client, createdDHS)
+	LabelClusterLocalVisibilityOrFail(client, ksvcName, createdDHS.Namespace)
+	allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, createdDHS.Namespace)
 
 	if !disableAutoCallback {
 		validationReceiverPod := CreateValidationReceiverOrFail(client)
