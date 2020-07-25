@@ -176,6 +176,9 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 		go WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod, notify)
 	}
 
+	// TODO ensure cluster local svc gets reconciled. remove this if possible.
+	time.Sleep(10 * time.Second)
+
 	// access test from cluster inside
 	t.Log("Send webhook to DockerHubSource")
 	MustSendWebhook(client, allocatedURL, payload)

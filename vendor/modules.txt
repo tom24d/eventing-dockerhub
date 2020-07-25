@@ -1036,6 +1036,7 @@ knative.dev/serving/pkg/client/listers/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1
 knative.dev/serving/pkg/client/listers/serving/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1beta1
+knative.dev/serving/pkg/reconciler/route/resources/labels
 # knative.dev/test-infra v0.0.0-20200724213858-d5ec9cdc6b33
 ## explicit
 knative.dev/test-infra/scripts

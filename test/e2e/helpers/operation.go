@@ -2,12 +2,10 @@ package helpers
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 
 	pkgTest "knative.dev/pkg/test"
@@ -15,7 +13,7 @@ import (
 
 	eventingtestlib "knative.dev/eventing/test/lib"
 
-	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
+	"knative.dev/serving/pkg/reconciler/route/resources/labels"
 
 	sourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
@@ -49,17 +47,15 @@ func DeleteKServiceOrFail(c *eventingtestlib.Client, name, namespace string) {
 }
 
 func LabelClusterLocalVisibilityOrFail(c *eventingtestlib.Client, name, namespace string) {
-	ksvc := servingv1.Service{}
-	ksvc.Labels = make(map[string]string)
-	ksvc.Labels["serving.knative.dev/visibility"] = "cluster-local"
-	patch, err := json.Marshal(ksvc)
+	ksvc, err := GetServiceClient(c).ServingV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		c.T.Fatalf("Failed to marshal knative service: %v", err)
+		c.T.Fatalf("Failed to GET knative service: %v", err)
 	}
+	labels.SetVisibility(&ksvc.ObjectMeta, true)
 
-	_, err = GetServiceClient(c).ServingV1().Services(namespace).Patch(name, types.MergePatchType, patch)
+	_, err = GetServiceClient(c).ServingV1().Services(namespace).Update(ksvc)
 	if err != nil {
-		c.T.Fatalf("Failed to PATCH knative service %q: %c", name, err)
+		c.T.Fatalf("Failed to UPDATE knative service %q: %c", name, err)
 	}
 }
 
