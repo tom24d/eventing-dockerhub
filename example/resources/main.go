@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -14,10 +13,10 @@ import (
 func display(event cloudevents.Event) {
 	data := &dockerhub.BuildPayload{}
 	if err := event.DataAs(data); err != nil {
-		fmt.Printf("Got Data Error: %s\n", err.Error())
+		log.Fatalf("Got Data Error: %s\n", err.Error())
 		return
 	}
-	fmt.Printf("Got Data: %+v\n", data)
+	log.Printf("Got Data: %+v\n", data)
 
 	if data.CallbackURL != "" {
 		message := "Event has been sent successfully to the sink."
@@ -30,9 +29,9 @@ func display(event cloudevents.Event) {
 
 		err := callbackData.EmitValidationCallback(data.CallbackURL)
 		if err != nil {
-			fmt.Printf("failed to send validation callback: %v", err)
+			log.Fatalf("failed to send validation callback: %v", err)
 		} else {
-			fmt.Printf("callback is sent from callback-display: %v", callbackData)
+			log.Printf("callback is sent from callback-display: %v", callbackData)
 		}
 	}
 }
