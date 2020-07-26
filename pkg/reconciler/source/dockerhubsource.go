@@ -110,21 +110,21 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			if err != nil {
 				return err
 			}
-			ksvc = ksvc.DeepCopy()
+			ksvcPatch := ksvc.DeepCopy()
 			// override env
-			ksvcPatch := v1.Service{}
-			ksvcPatch.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-			data, _ := json.Marshal(ksvcPatch)
-			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).
-				Patch(ksvc.Name, types.MergePatchType, data)
-			if err != nil {
-				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
-				return err
+			if len(ksvcPatch.Spec.Template.Spec.Containers) >= 1 {
+				ksvcPatch.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+				data, _ := json.Marshal(ksvcPatch)
+				ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Patch(ksvc.Name, types.MergePatchType, data)
+				if err != nil {
+					src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+					return err
+				}
+				controller.GetEventRecorder(ctx).
+					Eventf(src, corev1.EventTypeNormal,
+						"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
+				src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 			}
-			controller.GetEventRecorder(ctx).
-				Eventf(src, corev1.EventTypeNormal,
-					"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
-			src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 		}
 
 		if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
