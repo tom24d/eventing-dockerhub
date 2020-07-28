@@ -41,4 +41,7 @@ spec:
             value: ko://github.com/tom24d/eventing-dockerhub/cmd/receive_adapter
         securityContext:
           allowPrivilegeEscalation: false
+        ports:
+          - name: metrics
+            containerPort: 9090
       terminationGracePeriodSeconds: 10
