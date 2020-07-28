@@ -3,12 +3,12 @@ kind: Service
 metadata:
   labels:
     contrib.eventing.knative.dev/release: devel
-    control-plane: dockerhub-source-controller-manager
+    control-plane: dockerhub-source-controller
   name: dockerhub-source-controller-manager
   namespace: knative-sources
 spec:
   selector:
-    control-plane: dockerhub-source-controller-manager
+    control-plane: dockerhub-source-controller
   ports:
   - port: 443
     targetPort: 8080
