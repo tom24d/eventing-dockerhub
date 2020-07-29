@@ -110,12 +110,18 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			}
 			ksvc = ksvc.DeepCopy()
 			// override env
-			ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
-			if err != nil {
-				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
-				return err
+			if len(ksvc.Spec.Template.Spec.Containers) >= 1 {
+				ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+				err = pkgreconciler.RetryUpdateConflicts(func(i int) error {
+					ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+					return err
+				})
+				if err != nil {
+					src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+					return err
+				}
 			}
+
 			controller.GetEventRecorder(ctx).
 				Eventf(src, corev1.EventTypeNormal,
 					"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
