@@ -5,12 +5,12 @@ metadata:
   namespace: knative-sources
   labels:
     contrib.eventing.knative.dev/release: devel
-    control-plane: dockerhub-source-controller
+    app: dockerhub-source-controller
 spec:
   replicas: 1
   selector:
     matchLabels: &labels
-      control-plane: dockerhub-source-controller
+      app: dockerhub-source-controller
   template:
     metadata:
       labels: *labels
