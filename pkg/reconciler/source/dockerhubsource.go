@@ -13,7 +13,6 @@ import (
 	//knative.dev/serving imports
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingclientset "knative.dev/serving/pkg/client/clientset/versioned"
-	servinglisters "knative.dev/serving/pkg/client/listers/serving/v1"
 
 	//knative/eventing imports
 	eventingclient "knative.dev/eventing/pkg/client/clientset/versioned"
@@ -41,7 +40,6 @@ type Reconciler struct {
 	kubeClientSet kubernetes.Interface
 
 	servingClientSet servingclientset.Interface
-	servingLister    servinglisters.ServiceLister
 
 	eventingClientSet eventingclient.Interface
 
