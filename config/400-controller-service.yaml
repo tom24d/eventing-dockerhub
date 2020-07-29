@@ -4,7 +4,7 @@ metadata:
   labels:
     contrib.eventing.knative.dev/release: devel
     control-plane: dockerhub-source-controller
-  name: dockerhub-source-controller-manager
+  name: ddockerhub-source-controller
   namespace: knative-sources
 spec:
   selector:
