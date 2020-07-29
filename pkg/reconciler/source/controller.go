@@ -47,6 +47,7 @@ func NewController(
 
 	r := &Reconciler{
 		kubeClientSet:       kubeclient.Get(ctx),
+		servingLister:       ksvcInformer.Lister(),
 		servingClientSet:    serviceclient.Get(ctx),
 		eventingClientSet:   eventingclient.Get(ctx),
 		receiveAdapterImage: raImage,
