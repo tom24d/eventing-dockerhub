@@ -8,7 +8,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
 	//knative.dev/serving imports
@@ -103,19 +102,26 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 
 		// if user modifies DisableAutoCallback field
 		if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
-			// Fetch ksvc in case ReconcileSinkBinding might update ksvc above.
-			ksvc, err = r.getOwnedService(ctx, src)
-			if err != nil {
-				return err
+			if len(ksvc.Spec.Template.Spec.Containers) >= 1 {
+				err = pkgreconciler.RetryUpdateConflicts(func(_ int) error {
+					// Fetch ksvc in case ReconcileSinkBinding might update ksvc above.
+					ksvc, err = r.getOwnedService(ctx, src)
+					if err != nil {
+						return err
+					}
+					ksvc = ksvc.DeepCopy()
+					// override env
+					ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
+
+					ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+					return err
+				})
+				if err != nil {
+					src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+					return err
+				}
 			}
-			ksvc = ksvc.DeepCopy()
-			// override env
-			ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
-			if err != nil {
-				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
-				return err
-			}
+
 			controller.GetEventRecorder(ctx).
 				Eventf(src, corev1.EventTypeNormal,
 					"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
@@ -131,13 +137,13 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 }
 
 func (r *Reconciler) getOwnedService(_ context.Context, src *v1alpha1.DockerHubSource) (*v1.Service, error) {
-	serviceList, err := r.servingLister.Services(src.Namespace).List(labels.Everything())
+	serviceList, err := r.servingClientSet.ServingV1().Services(src.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	for _, ksvc := range serviceList {
-		if metav1.IsControlledBy(ksvc, src) {
-			return ksvc, nil
+	for i := range serviceList.Items {
+		if metav1.IsControlledBy(&serviceList.Items[i], src) {
+			return &serviceList.Items[i], nil
 		}
 	}
 	return nil, apierrors.NewNotFound(v1.Resource("services"), "")
