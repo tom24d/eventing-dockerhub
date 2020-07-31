@@ -25,4 +25,4 @@ replace k8s.io/client-go => k8s.io/client-go v0.17.6
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.17.6
 
-replace gopkg.in/go-playground/webhooks.v5 => ./pkg/adapter/webhooks
+replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks

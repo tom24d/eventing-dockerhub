@@ -1,3 +1,3 @@
-module github.com/tom24d/eventing-dockerhub/pkg/adapter/webhooks
+module gopkg.in/go-playground/webhooks
 
 go 1.14
