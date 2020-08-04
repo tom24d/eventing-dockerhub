@@ -5,8 +5,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  repository_dispatch:
-    types: [unit-test-command, retest-command]
 
 jobs:
 
@@ -25,7 +23,4 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Unit test for v1alpha1
-      run: go test ./pkg/apis/sources/v1alpha1
-
-    - name: Unit test for adapter
-      run: go test -race ./pkg/adapter/...
+      run: ./test/presubmit-tests.sh --unit-tests

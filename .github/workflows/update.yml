@@ -1,0 +1,69 @@
+name: Update Deps
+
+on:
+  schedule:
+    - cron: '0 0 * * 6'
+
+jobs:
+  update-deps:
+    name: Update Dependencies
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+
+    env:
+      GOPATH: ${{ github.workspace }}
+      GO111MODULE: off
+
+    steps:
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+        id: go
+
+      - name: Install Dependencies
+        run: |
+          go get github.com/google/go-licenses
+
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          path: ./src/github.com/tom24d/eventing-dockerhub
+
+      - name: Upgrade
+        shell: bash
+        run: |
+          pushd ./src/github.com/tom24d/eventing-dockerhub
+          ./hack/update-deps.sh --upgrade
+          popd
+
+      - name: Codegen
+        shell: bash
+        run: |
+          pushd ./src/github.com/tom24d/eventing-dockerhub
+          rm -rf ./pkg/client
+          ./hack/update-codegen.sh
+          popd
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          path: ./src/github.com/tom24d/eventing-dockerhub
+          token: ${{ secrets.UPDATE_BOT_TOKEN }}
+          assignees: tom24d
+          labels: dependencies
+          commit-message: 'ran ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh'
+          title: '[scheduled] Auto Update Dependencies'
+          body: |
+            This is scheduled PR by GitHub Action.
+
+            Produced via,
+            ```
+            ./hack/update-deps.sh --upgrade
+            rm -rf ./pkg/client
+            ./hack/update-codegen.sh
+            ```
