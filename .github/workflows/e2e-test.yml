@@ -5,8 +5,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  repository_dispatch:
-    types: [integration-test-command, retest-command]
 
 jobs:
   e2e:
