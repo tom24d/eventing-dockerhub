@@ -9,13 +9,17 @@ on:
 jobs:
   build-ko:
     name: Build Test with ko
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
 
-      - name: Set up Go 1.14
+      - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v2
         with:
-          go-version: 1.14
+          go-version: ${{ matrix.go-version }}
         id: go
 
       - name: Get google/ko
@@ -39,31 +43,48 @@ jobs:
 
   build-presubmit:
     name: Presubmit Build Test
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+
+    env:
+      GOPATH: ${{ github.workspace }}
+      GO111MODULE: off
+      KO_DOCKER_REPO: ${{ github.repository_owner }}
+
+
     steps:
 
-      - name: Set up Go 1.14
+      - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v2
         with:
-          go-version: 1.14
+          go-version: ${{ matrix.go-version }}
         id: go
 
       - name: Check out test-infra
         uses: actions/checkout@v2
         with:
           repository: knative/test-infra
-        env:
-          GOPATH: /home/runner/work/
+          fetch-depth: 1
+          path: ./src/knative.dev/test-infra
 
       - name: Install kntest
-        run: go install ./kntest/cmd/kntest
-        env:
-          GOPATH: /home/runner/work/
+        run: |
+          pushd ./src/knative.dev/test-infra
+          go install ./kntest/cmd/kntest
+          popd
 
-      - name: Check out code
+      - name: Check out code onto GOPATH
         uses: actions/checkout@v2
-        env:
-          GOPATH: /home/runner/work/
+        with:
+          fetch-depth: 1
+          path: ./src/github.com/tom24d/eventing-dockerhub
 
       - name: Run presubmit-test.sh
-        run: export PATH=$PATH:/home/runner/work/bin && ./test/presubmit-tests.sh --build-tests
+        run: |
+          pushd ./src/github.com/tom24d/eventing-dockerhub
+          ./test/presubmit-tests.sh --build-tests
+          popd
+

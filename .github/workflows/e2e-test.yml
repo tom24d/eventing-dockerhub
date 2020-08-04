@@ -9,24 +9,31 @@ on:
 jobs:
   e2e:
     name: Integration Test
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+
+    env:
+      GOPATH: ${{ github.workspace }}
+      GO111MODULE: off
+      KO_DOCKER_REPO: ${{ github.repository_owner }}
 
     steps:
-      - name: Set up Go 1.14
+      - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v2
         with:
-          go-version: 1.14
+          go-version: ${{ matrix.go-version }}
         id: go
 
       - name: Get google/ko
         run: GO111MODULE=on go get github.com/google/ko/cmd/ko
-        env:
-          GOPATH: /home/runner/work/
 
       - name: Create KinD Cluster
         run: |
           GO111MODULE="on" go get sigs.k8s.io/kind@v0.8.1
-          export PATH=$PATH:/home/runner/work/bin
+
           cat <<EOF | kind create cluster --config=-
           kind: Cluster
           apiVersion: kind.x-k8s.io/v1alpha4
@@ -41,25 +48,21 @@ jobs:
               hostPort: 443
               protocol: TCP
           EOF
-        env:
-          GOPATH: /home/runner/work/
 
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          path: ./src/github.com/tom24d/eventing-dockerhub
 
       - name: Install Knative Serving & Eventing
         run: |
-          export PATH=$PATH:/home/runner/work/bin
-          echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
+          pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/KinD-setup.sh
-        env:
-          KO_DOCKER_REPO: ${{ github.repository_owner }}
-          GOPATH: /home/runner/work/
+          popd
 
       - name: Run integration test
         run: |
-          export PATH=$PATH:/home/runner/work/bin
           echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
+          pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/e2e-tests.sh --run-tests --skip-knative-setup --skip-teardowns
-        env:
-          KO_DOCKER_REPO: ${{ github.repository_owner }}
-          GOPATH: /home/runner/work/
+          popd
