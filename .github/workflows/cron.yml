@@ -6,35 +6,64 @@ on:
 
 jobs:
   update-deps:
-    name: Auto Update Dependencies
-    runs-on: ubuntu-latest
+    name: Update Dependencies
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+
+    env:
+      GOPATH: ${{ github.workspace }}
+      GO111MODULE: off
+
     steps:
-      - name: Install hub cli
-        uses: geertvdc/setup-hub@v1.0.0
-      - name: Set up Go 1.14
+      - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v2
         with:
-          go-version: 1.14
+          go-version: ${{ matrix.go-version }}
         id: go
 
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-
-      - name: Run update sh
+      - name: Install Dependencies
         run: |
-          git config user.email "tom.24d.en@gmail.com"
-          git config user.name "Tomoya Nishide bot"
-          git checkout -b update-deps
-          export PATH=$PATH:/home/runner/work/bin
-          ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh
-          git add .
-          git commit -m "Auto Update Dependencies"
-        env:
-          GOPATH: /home/runner/work/
+          go get github.com/google/go-licenses
+
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          path: ./src/github.com/tom24d/eventing-dockerhub
+
+      - name: Upgrade
+        shell: bash
+        run: |
+          pushd ./src/github.com/tom24d/eventing-dockerhub
+          ./hack/update-deps.sh --upgrade
+          popd
+
+      - name: Codegen
+        shell: bash
+        run: |
+          pushd ./src/github.com/tom24d/eventing-dockerhub
+          rm -rf ./pkg/client
+          ./hack/update-codegen.sh
+          popd
 
       - name: Create Pull Request
-        run: |
-          hub push origin update-deps
-          hub pull-request -b master -a tom24d -l dependencies --file ./.github/template/update-deps.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.UPDATE_BOT_TOKEN }}
+        uses: peter-evans/create-pull-request@v3
+        with:
+          path: ./src/github.com/tom24d/eventing-dockerhub
+          token: ${{ secrets.UPDATE_BOT_TOKEN }}
+          assignees: tom24d
+          labels: dependencies
+          commit-message: 'ran ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh'
+          title: '[scheduled] Auto Update Dependencies'
+          body: |
+            This is scheduled PR by GitHub Action.
+
+            Produced via,
+            ```
+            ./hack/update-deps.sh --upgrade
+            rm -rf ./pkg/client
+            ./hack/update-codegen.sh
+            ```
