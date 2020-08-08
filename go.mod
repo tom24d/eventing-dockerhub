@@ -17,6 +17,8 @@ require (
 	knative.dev/test-infra v0.0.0-20200731141600-8bb2015c65e2
 )
 
+replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
+
 replace k8s.io/api => k8s.io/api v0.17.6
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
@@ -24,8 +26,6 @@ replace k8s.io/apimachinery => k8s.io/apimachinery v0.17.6
 replace k8s.io/client-go => k8s.io/client-go v0.17.6
 
 replace k8s.io/code-generator => k8s.io/code-generator v0.17.6
-
-replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
 
 replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.6
 
