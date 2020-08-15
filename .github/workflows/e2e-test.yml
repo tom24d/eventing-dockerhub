@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         go-version: [1.14.x]
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+        knative-version: [latest-release, nightly]
+    runs-on: ubuntu-latest
 
     env:
       GOPATH: ${{ github.workspace }}
@@ -29,40 +29,25 @@ jobs:
       - name: Get google/ko
         run: GO111MODULE=on go get github.com/google/ko/cmd/ko
 
-      - name: Create KinD Cluster
-        run: |
-          GO111MODULE=on go get sigs.k8s.io/kind@v0.8.1
-
-          cat <<EOF | kind create cluster --config=-
-          kind: Cluster
-          apiVersion: kind.x-k8s.io/v1alpha4
-          nodes:
-          - role: control-plane
-            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
-            extraPortMappings:
-            - containerPort: 31080
-              hostPort: 80
-              protocol: TCP
-            - containerPort: 31443
-              hostPort: 443
-              protocol: TCP
-          - role: control-plane
-            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
-          - role: worker
-            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
-          - role: worker
-            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
-          EOF
-
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
           path: ./src/github.com/tom24d/eventing-dockerhub
 
-      - name: Install Knative Serving & Eventing
+      - name: Create KinD Cluster
+        env:
+          KIND_VERSION: v0.8.1
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/KinD-setup.sh
+          ./test/kind/bootstrap.sh
+          popd
+
+      - name: Install Knative Serving & Eventing
+        env:
+          KNATIVE_VERSION: ${{ matrix.knative-version }}
+        run: |
+          pushd ./src/github.com/tom24d/eventing-dockerhub
+          ./test/kind/knative-install.sh
           popd
 
       - name: Log in to DockerHub
@@ -71,5 +56,5 @@ jobs:
       - name: Run integration test
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/e2e-tests.sh --run-tests --skip-knative-setup --skip-teardowns
+          ./test/kind/run-tests.sh
           popd

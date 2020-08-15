@@ -16,18 +16,15 @@
 
 export GO111MODULE=on
 
-# This the namespace used to install and test DockerHubSource.
-export TEST_SOURCE_NAMESPACE
-TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
-  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+TMP_DIR=$(git rev-parse --show-toplevel)/tmp
+readonly TMP_DIR
 
 
-source "$(dirname $0)/e2e-common.sh"
+source "$(dirname $0)/../e2e-common.sh"
 
 
-# Script entry point.
-initialize $@ --skip-istio-addon
+initialize $@ --skip-istio-addon --run-tests --skip-knative-setup --skip-teardowns
 
-go_test_e2e -timeout=5m ./test/e2e -tag e2e || fail_test
+go_test_e2e -timeout=6m ./test/e2e -tag e2e || fail_test
 
 success
