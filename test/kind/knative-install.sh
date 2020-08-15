@@ -1,17 +1,34 @@
 #!/usr/bin/env bash
 
-source $(dirname $0)/../../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
+REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
+source ${REPO_ROOT_DIR}/vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
-SERVING_VERSION=0.16.0
-EVENTING_VERSION=0.16.1
+if [[ ! -v SERVING_VERSION ]]; then
+  SERVING_VERSION="v0.16.0"
+fi
+
+if [[ ! -v EVENTING_VERSION ]]; then
+  EVENTING_VERSION="v0.16.1"
+fi
+
+function install_knative() {
+  local repo_name="$1"
+  local yaml_name="$2"
+  local version="$3"
+  if [[ ${version} == "nightly" ]]; then
+  kubectl apply --filename "https://storage.googleapis.com/knative-nightly/${repo_name}/latest/${yaml_name}.yaml"
+  return
+  fi
+  kubectl apply --filename "https://github.com/knative/${repo_name}/releases/download/${version}/${yaml_name}.yaml"
+}
 
 
 header "Install Serving"
-kubectl apply --filename https://github.com/knative/serving/releases/download/v${SERVING_VERSION}/serving-crds.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v${SERVING_VERSION}/serving-core.yaml
+install_knative "serving" "serving-crds" ${SERVING_VERSION}
+install_knative "serving" "serving-core" ${SERVING_VERSION}
 
 header "Install Kourier"
-kubectl apply --filename https://github.com/knative/net-kourier/releases/download/v${SERVING_VERSION}/kourier.yaml
+install_knative "net-kourier" "kourier" ${SERVING_VERSION}
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
@@ -46,6 +63,6 @@ wait_until_pods_running kourier-system || fail_test "Kourier not up"
 wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
 header "Install Eventing"
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v${EVENTING_VERSION}/eventing-crds.yaml
-kubectl apply --filename https://github.com/knative/eventing/releases/download/v${EVENTING_VERSION}/eventing-core.yaml
+install_knative "eventing" "eventing-crds" ${EVENTING_VERSION}
+install_knative "eventing" "eventing-core" ${EVENTING_VERSION}
 wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"

@@ -13,6 +13,8 @@ jobs:
       matrix:
         go-version: [1.14.x]
         platform: [ubuntu-latest]
+        serving-version: [v0.16.0, nightly]
+        eventing-version: [v0.16.1, nightly]
     runs-on: ${{ matrix.platform }}
 
     env:
@@ -41,6 +43,9 @@ jobs:
           popd
 
       - name: Install Knative Serving & Eventing
+        env:
+          SERVING_VERSION: ${{ matrix.serving-version }}
+          EVENTING_VERSION: ${{ matrix.eventing-version }}
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/kind/knative-install.sh
