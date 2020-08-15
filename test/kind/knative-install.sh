@@ -3,13 +3,14 @@
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 source ${REPO_ROOT_DIR}/vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
-if [[ ! -v SERVING_VERSION ]]; then
+if [[ ${KNATIVE_VERSION} == "latest-release" ]]; then
   SERVING_VERSION="v0.16.0"
+  EVENTING_VERSION="v0.16.1"
+else
+  SERVING_VERSION="nightly"
+  EVENTING_VERSION="nightly"
 fi
 
-if [[ ! -v EVENTING_VERSION ]]; then
-  EVENTING_VERSION="v0.16.1"
-fi
 
 function install_knative() {
   local repo_name="$1"
@@ -23,7 +24,7 @@ function install_knative() {
 }
 
 
-header "Install Serving"
+header "Install Serving ${SERVING_VERSION}"
 install_knative "serving" "serving-crds" ${SERVING_VERSION}
 install_knative "serving" "serving-core" ${SERVING_VERSION}
 
@@ -62,7 +63,7 @@ kubectl --namespace kourier-system get service kourier
 wait_until_pods_running kourier-system || fail_test "Kourier not up"
 wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
-header "Install Eventing"
+header "Install Eventing ${EVENTING_VERSION"
 install_knative "eventing" "eventing-crds" ${EVENTING_VERSION}
 install_knative "eventing" "eventing-core" ${EVENTING_VERSION}
 wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"

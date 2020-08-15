@@ -12,10 +12,8 @@ jobs:
     strategy:
       matrix:
         go-version: [1.14.x]
-        platform: [ubuntu-latest]
-        serving-version: [v0.16.0, nightly]
-        eventing-version: [v0.16.1, nightly]
-    runs-on: ${{ matrix.platform }}
+        knative-version: [latest-release, nightly]
+    runs-on: ubuntu-latest
 
     env:
       GOPATH: ${{ github.workspace }}
@@ -37,6 +35,8 @@ jobs:
           path: ./src/github.com/tom24d/eventing-dockerhub
 
       - name: Create KinD Cluster
+        env:
+          KIND_VERSION: v0.8.1
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/kind/bootstrap.sh
@@ -44,8 +44,7 @@ jobs:
 
       - name: Install Knative Serving & Eventing
         env:
-          SERVING_VERSION: ${{ matrix.serving-version }}
-          EVENTING_VERSION: ${{ matrix.eventing-version }}
+          KNATIVE_VERSION: ${{ matrix.knative-version }}
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/kind/knative-install.sh
@@ -57,5 +56,5 @@ jobs:
       - name: Run integration test
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/e2e-tests.sh --run-tests --skip-knative-setup --skip-teardowns
+          ./test/kind/run-tests.sh
           popd
