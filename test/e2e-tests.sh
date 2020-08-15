@@ -45,13 +45,11 @@ readonly REPLICAS=3
 
 # This the namespace used to install and test DockerHubSource.
 export TEST_SOURCE_NAMESPACE
-#TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
-#  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
-TEST_SOURCE_NAMESPACE="knative-sources"
+TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
+  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
 
 
-#TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
-TMP_DIR=$(dirname $0)/../tmp
+TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
 readonly TMP_DIR
 readonly KNATIVE_SOURCE_DEFAULT_NAMESPACE="knative-sources"
 
