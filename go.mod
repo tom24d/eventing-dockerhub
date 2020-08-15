@@ -8,13 +8,13 @@ require (
 	github.com/google/uuid v1.1.1
 	go.uber.org/zap v1.15.0
 	gopkg.in/go-playground/webhooks.v5 v5.15.0
-	k8s.io/api v0.18.1
-	k8s.io/apimachinery v0.18.6
+	k8s.io/api v0.18.7-rc.0
+	k8s.io/apimachinery v0.18.7-rc.0
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	knative.dev/eventing v0.16.1-0.20200731020700-9002ad5d9e49
-	knative.dev/pkg v0.0.0-20200731005101-694087017879
-	knative.dev/serving v0.16.1-0.20200731230600-b722983c543b
-	knative.dev/test-infra v0.0.0-20200731141600-8bb2015c65e2
+	knative.dev/eventing v0.16.1-0.20200814220206-e8307cbbcecb
+	knative.dev/pkg v0.0.0-20200812224206-44c860147a87
+	knative.dev/serving v0.16.1-0.20200814204806-884f4ed32039
+	knative.dev/test-infra v0.0.0-20200813220834-388e55a496cf
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
