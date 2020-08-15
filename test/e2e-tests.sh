@@ -47,7 +47,7 @@ readonly REPLICAS=3
 export TEST_SOURCE_NAMESPACE
 #TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
 #  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
-TEST_SOURCE_NAMESPACE="knative-sources-test"
+TEST_SOURCE_NAMESPACE="knative-sources"
 
 
 #TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
