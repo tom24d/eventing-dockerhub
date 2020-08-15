@@ -14,12 +14,10 @@ import (
 	"knative.dev/eventing/test/lib/recordevents"
 	"knative.dev/eventing/test/lib/resources"
 
-	"knative.dev/pkg/apis/duck/v1"
-	pkgTest "knative.dev/pkg/test"
-
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 	dhtestresources "github.com/tom24d/eventing-dockerhub/test/resources"
+	"knative.dev/pkg/apis/duck/v1"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
@@ -32,8 +30,16 @@ const (
 )
 
 func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *dockerhub.BuildPayload) {
-	args := []string{fmt.Sprintf("--%s=%s", dhtestresources.ArgSink, targetURL),
-		fmt.Sprintf("--%s=%s", dhtestresources.ArgPayload, dhtestresources.MarshalPayload(data))}
+	// curlimages/curl:7.71.1
+	const curlImage = "curlimages/curl@sha256:33c7803614e0ce13f27e1772a593db71eac626173a08e85c05a564afc29538ab"
+
+	args := []string{
+		"-XPOST",
+		fmt.Sprintf("-H \"%s\"", "Content-Type: application/json"),
+		"-v",
+		fmt.Sprintf("-d %s", dhtestresources.MarshalPayload(data)),
+		targetURL,
+	}
 
 	retryBackoff := int32(1)
 	ttl := int32(30)
@@ -49,7 +55,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{{
 						Name:            SenderImageName,
-						Image:           pkgTest.ImagePath(SenderImageName),
+						Image:           curlImage,
 						ImagePullPolicy: corev1.PullAlways,
 						Args:            args,
 					}},
