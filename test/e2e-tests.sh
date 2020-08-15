@@ -17,6 +17,12 @@
 export GO111MODULE=on
 source $(dirname $0)/../vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
+# Use GNU tools on macOS. Requires the 'grep' and 'gnu-sed' Homebrew formulae.
+if [ "$(uname)" == "Darwin" ]; then
+  sed=gsed
+  grep=ggrep
+fi
+
 readonly DOCKERHUB_INSTALLATION_CONFIG="./config/"
 
 # Vendored eventing test image.
@@ -33,6 +39,21 @@ readonly SERVING_ISTIO_CI_NO_MESH="https://raw.githubusercontent.com/knative/ser
 
 # Configure DNS
 readonly SERVING_DNS_SETUP="$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
+
+# The number of pods for leader-election test
+readonly REPLICAS=3
+
+# This the namespace used to install and test DockerHubSource.
+export TEST_SOURCE_NAMESPACE
+#TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
+#  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+TEST_SOURCE_NAMESPACE="knative-sources"
+
+
+#TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+TMP_DIR=$(dirname $0)/../tmp
+readonly TMP_DIR
+readonly KNATIVE_SOURCE_DEFAULT_NAMESPACE="knative-sources"
 
 function start_istio() {
   header "Starting Istio-${ISTIO_VERSION}"
@@ -55,6 +76,24 @@ function configure_dns() {
   kubectl apply -f ${SERVING_DNS_SETUP}
 }
 
+function scale_control_plane() {
+  for deployment in "$@"; do
+    # Make sure all pods run in leader-elected mode.
+    kubectl -n "${TEST_SOURCE_NAMESPACE}" scale deployment "$deployment" --replicas=0 || failed=1
+    # Give it time to kill the pods.
+    sleep 5
+    # Scale up components for HA tests
+    kubectl -n "${TEST_SOURCE_NAMESPACE}" scale deployment "$deployment" --replicas="${REPLICAS}" || failed=1
+  done
+}
+
+function unleash_duck() {
+  echo "unleash the duck"
+  cat test/config/chaosduck.yaml | \
+    sed "s/namespace: ${KNATIVE_SOURCE_DEFAULT_NAMESPACE}/namespace: ${TEST_SOURCE_NAMESPACE}/g" | \
+    ko apply --strict -f - || return $?
+}
+
 function knative_setup() {
   start_istio
   wait_until_pods_running istio-system || fail_test "Istio not up"
@@ -68,7 +107,12 @@ function knative_setup() {
 }
 
 function test_setup() {
+  echo ">> Creating ${TEST_SOURCE_NAMESPACE} namespace if it does not exist"
+  kubectl get ns ${TEST_SOURCE_NAMESPACE} || kubectl create namespace ${TEST_SOURCE_NAMESPACE}
+
   dockerhub_setup || return 1
+
+  unleash_duck || fail_test "Could not unleash the chaos duck"
 
   # Publish test images.
   echo ">> Publishing test images from eventing-dockerhub"
@@ -86,13 +130,22 @@ function test_teardown() {
 
 function dockerhub_setup() {
   header "Installing DockerHubSource"
-  ko apply -f "${DOCKERHUB_INSTALLATION_CONFIG}"
-  wait_until_pods_running knative-sources || fail_test "DockerHubSource controller not up"
+
+  local TMP_SOURCE_CONTROLLER_CONFIG_DIR=${TMP_DIR}/${DOCKERHUB_INSTALLATION_CONFIG}
+  mkdir -p ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
+  cp -r ${DOCKERHUB_INSTALLATION_CONFIG}/* ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
+  find ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} -type f -name "*.yaml" -exec sed -i "s/namespace: ${KNATIVE_SOURCE_DEFAULT_NAMESPACE}/namespace: ${TEST_SOURCE_NAMESPACE}/g" {} +
+  ko apply --strict -f ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} || return 1
+
+  scale_control_plane dockerhub-source-controller dockerhub-source-webhook
+
+  wait_until_pods_running ${TEST_SOURCE_NAMESPACE} || fail_test "DockerHubSource controller not up"
 }
 
 function dockerhub_teardown() {
   header "Uninstalling DockerHubSource"
-  kubectl delete -f "${DOCKERHUB_INSTALLATION_CONFIG}"
+  local TMP_SOURCE_CONTROLLER_CONFIG_DIR=${TMP_DIR}/${DOCKERHUB_INSTALLATION_CONFIG}
+  ko delete --ignore-not-found=true --now --timeout 60s -f ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
 }
 
 # Script entry point.

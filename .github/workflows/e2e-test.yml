@@ -17,7 +17,6 @@ jobs:
 
     env:
       GOPATH: ${{ github.workspace }}
-      GO111MODULE: off
       KO_DOCKER_REPO: ${{ github.repository_owner }}
 
     steps:
@@ -32,7 +31,7 @@ jobs:
 
       - name: Create KinD Cluster
         run: |
-          GO111MODULE="on" go get sigs.k8s.io/kind@v0.8.1
+          GO111MODULE=on go get sigs.k8s.io/kind@v0.8.1
 
           cat <<EOF | kind create cluster --config=-
           kind: Cluster
@@ -47,6 +46,12 @@ jobs:
             - containerPort: 31443
               hostPort: 443
               protocol: TCP
+          - role: control-plane
+            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
+          - role: worker
+            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
+          - role: worker
+            image: kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765
           EOF
 
       - uses: actions/checkout@v2
@@ -60,9 +65,11 @@ jobs:
           ./test/KinD-setup.sh
           popd
 
+      - name: Log in to DockerHub
+        run: echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
+
       - name: Run integration test
         run: |
-          echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/e2e-tests.sh --run-tests --skip-knative-setup --skip-teardowns
           popd

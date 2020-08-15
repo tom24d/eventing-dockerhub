@@ -28,10 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/storage/names"
 
-	"knative.dev/eventing/pkg/utils"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/helpers"
 	"knative.dev/pkg/test/prow"
+
+	"knative.dev/eventing/pkg/utils"
 
 	// Mysteriously required to support GCP auth (required by k8s libs).
 	// Apparently just importing it is enough. @_@ side effects @_@.
@@ -88,20 +89,20 @@ func (tr *ComponentsTestRunner) RunTestsWithComponentOptions(
 		options ...SetupClientOption),
 ) {
 	t.Parallel()
-	for _, component := range tr.ComponentsToTest {
-		// If in strict mode and a component is not present in the map, then
-		// don't run the tests
+	for _, c := range tr.ComponentsToTest {
+		component := c
 		features, present := tr.ComponentFeatureMap[component]
 		subTestName := fmt.Sprintf("%s-%s", component.Kind, component.APIVersion)
-		if !strict || (present && contains(features, feature)) {
-			t.Run(subTestName, func(st *testing.T) {
+		t.Run(subTestName, func(st *testing.T) {
+			// If in strict mode and a component is not present in the map, then
+			// don't run the tests
+			if !strict || (present && contains(features, feature)) {
 				testFunc(st, component, tr.componentOptions[component]...)
-			})
-		} else {
-			t.Skipf("Skipping %s for component %s since it did not "+
-				"match the feature %s and we are in strict mode", t.Name(),
-				subTestName, feature)
-		}
+			} else {
+				st.Skipf("Skipping component %s since it did not "+
+					"match the feature %s and we are in strict mode", subTestName, feature)
+			}
+		})
 	}
 }
 
@@ -179,6 +180,10 @@ func makeK8sNamespace(baseFuncName string) string {
 
 // TearDown will delete created names using clients.
 func TearDown(client *Client) {
+	if err := client.runCleanup(); err != nil {
+		client.T.Logf("Cleanup error: %+v", err)
+	}
+
 	// Dump the events in the namespace
 	el, err := client.Kube.Kube.CoreV1().Events(client.Namespace).List(metav1.ListOptions{})
 	if err != nil {
