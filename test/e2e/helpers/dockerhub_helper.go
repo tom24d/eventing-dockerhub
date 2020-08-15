@@ -34,10 +34,11 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	const curlImage = "curlimages/curl@sha256:33c7803614e0ce13f27e1772a593db71eac626173a08e85c05a564afc29538ab"
 
 	args := []string{
-		fmt.Sprintf("-X POST -H 'Content-Type: application/json' -v -d %s %s",
-			dhtestresources.MarshalPayload(data),
-			targetURL,
-		),
+		"-XPOST",
+		fmt.Sprintf("-H \"%s\"", "Content-Type: application/json"),
+		"-v",
+		fmt.Sprintf("-d %s", dhtestresources.MarshalPayload(data)),
+		targetURL,
 	}
 
 	retryBackoff := int32(1)
