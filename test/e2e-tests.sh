@@ -45,11 +45,13 @@ readonly REPLICAS=3
 
 # This the namespace used to install and test DockerHubSource.
 export TEST_SOURCE_NAMESPACE
-TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
-  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+#TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
+#  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+TEST_SOURCE_NAMESPACE="knative-sources-test"
 
 
-TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+#TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+TMP_DIR=$(dirname $0)/../tmp
 readonly TMP_DIR
 readonly KNATIVE_SOURCE_DEFAULT_NAMESPACE="knative-sources"
 
@@ -132,7 +134,7 @@ function dockerhub_setup() {
   local TMP_SOURCE_CONTROLLER_CONFIG_DIR=${TMP_DIR}/${DOCKERHUB_INSTALLATION_CONFIG}
   mkdir -p ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
   cp -r ${DOCKERHUB_INSTALLATION_CONFIG}/* ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
-  find ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} -type f -name "*.yaml" -exec sed -i '' "s/namespace: ${KNATIVE_SOURCE_DEFAULT_NAMESPACE}/namespace: ${TEST_SOURCE_NAMESPACE}/g" {} +
+  find ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} -type f -name "*.yaml" -exec sed -i "s/namespace: ${KNATIVE_SOURCE_DEFAULT_NAMESPACE}/namespace: ${TEST_SOURCE_NAMESPACE}/g" {} +
   ko apply --strict -f ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} || return 1
 
   scale_control_plane dockerhub-source-controller dockerhub-source-webhook
