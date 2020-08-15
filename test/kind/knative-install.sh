@@ -63,7 +63,7 @@ kubectl --namespace kourier-system get service kourier
 wait_until_pods_running kourier-system || fail_test "Kourier not up"
 wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
-header "Install Eventing ${EVENTING_VERSION"
+header "Install Eventing ${EVENTING_VERSION}"
 install_knative "eventing" "eventing-crds" ${EVENTING_VERSION}
 install_knative "eventing" "eventing-core" ${EVENTING_VERSION}
 wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"
