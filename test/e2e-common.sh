@@ -143,6 +143,10 @@ function test_setup() {
 
 function test_teardown() {
   dockerhub_teardown
+
+  if [[ ${TEST_SOURCE_NAMESPACE} != ${KNATIVE_SOURCE_DEFAULT_NAMESPACE} ]]; then
+    kubectl delete ns ${TEST_SOURCE_NAMESPACE}
+  fi
 }
 
 function dockerhub_setup() {
