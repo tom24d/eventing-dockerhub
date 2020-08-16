@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -16,7 +17,6 @@ import (
 
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
-	dhtestresources "github.com/tom24d/eventing-dockerhub/test/resources"
 	"knative.dev/pkg/apis/duck/v1"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
@@ -33,11 +33,16 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	// curlimages/curl:7.71.1
 	const curlImage = "curlimages/curl@sha256:33c7803614e0ce13f27e1772a593db71eac626173a08e85c05a564afc29538ab"
 
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		client.T.Fatalf("failed to marshal payload: %v", err)
+	}
+
 	args := []string{
 		"-XPOST",
 		fmt.Sprintf("-H \"%s\"", "Content-Type: application/json"),
 		"-v",
-		fmt.Sprintf("-d %s", dhtestresources.MarshalPayload(data)),
+		fmt.Sprintf("-d %s", jsonData),
 		targetURL,
 	}
 
@@ -68,7 +73,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}
 	CreateJobOrFail(client, job)
 
-	err := WaitForJobState(client.Kube, func(job *batchv1.Job) (bool, error) {
+	err = WaitForJobState(client.Kube, func(job *batchv1.Job) (bool, error) {
 		if len(job.Status.Conditions) >= 1 {
 			if job.Status.Conditions[0].Type == batchv1.JobFailed {
 				// JobFailed. Get log and return them with error.
