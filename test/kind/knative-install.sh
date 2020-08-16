@@ -28,7 +28,7 @@ header "Install Serving ${SERVING_VERSION}"
 install_knative "serving" "serving-crds" ${SERVING_VERSION}
 install_knative "serving" "serving-core" ${SERVING_VERSION}
 
-header "Install Kourier"
+header "Install Kourier ${SERVING_VERSION}"
 install_knative "net-kourier" "kourier" ${SERVING_VERSION}
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
