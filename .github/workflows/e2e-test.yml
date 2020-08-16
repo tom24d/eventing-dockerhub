@@ -56,5 +56,5 @@ jobs:
       - name: Run integration test
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/kind/run-tests.sh
+          ./test/kind/run-tests.sh --skip-teardowns
           popd
