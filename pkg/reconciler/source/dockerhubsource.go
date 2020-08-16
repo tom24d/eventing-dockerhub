@@ -65,7 +65,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 			return err
 		}
 		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
-		src.Status.ReceiveAdapterServiceName = ksvc.Name
 		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceCreated", "Created Service %q", ksvc.Name)
 	} else if err != nil {
 		src.Status.MarkNoEndpoint("ServiceUnavailable", "%v", err)
@@ -74,6 +73,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		src.Status.MarkNoEndpoint("ServiceNotOwned", "Service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 		return fmt.Errorf("service %q is not owned by DockerHubSource %q", ksvc.Name, src.Name)
 	}
+	src.Status.ReceiveAdapterServiceName = ksvc.Name
 
 	// reconcile SinkBinding for the kservice.
 	if ksvc != nil {
