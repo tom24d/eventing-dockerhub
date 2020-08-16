@@ -190,7 +190,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	}
 
 	t.Log("Asserting CloudEvents...")
-	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 
 	MustHasSameServiceName(t, client, dockerHubSource)
 }
