@@ -22,6 +22,6 @@ source "$(dirname $0)/../e2e-common.sh"
 
 initialize $@ --skip-istio-addon --run-tests --skip-knative-setup
 
-go_test_e2e -timeout=6m -parallel=2 ./test/e2e -tag e2e || fail_test
+go_test_e2e -timeout=5m -parallel=2 ./test/e2e -tag e2e || fail_test
 
 success
