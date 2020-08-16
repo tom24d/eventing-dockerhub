@@ -31,7 +31,7 @@ func TestDockerHubSource(t *testing.T) {
 				p.Repository.RepoName = helpers.RepoName
 				return p
 			}(),
-			matcherGen: func(namespace string) cetestv2.EventMatcher {
+			matcherGen: func(_ string) cetestv2.EventMatcher {
 				return cetestv2.AllOf(
 					cetestv2.HasSource(sourcev1alpha1.DockerHubEventSource(helpers.RepoName)),
 					cetestv2.HasType(sourcev1alpha1.DockerHubCloudEventsEventType(adapterresource.DockerHubEventType)),

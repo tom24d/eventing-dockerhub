@@ -128,7 +128,7 @@ func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSo
 	c.WaitForAllTestResourcesReadyOrFail()
 
 	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
-	if before == "" {
+	if after == "" {
 		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
 

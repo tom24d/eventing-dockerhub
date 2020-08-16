@@ -24,7 +24,22 @@ if [ "$(uname)" == "Darwin" ]; then
   grep=ggrep
 fi
 
-readonly DOCKERHUB_INSTALLATION_CONFIG="./config/"
+if [[ ${CI} ]]; then
+  # GitHub Action cannot run cat /dev/urandom, hence set up tmp directory.
+  TMP_DIR=$(git rev-parse --show-toplevel)/tmp
+  mkdir ${TMP_DIR}
+  readonly TMP_DIR
+else
+  TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+  readonly TMP_DIR
+
+    # This the namespace used to install and test DockerHubSource.
+  export TEST_SOURCE_NAMESPACE
+  TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
+  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+fi
+
+readonly DOCKERHUB_INSTALLATION_CONFIG="config"
 
 # Vendored eventing test image.
 readonly VENDOR_EVENTING_TEST_IMAGES="vendor/knative.dev/eventing/test/test_images/"
@@ -46,17 +61,10 @@ readonly REPLICAS=3
 
 readonly KNATIVE_SOURCE_DEFAULT_NAMESPACE="knative-sources"
 
-
-
 if [[ ! -v TEST_SOURCE_NAMESPACE ]]; then
   TEST_SOURCE_NAMESPACE=${KNATIVE_SOURCE_DEFAULT_NAMESPACE}
   readonly TEST_SOURCE_NAMESPACE
   echo "using 'knative-sources' for test installation namespace"
-fi
-
-if [[ ! -v TMP_DIR ]]; then
-  TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
-  readonly TMP_DIR
 fi
 
 
@@ -125,12 +133,20 @@ function test_setup() {
   echo ">> Publishing test images from eventing"
   # We vendor test image code from eventing, in order to use ko to resolve them into Docker images, the
   # path has to be a GOPATH.
-  sed -i 's@knative.dev/eventing/test/test_images@github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images@g' "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
-  ${REPO_ROOT_DIR}/test//upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
+  local knative="knative.dev/eventing/test/test_images"
+  local repo="github.com/tom24d/eventing-dockerhub/vendor/knative.dev/eventing/test/test_images"
+  sed -i "s@${knative}@${repo}@g" "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
+  ${REPO_ROOT_DIR}/test/upload-test-images.sh ${VENDOR_EVENTING_TEST_IMAGES} e2e || fail_test "Error uploading eventing test images"
+  # rollback
+  sed -i "s@${repo}@${knative}@g" "${VENDOR_EVENTING_TEST_IMAGES}"*/*.yaml
 }
 
 function test_teardown() {
   dockerhub_teardown
+
+  if [[ ${TEST_SOURCE_NAMESPACE} != ${KNATIVE_SOURCE_DEFAULT_NAMESPACE} ]]; then
+    kubectl delete ns ${TEST_SOURCE_NAMESPACE}
+  fi
 }
 
 function dockerhub_setup() {
