@@ -186,7 +186,6 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	if !disableAutoCallback {
 		t.Log("Waiting for validation receiver report...")
 		WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod)
-		t.Log("Validation receiver confirmed its callback.")
 	}
 
 	t.Log("Asserting CloudEvents...")
