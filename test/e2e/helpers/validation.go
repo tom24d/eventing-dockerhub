@@ -56,7 +56,7 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 	return receiverPod
 }
 
-func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *v1.Pod, notify chan bool) {
+func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *v1.Pod) {
 	err := test.WaitForPodState(client.Kube, func(pod *v1.Pod) (bool, error) {
 		if pod.Status.Phase == v1.PodFailed {
 			return true, fmt.Errorf("validation receiver pod failed: %v", pod)
@@ -69,5 +69,4 @@ func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *
 	if err != nil {
 		client.T.Fatalf("Failed waiting for completeness of the pod: %v", err)
 	}
-	notify <- true
 }

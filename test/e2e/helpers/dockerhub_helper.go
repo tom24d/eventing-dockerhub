@@ -143,15 +143,11 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
 	)
 
-	notify := make(chan bool)
-	defer close(notify)
-
 	client := eventingtestlib.Setup(t, false)
 	defer eventingtestlib.TearDown(client)
 
 	// create event logger eventSender and service
 	eventTracker, _ := recordevents.StartEventRecordOrFail(client, recordEventPodName)
-	defer eventTracker.Cleanup()
 
 	dockerHubSource := dhsOptions.NewDockerHubSourceV1Alpha1(
 		dockerHubSourceName,
@@ -173,18 +169,14 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	LabelClusterLocalVisibilityOrFail(client, ksvcName, createdDHS.Namespace)
 	allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, createdDHS.Namespace)
 
+	var validationReceiverPod *corev1.Pod
 	if !disableAutoCallback {
-		validationReceiverPod := CreateValidationReceiverOrFail(client)
+		validationReceiverPod = CreateValidationReceiverOrFail(client)
 
 		client.WaitForAllTestResourcesReadyOrFail()
 
 		// set callbackURL
 		payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
-		t.Logf("Webhook payload: %v", payload)
-
-		// wait for validation webhook received
-		t.Log("Waiting for validation started...")
-		go WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod, notify)
 	}
 
 	// access test from cluster inside
@@ -193,13 +185,11 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 
 	if !disableAutoCallback {
 		t.Log("Waiting for validation receiver report...")
-		if n := <-notify; !n {
-			t.Fatal("Failed to wait for validation receiver report")
-		}
-		t.Log("Validation receiver confirmed its callback.")
+		WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod)
 	}
 
-	eventTracker.AssertAtLeast(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+	t.Log("Asserting CloudEvents...")
+	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 
 	MustHasSameServiceName(t, client, dockerHubSource)
 }

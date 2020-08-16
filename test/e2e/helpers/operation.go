@@ -85,7 +85,7 @@ func WaitForJobState(client *pkgTest.KubeClient, inState func(p *batchv1.Job) (b
 	span := logging.GetEmitableSpan(context.Background(), "WaitForJobState/"+name)
 	defer span.End()
 
-	return wait.PollImmediate(1*time.Second, 8*time.Minute, func() (bool, error) {
+	return wait.PollImmediate(1*time.Second, 4*time.Minute, func() (bool, error) {
 		p, err := p.Get(name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
