@@ -16,12 +16,6 @@
 
 export GO111MODULE=on
 
-# This the namespace used to install and test DockerHubSource.
-export TEST_SOURCE_NAMESPACE
-TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
-  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
-
-
 source "$(dirname $0)/e2e-common.sh"
 
 

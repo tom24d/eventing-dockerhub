@@ -16,9 +16,6 @@
 
 export GO111MODULE=on
 
-TMP_DIR=$(git rev-parse --show-toplevel)/tmp
-readonly TMP_DIR
-
 
 source "$(dirname $0)/../e2e-common.sh"
 
