@@ -119,6 +119,13 @@ function knative_setup() {
   wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"
 }
 
+function smoke_test() {
+    header "Smoke Test for example"
+    ko apply -f ${REPO_ROOT_DIR}/example/
+    wait_until_pods_running default || fail_test "example resource not up"
+    ko delete -f ${REPO_ROOT_DIR}/example/
+}
+
 function test_setup() {
   echo ">> Creating ${TEST_SOURCE_NAMESPACE} namespace if it does not exist"
   kubectl get ns ${TEST_SOURCE_NAMESPACE} || kubectl create namespace ${TEST_SOURCE_NAMESPACE}
@@ -126,6 +133,9 @@ function test_setup() {
   dockerhub_setup || return 1
 
   unleash_duck || fail_test "Could not unleash the chaos duck"
+
+  smoke_test || fail_test
+
 
   # Publish test images.
   echo ">> Publishing test images from eventing-dockerhub"
