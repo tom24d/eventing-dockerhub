@@ -15,6 +15,16 @@ spec:
     metadata:
       labels: *labels
     spec:
+      # To avoid node becoming SPOF, spread the replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: *labels
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+
       serviceAccountName: dockerhub-source-controller
       containers:
       - name: dockerhub-source-controller

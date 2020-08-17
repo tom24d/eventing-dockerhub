@@ -17,6 +17,16 @@ spec:
         sidecar.istio.io/inject: "false"
       labels: *labels
     spec:
+      # To avoid node becoming SPOF, spread the replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels: *labels
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+
       serviceAccountName: dockerhub-source-webhook
       containers:
         - name: dockerhub-source-webhook-container
