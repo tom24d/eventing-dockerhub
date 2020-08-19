@@ -1,12 +1,13 @@
 package helpers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
-	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -30,69 +31,17 @@ const (
 )
 
 func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *dockerhub.BuildPayload) {
-	// curlimages/curl:7.71.1
-	const curlImage = "curlimages/curl@sha256:33c7803614e0ce13f27e1772a593db71eac626173a08e85c05a564afc29538ab"
-
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		client.T.Fatalf("failed to marshal payload: %v", err)
 	}
 
-	args := []string{
-		"-XPOST",
-		fmt.Sprintf("-H \"%s\"", "Content-Type: application/json"),
-		"-v",
-		fmt.Sprintf("-d %s", jsonData),
-		targetURL,
-	}
-
-	retryBackoff := int32(1)
-	ttl := int32(30)
-
-	// create webhook sender
-	job := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: client.Namespace,
-			Name:      SenderImageName,
-		},
-		Spec: batchv1.JobSpec{
-			Template: corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{{
-						Name:            SenderImageName,
-						Image:           curlImage,
-						ImagePullPolicy: corev1.PullAlways,
-						Args:            args,
-					}},
-					RestartPolicy: corev1.RestartPolicyNever,
-				},
-			},
-			BackoffLimit:            &retryBackoff,
-			TTLSecondsAfterFinished: &ttl,
-		},
-	}
-	CreateJobOrFail(client, job)
-
-	err = WaitForJobState(client.Kube, func(job *batchv1.Job) (bool, error) {
-		if len(job.Status.Conditions) >= 1 {
-			if job.Status.Conditions[0].Type == batchv1.JobFailed {
-				// JobFailed. Get log and return them with error.
-				l, err := client.Kube.PodLogs(job.Name, SenderImageName, client.Namespace)
-				if err != nil {
-					// retry
-					return false, nil
-				}
-				return true, fmt.Errorf("job:%s is failed. Log: %s", job.Name, l)
-			} else {
-				// JobSuccess
-				return true, nil
-			}
-		}
-		return false, nil
-	}, job.Name, job.Namespace)
-
+	res, err := http.Post(targetURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		client.T.Fatalf("Failed sending webhook: %v", err)
+		client.T.Fatalf("failed to send payload: %v", err)
+	}
+	if code := res.StatusCode; code < http.StatusOK || http.StatusBadRequest <= code {
+		client.T.Fatalf("status code got: %d", res.StatusCode)
 	}
 }
 
@@ -166,8 +115,9 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 
 	// set URL, visibility
 	ksvcName := GetReceiveAdapterServiceNameOrFail(client, createdDHS)
-	LabelClusterLocalVisibilityOrFail(client, ksvcName, createdDHS.Namespace)
-	allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, createdDHS.Namespace)
+	//LabelClusterLocalVisibilityOrFail(client, ksvcName, createdDHS.Namespace)
+	//allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, createdDHS.Namespace)
+	allocatedURL := fmt.Sprintf("http://%s.%s.127.0.0.1.nip.io", ksvcName, createdDHS.Namespace)
 
 	var validationReceiverPod *corev1.Pod
 	if !disableAutoCallback {
