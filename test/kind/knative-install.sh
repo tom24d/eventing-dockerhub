@@ -4,8 +4,8 @@ REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 source ${REPO_ROOT_DIR}/vendor/knative.dev/test-infra/scripts/e2e-tests.sh
 
 if [[ ${KNATIVE_VERSION} == "latest-release" ]]; then
-  SERVING_VERSION="v0.16.0"
-  EVENTING_VERSION="v0.16.1"
+  SERVING_VERSION="v0.17.0"
+  EVENTING_VERSION="v0.17.0"
 else
   SERVING_VERSION="nightly"
   EVENTING_VERSION="nightly"
