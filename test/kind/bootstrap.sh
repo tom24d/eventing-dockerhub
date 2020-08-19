@@ -27,10 +27,6 @@ nodes:
   - containerPort: 31443
     hostPort: 443
     protocol: TCP
-- role: control-plane
-  image: ${node_image}
-- role: control-plane
-  image: ${node_image}
 - role: worker
   image: ${node_image}
 - role: worker
