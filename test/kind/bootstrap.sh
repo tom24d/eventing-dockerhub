@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o errexit
 
 # partially copied from knative.dev/discovery
 # license: Apache-2.0 License
