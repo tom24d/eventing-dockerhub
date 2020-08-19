@@ -26,7 +26,7 @@ export GOFLAGS=-mod=vendor
 
 cd ${ROOT_DIR}
 
-VERSION="release-0.17"
+VERSION="master"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
