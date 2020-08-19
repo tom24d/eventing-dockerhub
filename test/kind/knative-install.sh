@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o errexit
 
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
 source ${REPO_ROOT_DIR}/vendor/knative.dev/test-infra/scripts/e2e-tests.sh
