@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-#source vendor/knative.dev/test-infra/scripts/release.sh
+if [[ ! -v TAG ]]; then
+  TAG="nightly"
+  readonly TAG
+fi
 
 function build_release() {
   # config/ contains the manifests
-  ko resolve ${KO_FLAGS} -f config/ > release.yaml
+  ko resolve --tags "$1" -f config/ > release.yaml
   ARTIFACTS_TO_PUBLISH="release.yaml"
 }
-# TODO
-#main "$@"
+
+build_release ${TAG}

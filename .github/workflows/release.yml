@@ -1,0 +1,55 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Upload Release Asset
+
+jobs:
+  build-release:
+    name: Upload Release Asset
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+    runs-on: ubuntu-latest
+    env:
+      KO_DOCKER_REPO: ${{ github.repository_owner }}
+
+    steps:
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+        id: go
+      - name: Get google/ko
+        run: GO111MODULE=on go get github.com/google/ko/cmd/ko
+      - name: Log in to DockerHub
+        run: echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build source
+        run: ./test/release.sh
+        env:
+          KO_DOCKER_REPO: ${{ github.repository_owner }}
+          TAG: ${{ github.ref }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release.yml
+          asset_name: release.yml
+          asset_content_type: application/yaml
