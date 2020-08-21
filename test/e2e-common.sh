@@ -60,6 +60,14 @@ if [[ ! -v TEST_SOURCE_NAMESPACE ]]; then
   echo "using 'knative-sources' for test installation namespace"
 fi
 
+function parse_flags() {
+  if [[ "$1" == "--run-on-kind" ]]; then
+  ON_KIND=true
+  return 1
+  fi
+  return 0
+}
+
 function install_net_kourier() {
   subheader "Installing net-kourier"
   kubectl apply -f "$(get_latest_knative_yaml_source "net-kourier" "kourier")"
