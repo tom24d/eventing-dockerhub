@@ -82,6 +82,8 @@ function install_net_kourier() {
 function install_net_istio() {
   subheader "Installing net-istio"
   kubectl apply -f "${KNATIVE_NET_ISTIO_RELEASE}"
+  echo "Set up Magic DNS"
+  kubectl apply -f "$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
   wait_until_pods_running istio-system || fail_test "Istio not up"
 }
 
