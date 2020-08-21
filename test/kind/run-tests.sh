@@ -20,7 +20,7 @@ export GO111MODULE=on
 source "$(dirname $0)/../e2e-common.sh"
 
 
-initialize $@ --skip-istio-addon --run-tests --skip-knative-setup
+initialize $@ --skip-istio-addon --run-tests
 
 go_test_e2e -timeout=10m -parallel=2 ./test/e2e -tag e2e || fail_test
 
