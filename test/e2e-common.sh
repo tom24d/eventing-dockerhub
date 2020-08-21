@@ -60,9 +60,19 @@ if [[ ! -v TEST_SOURCE_NAMESPACE ]]; then
   echo "using 'knative-sources' for test installation namespace"
 fi
 
+ON_KIND=0
+USE_ISTIO=0
+USE_KOURIER=0
+
 function parse_flags() {
   if [[ "$1" == "--run-on-kind" ]]; then
-  ON_KIND=true
+  ON_KIND=1
+  return 1
+  elif [[ "$1" == "--use-istio" ]]; then
+  USE_ISTIO=1
+  return 1
+  elif [[ "$1" == "--use-kourier" ]]; then
+  USE_KOURIER=1
   return 1
   fi
   return 0
@@ -77,11 +87,12 @@ function install_net_kourier() {
   if [[ ${ON_KIND} ]]; then
     kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
     kubectl patch configmap/config-domain --namespace knative-serving --type merge \
-  --patch '{"data":{"127.0.0.1.nip.io":""}}'
+      --patch '{"data":{"127.0.0.1.nip.io":""}}'
+  else
+    wait_until_service_has_external_http_address kourier-system kourier
   fi
 
   wait_until_pods_running kourier-system || return 1
-  wait_until_service_has_external_http_address kourier-system kourier
 }
 
 function install_net_istio() {
@@ -120,8 +131,11 @@ function knative_setup() {
   kubectl apply -f "${KNATIVE_SERVING_RELEASE_CORE}"
 
   # install net-*
-  install_net_kourier || fail_test "net-kourier not up"
-  install_net_istio || fail_test "net-istio not up"
+  if (( USE_KOURIER )); then
+    install_net_kourier || fail_test "net-kourier not up"
+  elif (( USE_ISTIO )); then
+    install_net_istio || fail_test "net-istio not up"
+  fi
 
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
