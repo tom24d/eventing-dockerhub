@@ -2,9 +2,9 @@ name: Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ 'master', 'release-*' ]
   pull_request:
-    branches: [ master ]
+    branches: [ 'master', 'release-*' ]
   schedule:
     - cron: '0 0 * * *'
 
@@ -13,8 +13,7 @@ jobs:
     name: Integration Test
     strategy:
       matrix:
-        go-version: [1.14.x]
-        knative-version: [latest-release, nightly]
+        go-version: [1.15.x]
     runs-on: ubuntu-latest
 
     env:
@@ -44,13 +43,6 @@ jobs:
           ./test/kind/bootstrap.sh
           popd
 
-      - name: Install Knative Serving & Eventing
-        env:
-          KNATIVE_VERSION: ${{ matrix.knative-version }}
-        run: |
-          pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/kind/knative-install.sh
-          popd
 
       - name: Log in to DockerHub
         run: echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
@@ -58,5 +50,5 @@ jobs:
       - name: Run integration test
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/kind/run-tests.sh --skip-teardowns
+          ./test/kind/run-tests.sh
           popd

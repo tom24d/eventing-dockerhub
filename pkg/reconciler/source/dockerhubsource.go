@@ -107,11 +107,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		if len(ksvc.Spec.Template.Spec.Containers) >= 1 {
 			err = pkgreconciler.RetryUpdateConflicts(func(_ int) error {
 				// Fetch ksvc in case ReconcileSinkBinding might update ksvc above.
-				ksvc, err = r.getOwnedService(ctx, src)
+				k, err := r.getOwnedService(ctx, src)
 				if err != nil {
 					return err
 				}
-				ksvc = ksvc.DeepCopy()
+				ksvc = k.DeepCopy()
 				// override env
 				ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
 
