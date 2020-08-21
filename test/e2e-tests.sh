@@ -22,6 +22,6 @@ source $(dirname $0)/e2e-common.sh
 # Script entry point.
 initialize $@
 
-go_test_e2e -timeout=5m ./test/e2e -tag e2e || fail_test
+go_test_e2e -timeout=5m ./test/e2e -tag=e2e || fail_test
 
 success
