@@ -13,6 +13,7 @@ import (
 	"knative.dev/pkg/test"
 )
 
+// CreateValidationReceiverOrFail creates validation-receiver pod or fail.
 func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 	const receiverImageName = "validation-receiver"
 	args := []string{"--patient", strconv.Itoa(60)}
@@ -56,6 +57,7 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 	return receiverPod
 }
 
+// WaitForValidationReceiverPodSuccessOrFail waits for v1.PodSucceeded or fail.
 func WaitForValidationReceiverPodSuccessOrFail(client *lib.Client, receiverPod *v1.Pod) {
 	err := test.WaitForPodState(client.Kube, func(pod *v1.Pod) (bool, error) {
 		if pod.Status.Phase == v1.PodFailed {

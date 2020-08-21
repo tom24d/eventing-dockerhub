@@ -26,10 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-const (
-	SenderImageName = "webhook-sender"
-)
-
+// MustSendWebhook sends data to the given targetURL.
 func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *dockerhub.BuildPayload) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -45,31 +42,33 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}
 }
 
-func GetReceiveAdapterServiceNameOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
+// GetSourceEndpointOrFail gets source's endpoint or fail.
+func GetSourceEndpointOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
 	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
-	ksvcName := ""
+	url := ""
 
 	err := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool, error) {
 		dhs, err := dhCli.Get(source.Name, metav1.GetOptions{})
 		if err != nil {
 			return true, fmt.Errorf("failed to get DockerHubSource: %v", source.Name)
 		}
-		ksvcName = dhs.Status.ReceiveAdapterServiceName
-		if ksvcName == "" {
+		url = dhs.Status.URL.String()
+		if url == "" {
 			return false, nil
 		}
 		return true, nil
 	})
 	if err != nil {
-		client.T.Fatalf("failed to get ReceiveAdapterServiceName: %v", err)
+		client.T.Fatalf("failed to source endpoint: %v", err)
 	}
-	return ksvcName
+	return url
 }
 
-func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
+// MustHasSameServiceName ensures the source keeps same ReceiveAdapterServiceName even if ksvc gets accidentally deleted.
+func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
 	before := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if before == "" {
-		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
+		c.T.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
 	DeleteKServiceOrFail(c, before, c.Namespace)
 
@@ -78,7 +77,7 @@ func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSo
 
 	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if after == "" {
-		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
+		c.T.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
 
 	if diff := cmp.Diff(before, after); diff != "" {
@@ -114,10 +113,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL, visibility
-	ksvcName := GetReceiveAdapterServiceNameOrFail(client, createdDHS)
-	//LabelClusterLocalVisibilityOrFail(client, ksvcName, createdDHS.Namespace)
-	//allocatedURL := fmt.Sprintf("http://%s.%s.svc.cluster.local", ksvcName, createdDHS.Namespace)
-	allocatedURL := fmt.Sprintf("http://%s.%s.127.0.0.1.nip.io", ksvcName, createdDHS.Namespace)
+	allocatedURL := GetSourceEndpointOrFail(client, createdDHS)
 
 	var validationReceiverPod *corev1.Pod
 	if !disableAutoCallback {
@@ -141,5 +137,5 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	t.Log("Asserting CloudEvents...")
 	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 
-	MustHasSameServiceName(t, client, dockerHubSource)
+	MustHasSameServiceName(client, dockerHubSource)
 }
