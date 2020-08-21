@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+// MustSendWebhook sends data to the given targetURL.
 func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *dockerhub.BuildPayload) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -41,6 +42,7 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	}
 }
 
+// GetSourceEndpointOrFail gets source's endpoint or fail.
 func GetSourceEndpointOrFail(client *eventingtestlib.Client, source *sourcesv1alpha1.DockerHubSource) string {
 	dhCli := GetSourceClient(client).SourcesV1alpha1().DockerHubSources(client.Namespace)
 	url := ""
@@ -62,6 +64,7 @@ func GetSourceEndpointOrFail(client *eventingtestlib.Client, source *sourcesv1al
 	return url
 }
 
+// MustHasSameServiceName ensures the source keeps same ReceiveAdapterServiceName even if ksvc gets accidentally deleted.
 func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
 	before := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if before == "" {
