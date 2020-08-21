@@ -76,7 +76,6 @@ function install_net_kourier() {
   --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
   kubectl patch configmap/config-domain --namespace knative-serving --type merge \
   --patch '{"data":{"127.0.0.1.nip.io":""}}'
-  kubectl --namespace kourier-system get service kourier
   wait_until_pods_running kourier-system || fail_test "Kourier not up"
 }
 
@@ -105,7 +104,6 @@ function unleash_duck() {
 }
 
 function knative_setup() {
-  start_knative_serving  "${KNATIVE_NET_RELEASE}"
   header "Starting Knative Serving"
   subheader "Installing Knative Serving"
   echo "Installing Serving CRDs from ${KNATIVE_SERVING_RELEASE_CRDS}"
