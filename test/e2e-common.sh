@@ -39,22 +39,15 @@ else
   | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
 fi
 
+
 readonly DOCKERHUB_INSTALLATION_CONFIG="config"
+
 
 # Vendored eventing test image.
 readonly VENDOR_EVENTING_TEST_IMAGES="vendor/knative.dev/eventing/test/test_images/"
 # HEAD eventing test images.
 readonly HEAD_EVENTING_TEST_IMAGES="${GOPATH}/src/knative.dev/eventing/test/test_images/"
 
-# Istio version for ci
-readonly ISTIO_VERSION="1.5.7"
-# Istio crd yaml
-readonly SERVING_ISTIO_CRD="https://raw.githubusercontent.com/knative/serving/master/third_party/istio-${ISTIO_VERSION}/istio-crds.yaml"
-# istio-ci-no-mesh
-readonly SERVING_ISTIO_CI_NO_MESH="https://raw.githubusercontent.com/knative/serving/master/third_party/istio-${ISTIO_VERSION}/istio-ci-no-mesh.yaml"
-
-# Configure DNS
-readonly SERVING_DNS_SETUP="$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
 
 # The number of pods for leader-election test
 readonly REPLICAS=3
@@ -67,26 +60,22 @@ if [[ ! -v TEST_SOURCE_NAMESPACE ]]; then
   echo "using 'knative-sources' for test installation namespace"
 fi
 
-
-function start_istio() {
-  header "Starting Istio-${ISTIO_VERSION}"
-
-  subheader "Installing Istio-${ISTIO_VERSION} CRD"
-  echo "Installing Istio CRD from ${SERVING_VENDORED_ISTIO_CRD}"
-  kubectl apply -f ${SERVING_ISTIO_CRD}
-  while [[ $(kubectl get crd gateways.networking.istio.io -o jsonpath='{.status.conditions[?(@.type=="Established")].status}') != 'True' ]]; do
-    echo "Waiting on Istio CRDs"; sleep 1
-  done
-
-  subheader "Installing Istio-${ISTIO_VERSION} YAML"
-  echo "Installing Istio from ${SERVING_VENDORED_ISTIO_CI_NO_MESH}"
-  kubectl apply -f ${SERVING_ISTIO_CI_NO_MESH}
+function install_net_kourier() {
+  subheader "Installing net-kourier"
+  kubectl apply -f "$(get_latest_knative_yaml_source "net-kourier" "kourier")"
+  kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
+  kubectl patch configmap/config-network --namespace knative-serving --type merge \
+  --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
+  kubectl patch configmap/config-domain --namespace knative-serving --type merge \
+  --patch '{"data":{"127.0.0.1.nip.io":""}}'
+  kubectl --namespace kourier-system get service kourier
+  wait_until_pods_running kourier-system || fail_test "Kourier not up"
 }
 
-function configure_dns() {
-  subheader "Configuring DNS"
-  echo "Configuring DNS from ${SERVING_DNS_SETUP}"
-  kubectl apply -f ${SERVING_DNS_SETUP}
+function install_net_istio() {
+  subheader "Installing net-istio"
+  kubectl apply -f "${KNATIVE_NET_ISTIO_RELEASE}"
+  wait_until_pods_running istio-system || fail_test "Istio not up"
 }
 
 function scale_control_plane() {
@@ -108,11 +97,21 @@ function unleash_duck() {
 }
 
 function knative_setup() {
-  start_istio
-  wait_until_pods_running istio-system || fail_test "Istio not up"
+  start_knative_serving  "${KNATIVE_NET_RELEASE}"
+  header "Starting Knative Serving"
+  subheader "Installing Knative Serving"
+  echo "Installing Serving CRDs from ${KNATIVE_SERVING_RELEASE_CRDS}"
+  kubectl apply -f "${KNATIVE_SERVING_RELEASE_CRDS}"
+  echo "Installing Serving core components from ${KNATIVE_SERVING_RELEASE_CORE}"
+  kubectl apply -f "${KNATIVE_SERVING_RELEASE_CORE}"
 
-  start_latest_knative_serving
-  configure_dns
+  # install net-*
+  if [[ ${ON_KIND} ]]; then
+  install_net_kourier
+  else
+  install_net_istio
+  fi
+
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
   start_latest_knative_eventing
@@ -120,7 +119,7 @@ function knative_setup() {
 }
 
 function smoke_test() {
-    header "Smoke Test for example"
+    header "Smoke Test for example resources"
     ko apply -f ${REPO_ROOT_DIR}/example/
     wait_until_pods_running default || fail_test "example resource not up"
     ko delete -f ${REPO_ROOT_DIR}/example/

@@ -16,11 +16,13 @@
 
 export GO111MODULE=on
 
+# This var make initialize to install net-kourier.
+export ON_KIND=true
 
-source "$(dirname $0)/../e2e-common.sh"
+source $(dirname $0)/../e2e-common.sh
 
 
-initialize $@ --skip-istio-addon --run-tests
+initialize $@ --run-tests
 
 go_test_e2e -timeout=10m -parallel=2 ./test/e2e -tag e2e || fail_test
 
