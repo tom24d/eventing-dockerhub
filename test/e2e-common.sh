@@ -76,7 +76,7 @@ function install_net_kourier() {
   --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
   kubectl patch configmap/config-domain --namespace knative-serving --type merge \
   --patch '{"data":{"127.0.0.1.nip.io":""}}'
-  wait_until_pods_running kourier-system || fail_test "Kourier not up"
+  wait_until_pods_running kourier-system || return 1
   wait_until_service_has_external_http_address kourier-system kourier
 }
 
@@ -85,7 +85,7 @@ function install_net_istio() {
   kubectl apply -f "${KNATIVE_NET_ISTIO_RELEASE}"
   echo "Set up Magic DNS"
   kubectl apply -f "$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
-  wait_until_pods_running istio-system || fail_test "Istio not up"
+  wait_until_pods_running istio-system || return 1
   wait_until_service_has_external_http_address istio-system istio-ingressgateway
 }
 
@@ -117,9 +117,9 @@ function knative_setup() {
 
   # install net-*
   if [[ ${ON_KIND} ]]; then
-  install_net_kourier
+  install_net_kourier || fail_test "net-kourier not up"
   else
-  install_net_istio
+  install_net_istio || fail_test "net-istio not up"
   fi
 
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
