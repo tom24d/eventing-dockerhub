@@ -71,11 +71,15 @@ function parse_flags() {
 function install_net_kourier() {
   subheader "Installing net-kourier"
   kubectl apply -f "$(get_latest_knative_yaml_source "net-kourier" "kourier")"
-  kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
   kubectl patch configmap/config-network --namespace knative-serving --type merge \
   --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
-  kubectl patch configmap/config-domain --namespace knative-serving --type merge \
+
+  if [[ ${ON_KIND} ]]; then
+    kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
+    kubectl patch configmap/config-domain --namespace knative-serving --type merge \
   --patch '{"data":{"127.0.0.1.nip.io":""}}'
+  fi
+
   wait_until_pods_running kourier-system || return 1
   wait_until_service_has_external_http_address kourier-system kourier
 }
@@ -116,11 +120,8 @@ function knative_setup() {
   kubectl apply -f "${KNATIVE_SERVING_RELEASE_CORE}"
 
   # install net-*
-  if [[ ${ON_KIND} ]]; then
   install_net_kourier || fail_test "net-kourier not up"
-  else
   install_net_istio || fail_test "net-istio not up"
-  fi
 
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
