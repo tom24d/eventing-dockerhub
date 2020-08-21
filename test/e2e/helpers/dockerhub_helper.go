@@ -26,10 +26,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-const (
-	SenderImageName = "webhook-sender"
-)
-
 func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *dockerhub.BuildPayload) {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -66,10 +62,10 @@ func GetSourceEndpointOrFail(client *eventingtestlib.Client, source *sourcesv1al
 	return url
 }
 
-func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
+func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
 	before := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if before == "" {
-		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
+		c.T.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
 	DeleteKServiceOrFail(c, before, c.Namespace)
 
@@ -78,7 +74,7 @@ func MustHasSameServiceName(t *testing.T, c *eventingtestlib.Client, dockerHubSo
 
 	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if after == "" {
-		t.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
+		c.T.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
 
 	if diff := cmp.Diff(before, after); diff != "" {
@@ -138,5 +134,5 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	t.Log("Asserting CloudEvents...")
 	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 
-	MustHasSameServiceName(t, client, dockerHubSource)
+	MustHasSameServiceName(client, dockerHubSource)
 }
