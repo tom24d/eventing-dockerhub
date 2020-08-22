@@ -20,7 +20,7 @@ source $(dirname $0)/e2e-common.sh
 
 
 # Script entry point.
-initialize $@ --use-istio
+initialize $@ --skip-istio-addon --use-istio
 
 go_test_e2e -timeout=5m ./test/e2e -tag=e2e || fail_test
 
