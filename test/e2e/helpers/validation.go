@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/google/uuid"
-
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -22,7 +20,6 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
 			Name:      receiverImageName,
-			Labels:    map[string]string{"e2etest": uuid.New().String()},
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{{

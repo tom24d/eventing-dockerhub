@@ -31,6 +31,7 @@ const (
 	StatusError   Status = "error"
 )
 
+// EmitValidationCallback send callback to given callbackURL
 func (callback *CallbackPayload) EmitValidationCallback(callbackURL string) error {
 	if callbackURL == "" {
 		return fmt.Errorf("callbackURL is not set")

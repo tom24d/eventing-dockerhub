@@ -8,17 +8,21 @@ import (
 	"testing"
 	"time"
 
+	// k8s.io imports
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 
+	// eventing imports
 	eventingtestlib "knative.dev/eventing/test/lib"
 	"knative.dev/eventing/test/lib/recordevents"
 	"knative.dev/eventing/test/lib/resources"
 
+	// pkg imports
+	"knative.dev/pkg/apis/duck/v1"
+
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
-	"knative.dev/pkg/apis/duck/v1"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
@@ -72,7 +76,7 @@ func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv
 	}
 	DeleteKServiceOrFail(c, before, c.Namespace)
 
-	// wait for DockerHubSource to be URL allocated
+	// wait for DockerHubSource to re-make ksvc
 	c.WaitForAllTestResourcesReadyOrFail()
 
 	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
