@@ -7,6 +7,6 @@ creates KinD cluster with [local Docker Registry](https://kind.sigs.k8s.io/docs/
 
 
 ```shell script
-./test/kind/run-tests.sh
+KO_DOCKER_REPO=localhost:port ./test/kind/run-tests.sh
 ```
 runs integration test on KinD.
