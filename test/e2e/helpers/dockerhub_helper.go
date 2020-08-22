@@ -20,13 +20,14 @@ import (
 
 	// pkg imports
 	"knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/test"
 
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
-	"github.com/cloudevents/sdk-go/v2/test"
+	cetestv2 "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -89,7 +90,7 @@ func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv
 	}
 }
 
-func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) test.EventMatcher) {
+func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) cetestv2.EventMatcher) {
 	const (
 		dockerHubSourceName = "e2e-dockerhub-source"
 		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
@@ -135,11 +136,27 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 
 	if !disableAutoCallback {
 		t.Log("Waiting for validation receiver report...")
-		WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod)
+		waitForPodSuccessOrFail(client, validationReceiverPod)
 	}
 
 	t.Log("Asserting CloudEvents...")
 	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 
 	MustHasSameServiceName(client, dockerHubSource)
+}
+
+// waitForValidationReceiverPodSuccessOrFail waits for v1.PodSucceeded or fail.
+func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
+	err := test.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
+		if pod.Status.Phase == corev1.PodFailed {
+			return true, fmt.Errorf("pod failed: %v", pod)
+		} else if pod.Status.Phase != corev1.PodSucceeded {
+			return false, nil
+		}
+		return true, nil
+	}, pod.Name, pod.Namespace)
+
+	if err != nil {
+		client.T.Fatalf("Failed waiting for completeness of the pod: %v", err)
+	}
 }
