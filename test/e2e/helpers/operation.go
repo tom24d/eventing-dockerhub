@@ -8,7 +8,7 @@ import (
 	sourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
-func CreateDockerHubSourceOrFail(c *eventingtestlib.Client, dockerHubSource *sourcev1alpha1.DockerHubSource) *sourcev1alpha1.DockerHubSource {
+func CreateDockerHubSourceOrFail(c *eventingtestlib.Client, dockerHubSource *sourcev1alpha1.DockerHubSource) {
 	createdDockerHubSource, err := GetSourceClient(c).SourcesV1alpha1().
 		DockerHubSources(dockerHubSource.GetNamespace()).Create(dockerHubSource)
 	if err != nil {
@@ -16,7 +16,7 @@ func CreateDockerHubSourceOrFail(c *eventingtestlib.Client, dockerHubSource *sou
 	}
 
 	c.Tracker.AddObj(createdDockerHubSource)
-	return createdDockerHubSource
+	dockerHubSource = createdDockerHubSource
 }
 
 func GetSourceOrFail(c *eventingtestlib.Client, namespace, name string) *sourcev1alpha1.DockerHubSource {

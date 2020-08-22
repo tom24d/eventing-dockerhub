@@ -112,13 +112,13 @@ func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disa
 	)
 
 	t.Log("Creating DockerHubSource")
-	createdDHS := CreateDockerHubSourceOrFail(client, dockerHubSource)
+	CreateDockerHubSourceOrFail(client, dockerHubSource)
 
 	// wait for DockerHubSource to be URL allocated
 	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL, visibility
-	allocatedURL := GetSourceEndpointOrFail(client, createdDHS)
+	allocatedURL := GetSourceEndpointOrFail(client, dockerHubSource)
 
 	var validationReceiverPod *corev1.Pod
 	if !disableAutoCallback {
