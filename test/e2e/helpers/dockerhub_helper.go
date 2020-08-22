@@ -90,13 +90,15 @@ func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv
 	}
 }
 
-func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) cetestv2.EventMatcher) {
+func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) cetestv2.EventMatcher) {
 	const (
 		dockerHubSourceName = "e2e-dockerhub-source"
 		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
 	)
 
-	client := eventingtestlib.Setup(t, false)
+	payload := &data
+
+	client := eventingtestlib.Setup(t, true)
 	defer eventingtestlib.TearDown(client)
 
 	// create event logger eventSender and service
