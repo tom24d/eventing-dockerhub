@@ -74,6 +74,11 @@ function parse_flags() {
   return 0
 }
 
+function configure_dns() {
+  echo "Set up Magic DNS"
+  kubectl apply -f "$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
+}
+
 function install_net_kourier() {
   subheader "Installing net-kourier"
   kubectl apply -f "$(get_latest_knative_yaml_source "net-kourier" "kourier")"
@@ -85,6 +90,7 @@ function install_net_kourier() {
     kubectl patch configmap/config-domain --namespace knative-serving --type merge \
       --patch '{"data":{"127.0.0.1.nip.io":""}}'
   else
+    configure_dns
     wait_until_service_has_external_http_address kourier-system kourier
   fi
 
@@ -92,12 +98,43 @@ function install_net_kourier() {
 }
 
 function install_net_istio() {
-  subheader "Installing net-istio"
+  # install istio ingress controller from nightly release
+  subheader "Install net-istio"
   kubectl apply -f "${KNATIVE_NET_ISTIO_RELEASE}"
-  echo "Set up Magic DNS"
-  kubectl apply -f "$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
+
+  configure_dns
   wait_until_pods_running istio-system || return 1
   wait_until_service_has_external_http_address istio-system istio-ingressgateway
+}
+
+function install_istio() {
+  if [[ -z "${ISTIO_VERSION}" ]]; then
+    readonly ISTIO_VERSION="stable"
+  fi
+
+  # TODO: Figure out solid way to install Istio
+  local NET_ISTIO_COMMIT=f64ed34d3776a444372483dddc15a330c6c1ac53
+
+  # And checkout the setup script based on that commit.
+  local NET_ISTIO_DIR=$(mktemp -d)
+  (
+    cd $NET_ISTIO_DIR \
+      && git init \
+      && git remote add origin https://github.com/knative-sandbox/net-istio.git \
+      && git fetch --depth 1 origin $NET_ISTIO_COMMIT \
+      && git checkout FETCH_HEAD
+  )
+
+  if (( MESH )); then
+    ISTIO_PROFILE="istio-ci-mesh.yaml"
+  else
+    ISTIO_PROFILE="istio-ci-no-mesh.yaml"
+  fi
+
+  echo ">> Installing Istio"
+  echo "Istio version: ${ISTIO_VERSION}"
+  echo "Istio profile: ${ISTIO_PROFILE}"
+  ${NET_ISTIO_DIR}/third_party/istio-${ISTIO_VERSION}/install-istio.sh ${ISTIO_PROFILE}
 }
 
 function scale_control_plane() {
@@ -119,22 +156,24 @@ function unleash_duck() {
 }
 
 function knative_setup() {
+  # Install serving
   header "Starting Knative Serving"
   subheader "Installing Knative Serving"
   echo "Installing Serving CRDs from ${KNATIVE_SERVING_RELEASE_CRDS}"
   kubectl apply -f "${KNATIVE_SERVING_RELEASE_CRDS}"
   echo "Installing Serving core components from ${KNATIVE_SERVING_RELEASE_CORE}"
   kubectl apply -f "${KNATIVE_SERVING_RELEASE_CORE}"
-
-  # install net-*
+  # install ingress controller
   if (( USE_KOURIER )); then
     install_net_kourier || fail_test "net-kourier not up"
   elif (( USE_ISTIO )); then
-    install_net_istio || fail_test "net-istio not up"
+    install_istio || fail_test "Istio not up"
+    install_net_istio || fail_test "istio not up"
   fi
 
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
 
+  # Install eventing
   start_latest_knative_eventing
   wait_until_pods_running knative-eventing || fail_test "Knative Eventing not up"
 }
