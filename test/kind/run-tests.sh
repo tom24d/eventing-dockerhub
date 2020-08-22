@@ -19,7 +19,7 @@ export GO111MODULE=on
 source $(dirname $0)/../e2e-common.sh
 
 
-initialize $@ --run-tests --run-on-kind
+initialize $@ --run-tests --run-on-kind --use-kourier
 
 go_test_e2e -timeout=10m -parallel=2 ./test/e2e -tag=e2e || fail_test
 

@@ -24,21 +24,8 @@ if [ "$(uname)" == "Darwin" ]; then
   grep=ggrep
 fi
 
-if [[ ${CI} ]]; then
-  # GitHub Action cannot run cat /dev/urandom, hence set up tmp directory.
-  TMP_DIR=$(git rev-parse --show-toplevel)/tmp
-  mkdir ${TMP_DIR}
-  readonly TMP_DIR
-else
-  TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
-  readonly TMP_DIR
-
-    # This the namespace used to install and test DockerHubSource.
-  export TEST_SOURCE_NAMESPACE
-  TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
-  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
-fi
-
+TMP_DIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
+readonly TMP_DIR
 
 readonly DOCKERHUB_INSTALLATION_CONFIG="config"
 
@@ -54,15 +41,34 @@ readonly REPLICAS=3
 
 readonly KNATIVE_SOURCE_DEFAULT_NAMESPACE="knative-sources"
 
+
+if [[ ! -v CI ]]; then
+  # GitHub Action cannot run (cat /dev/urandom).
+  # This the namespace used to install and test DockerHubSource.
+  export TEST_SOURCE_NAMESPACE
+  TEST_SOURCE_NAMESPACE="${TEST_SOURCE_NAMESPACE:-"knative-sources-"$(cat /dev/urandom \
+  | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 10 | head -n 1)}"
+fi
+
 if [[ ! -v TEST_SOURCE_NAMESPACE ]]; then
   TEST_SOURCE_NAMESPACE=${KNATIVE_SOURCE_DEFAULT_NAMESPACE}
   readonly TEST_SOURCE_NAMESPACE
   echo "using 'knative-sources' for test installation namespace"
 fi
 
+ON_KIND=0
+USE_ISTIO=0
+USE_KOURIER=0
+
 function parse_flags() {
   if [[ "$1" == "--run-on-kind" ]]; then
-  ON_KIND=true
+  ON_KIND=1
+  return 1
+  elif [[ "$1" == "--use-istio" ]]; then
+  USE_ISTIO=1
+  return 1
+  elif [[ "$1" == "--use-kourier" ]]; then
+  USE_KOURIER=1
   return 1
   fi
   return 0
@@ -71,18 +77,27 @@ function parse_flags() {
 function install_net_kourier() {
   subheader "Installing net-kourier"
   kubectl apply -f "$(get_latest_knative_yaml_source "net-kourier" "kourier")"
-  kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
   kubectl patch configmap/config-network --namespace knative-serving --type merge \
   --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
-  kubectl patch configmap/config-domain --namespace knative-serving --type merge \
-  --patch '{"data":{"127.0.0.1.nip.io":""}}'
-  wait_until_pods_running kourier-system || fail_test "Kourier not up"
+
+  if [[ ${ON_KIND} ]]; then
+    kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
+    kubectl patch configmap/config-domain --namespace knative-serving --type merge \
+      --patch '{"data":{"127.0.0.1.nip.io":""}}'
+  else
+    wait_until_service_has_external_http_address kourier-system kourier
+  fi
+
+  wait_until_pods_running kourier-system || return 1
 }
 
 function install_net_istio() {
   subheader "Installing net-istio"
   kubectl apply -f "${KNATIVE_NET_ISTIO_RELEASE}"
-  wait_until_pods_running istio-system || fail_test "Istio not up"
+  echo "Set up Magic DNS"
+  kubectl apply -f "$(get_latest_knative_yaml_source "serving" "serving-default-domain")"
+  wait_until_pods_running istio-system || return 1
+  wait_until_service_has_external_http_address istio-system istio-ingressgateway
 }
 
 function scale_control_plane() {
@@ -112,10 +127,10 @@ function knative_setup() {
   kubectl apply -f "${KNATIVE_SERVING_RELEASE_CORE}"
 
   # install net-*
-  if [[ ${ON_KIND} ]]; then
-  install_net_kourier
-  else
-  install_net_istio
+  if (( USE_KOURIER )); then
+    install_net_kourier || fail_test "net-kourier not up"
+  elif (( USE_ISTIO )); then
+    install_net_istio || fail_test "net-istio not up"
   fi
 
   wait_until_pods_running knative-serving || fail_test "Knative Serving not up"
