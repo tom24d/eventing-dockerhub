@@ -101,16 +101,25 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 	client := eventingtestlib.Setup(t, true)
 	defer eventingtestlib.TearDown(client)
 
-	// create event logger eventSender and service
-	eventTracker, _ := recordevents.StartEventRecordOrFail(client, recordEventPodName)
+	var eventTracker *recordevents.EventInfoStore
+	var ref *v1.KReference
+	var callbackPod *corev1.Pod
+
+	if !disableAutoCallback {
+		// create event logger eventSender and service
+		eventTracker, _ = recordevents.StartEventRecordOrFail(client, recordEventPodName)
+		ref = resources.KnativeRefForService(recordEventPodName, client.Namespace)
+	} else {
+		// create callback-display pod and service
+		callbackPod = CreateCallbackDisplayOrFail(client)
+		ref = resources.KnativeRefForService(callbackPod.Name, client.Namespace)
+	}
 
 	dockerHubSource := dhsOptions.NewDockerHubSourceV1Alpha1(
 		dockerHubSourceName,
 		client.Namespace,
 		dhsOptions.DisabledAutoCallback(disableAutoCallback),
-		dhsOptions.WithSinkV1A1(v1.Destination{
-			Ref: resources.KnativeRefForService(recordEventPodName, client.Namespace)},
-		),
+		dhsOptions.WithSinkV1A1(v1.Destination{Ref: ref}),
 	)
 
 	t.Log("Creating DockerHubSource")
@@ -119,30 +128,28 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 	// wait for DockerHubSource to be URL allocated
 	client.WaitForAllTestResourcesReadyOrFail()
 
-	// set URL, visibility
+	// set URL
 	allocatedURL := GetSourceEndpointOrFail(client, dockerHubSource)
 
-	var validationReceiverPod *corev1.Pod
-	if !disableAutoCallback {
-		validationReceiverPod = CreateValidationReceiverOrFail(client)
+	validationReceiverPod := CreateValidationReceiverOrFail(client)
 
-		client.WaitForAllTestResourcesReadyOrFail()
+	// set callbackURL
+	payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
 
-		// set callbackURL
-		payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
-	}
-
-	// access test from cluster inside
+	// access test
 	t.Log("Send webhook to DockerHubSource")
 	MustSendWebhook(client, allocatedURL, payload)
 
-	if !disableAutoCallback {
-		t.Log("Waiting for validation receiver report...")
-		waitForPodSuccessOrFail(client, validationReceiverPod)
-	}
+	t.Log("Waiting for validation receiver report...")
+	waitForPodSuccessOrFail(client, validationReceiverPod)
 
-	t.Log("Asserting CloudEvents...")
-	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+	if eventTracker != nil { // == !disableAutoCallback
+		t.Log("Asserting CloudEvents...")
+		eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+	} else if callbackPod != nil {
+		t.Log("Confirming callback-display reports succeeded...")
+		waitForPodSuccessOrFail(client, callbackPod)
+	}
 
 	MustHasSameServiceName(client, dockerHubSource)
 }
@@ -151,7 +158,7 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
 	err := test.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
 		if pod.Status.Phase == corev1.PodFailed {
-			return true, fmt.Errorf("pod failed: %v", pod)
+			return true, fmt.Errorf("pod %s failed", pod.Name)
 		} else if pod.Status.Phase != corev1.PodSucceeded {
 			return false, nil
 		}

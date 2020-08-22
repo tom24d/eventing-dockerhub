@@ -37,19 +37,53 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 		},
 	}
 
-	client.CreatePodOrFail(receiverPod, lib.WithService(receiverPod.GetName()))
+	createPodOrFailWithMessage(client, receiverPod)
+
+	return receiverPod
+}
+
+// CreateCallbackDisplayOrFail creates callback-display pod or fail.
+func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
+	const receiverImageName = "callback-display"
+
+	callbackPod := &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: client.Namespace,
+			Name:      receiverImageName,
+		},
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{{
+				Name:            receiverImageName,
+				Image:           test.ImagePath(receiverImageName),
+				ImagePullPolicy: v1.PullAlways,
+				Ports: []v1.ContainerPort{
+					{
+						ContainerPort: 8080,
+					},
+				},
+			}},
+			RestartPolicy: v1.RestartPolicyNever,
+		},
+	}
+
+	createPodOrFailWithMessage(client, callbackPod)
+
+	return callbackPod
+}
+
+func createPodOrFailWithMessage(client *lib.Client, pod *v1.Pod) {
+	client.CreatePodOrFail(pod, lib.WithService(pod.GetName()))
 
 	err := test.WaitForPodState(client.Kube, func(pod *v1.Pod) (bool, error) {
 		if pod.Status.Phase == v1.PodFailed {
-			return true, fmt.Errorf("validation receiver pod failed to get up with message %s", pod.Status.Message)
+			return true, fmt.Errorf("pod failed to get up. message: %s", pod.Status.Message)
 		} else if pod.Status.Phase != v1.PodRunning {
 			return false, nil
 		}
 		return true, nil
-	}, receiverPod.Name, receiverPod.Namespace)
+	}, pod.Name, pod.Namespace)
 
 	if err != nil {
-		client.T.Fatalf("Failed waiting for pod running %q: %v", receiverPod.Name, receiverPod)
+		client.T.Fatalf("Failed waiting for pod running %q: %v", pod.Name, pod)
 	}
-	return receiverPod
 }
