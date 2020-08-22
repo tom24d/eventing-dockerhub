@@ -1,4 +1,4 @@
-These scripts help development with [KinD](https://kind.sigs.k8s.io/) cluster.
+These scripts help development with [KinD](https://kind.sigs.k8s.io/) cluster.  
 
 ```shell script
 ./test/kind/bootstrap.sh
