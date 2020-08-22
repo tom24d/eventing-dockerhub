@@ -18,7 +18,7 @@ jobs:
 
     env:
       GOPATH: ${{ github.workspace }}
-      KO_DOCKER_REPO: ${{ github.repository_owner }}
+      KO_DOCKER_REPO: localhost:5000
 
     steps:
       - name: Set up Go ${{ matrix.go-version }}
@@ -42,10 +42,6 @@ jobs:
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/kind/bootstrap.sh
           popd
-
-
-      - name: Log in to DockerHub
-        run: echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
 
       - name: Run integration test
         run: |
