@@ -9,13 +9,18 @@ if [[ ! -v KIND_VERSION ]]; then
   readonly KIND_VERSION
 fi
 
+TEMP_DIR=$(mktemp -d)
+readonly TEMP_DIR
+pushd ${TEMP_DIR}
 curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-$(uname)-amd64
 chmod +x ./kind
-sudo mv kind /usr/local/bin
+KIND_BIN=${TEMP_DIR}/kind
+readonly KIND_BIN
+popd
 
 node_image='kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765'
 
-cat <<EOF | kind create cluster --config=-
+cat <<EOF | ${KIND_BIN} create cluster --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
