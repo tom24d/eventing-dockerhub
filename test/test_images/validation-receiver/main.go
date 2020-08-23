@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -25,37 +26,53 @@ func init() {
 func main() {
 	flag.Parse()
 
+	received := make(chan int, 1)
+	defer close(received)
+
 	h := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
+		w.Write([]byte("payload received."))
 		reqDump, _ := httputil.DumpRequest(r, true)
 		log.Printf("incoming request: %s", string(reqDump))
 		_, err := resources.Parse(r)
 		if err != nil {
 			log.Println(err.Error())
-			os.Exit(1)
+			received <- 1
+		} else {
+			received <- 0
 		}
-		os.Exit(0)
 	}
 	r := http.NewServeMux()
 	r.HandleFunc("/", h)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", helpers.ValidationReceivePort),
 		Handler: r,
 	}
 
-	go server.ListenAndServe()
-	log.Println("listening...")
+	go func() {
+		if err := server.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("failed to wake server up: %v", err)
+		}
+	}()
 
 	counter := 0
-
 	ticker := time.NewTicker(time.Second)
+
 	for {
-		<-ticker.C
-		counter += 1
-		if counter > patient {
-			log.Println("exhausted to wait validation report. exit 1.")
-			os.Exit(1)
+		select {
+		case <-ticker.C:
+			counter += 1
+			if counter > patient {
+				cancel()
+				log.Fatalln("exhausted to wait for validation report.")
+			}
+		case exitCode := <-received:
+			server.Shutdown(ctx)
+			cancel()
+			os.Exit(exitCode)
 		}
 	}
 }

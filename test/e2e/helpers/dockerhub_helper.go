@@ -161,7 +161,7 @@ func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
 	err := test.WaitForPodState(client.Kube, func(p *corev1.Pod) (bool, error) {
 		if p.Status.Phase == corev1.PodFailed {
 			log, e := client.Kube.PodLogs(p.Name, p.Spec.Containers[0].Name, p.Namespace)
-			return true, fmt.Errorf("pod %s failed. (log, err)=: (%v,\n%v)", p.Name, string(log), e)
+			return true, fmt.Errorf("pod %s failed. (log, err)=: (\n%v,\n%v)", p.Name, string(log), e)
 		} else if p.Status.Phase != corev1.PodSucceeded {
 			return false, nil
 		}

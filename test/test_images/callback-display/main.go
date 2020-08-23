@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
@@ -20,6 +21,10 @@ func display(event cloudevents.Event) {
 		return
 	}
 	log.Printf("Got Data: %+v\n", data)
+
+	// ensure RA finished processing incoming webhook.
+	time.Sleep(time.Second*5)
+	// if RA send validation webhook behalf, operation below should fail.
 
 	if data.CallbackURL != "" {
 		message := "Event has been sent successfully to the sink."
