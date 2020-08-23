@@ -158,11 +158,11 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 
 // waitForPodSuccessOrFail waits for v1.PodSucceeded or fail.
 func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
-	err := test.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
-		if pod.Status.Phase == corev1.PodFailed {
-			log, e := client.Kube.PodLogs(pod.Name, pod.Spec.Containers[0].Name, pod.Namespace)
-			return true, fmt.Errorf("pod %s failed. (log, err)=: (%v,\n%v)", pod.Name, string(log), e)
-		} else if pod.Status.Phase != corev1.PodSucceeded {
+	err := test.WaitForPodState(client.Kube, func(p *corev1.Pod) (bool, error) {
+		if p.Status.Phase == corev1.PodFailed {
+			log, e := client.Kube.PodLogs(p.Name, p.Spec.Containers[0].Name, p.Namespace)
+			return true, fmt.Errorf("pod %s failed. (log, err)=: (%v,\n%v)", p.Name, string(log), e)
+		} else if p.Status.Phase != corev1.PodSucceeded {
 			return false, nil
 		}
 		return true, nil

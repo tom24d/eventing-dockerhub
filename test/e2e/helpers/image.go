@@ -74,10 +74,10 @@ func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
 func createPodOrFailWithMessage(client *lib.Client, pod *v1.Pod) {
 	client.CreatePodOrFail(pod, lib.WithService(pod.GetName()))
 
-	err := test.WaitForPodState(client.Kube, func(pod *v1.Pod) (bool, error) {
-		if pod.Status.Phase == v1.PodFailed {
-			return true, fmt.Errorf("pod failed to get up. message: %s", pod.Status.Message)
-		} else if pod.Status.Phase != v1.PodRunning {
+	err := test.WaitForPodState(client.Kube, func(p *v1.Pod) (bool, error) {
+		if p.Status.Phase == v1.PodFailed {
+			return true, fmt.Errorf("pod failed to get up. message: %s", p.Status.Message)
+		} else if p.Status.Phase != v1.PodRunning {
 			return false, nil
 		}
 		return true, nil
