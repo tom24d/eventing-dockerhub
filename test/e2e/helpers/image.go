@@ -9,6 +9,8 @@ import (
 
 	"knative.dev/eventing/test/lib"
 	"knative.dev/pkg/test"
+
+	"github.com/google/uuid"
 )
 
 // CreateValidationReceiverOrFail creates validation-receiver pod or fail.
@@ -20,6 +22,7 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
 			Name:      receiverImageName,
+			Labels:    map[string]string{"e2e-test": uuid.New().String()},
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{{
@@ -27,11 +30,6 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 				Image:           test.ImagePath(receiverImageName),
 				ImagePullPolicy: v1.PullAlways,
 				Args:            args,
-				Ports: []v1.ContainerPort{
-					{
-						ContainerPort: 8080,
-					},
-				},
 			}},
 			RestartPolicy: v1.RestartPolicyNever,
 		},
@@ -50,17 +48,13 @@ func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: client.Namespace,
 			Name:      receiverImageName,
+			Labels:    map[string]string{"e2e-test": uuid.New().String()},
 		},
 		Spec: v1.PodSpec{
 			Containers: []v1.Container{{
 				Name:            receiverImageName,
 				Image:           test.ImagePath(receiverImageName),
 				ImagePullPolicy: v1.PullAlways,
-				Ports: []v1.ContainerPort{
-					{
-						ContainerPort: ValidationReceivePort,
-					},
-				},
 			}},
 			RestartPolicy: v1.RestartPolicyNever,
 		},
