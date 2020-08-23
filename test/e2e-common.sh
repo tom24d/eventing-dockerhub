@@ -113,7 +113,7 @@ function install_istio() {
   fi
 
   # TODO: Figure out solid way to install Istio
-  local NET_ISTIO_COMMIT=f64ed34d3776a444372483dddc15a330c6c1ac53
+  local NET_ISTIO_COMMIT=104ee547cee5ec04752a05dae946c5852022cebf
 
   # And checkout the setup script based on that commit.
   local NET_ISTIO_DIR=$(mktemp -d)
