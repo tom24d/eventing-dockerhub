@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"os"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
@@ -16,10 +17,14 @@ import (
 func display(event cloudevents.Event) {
 	data := &dockerhub.BuildPayload{}
 	if err := event.DataAs(data); err != nil {
-		fmt.Printf("Got Data Error: %s\n", err.Error())
+		log.Printf("Got Data Error: %s\n", err.Error())
 		return
 	}
-	fmt.Printf("Got Data: %+v\n", data)
+	log.Printf("Got Data: %+v\n", data)
+
+	// ensure RA finished processing incoming webhook.
+	time.Sleep(time.Second*5)
+	// if RA send validation webhook behalf, operation below should fail.
 
 	if data.CallbackURL != "" {
 		message := "Event has been sent successfully to the sink."
@@ -32,9 +37,11 @@ func display(event cloudevents.Event) {
 
 		err := callbackData.EmitValidationCallback(data.CallbackURL)
 		if err != nil {
-			fmt.Printf("failed to send validation callback: %v", err)
+			log.Printf("failed to send validation callback: %v", err)
+			os.Exit(1)
 		} else {
-			fmt.Printf("callback is sent from callback-display: %v", callbackData)
+			log.Printf("callback is sent from callback-display: %v", callbackData)
+			os.Exit(0)
 		}
 	}
 }

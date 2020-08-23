@@ -9,8 +9,8 @@ To learn more about Knative, please visit
 If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
 and [DEVELOPMENT.md](./DEVELOPMENT.md).
 
-This project is inspired [JBoss community](https://docs.jboss.org/display/GSOC/Google+Summer+of+Code+2020+ideas#GoogleSummerofCode2020ideas-Knative-Eventsourcesforcontainerregistries,pipelinesandbuilds).
-
+The initial idea comes from [JBoss community](https://docs.jboss.org/display/GSOC/Google+Summer+of+Code+2020+ideas#GoogleSummerofCode2020ideas-Knative-Eventsourcesforcontainerregistries,pipelinesandbuilds).  
+This is a part of [Google Summer of Code 2020 project](https://summerofcode.withgoogle.com/projects/?sp-search=tom24d#5186775800086528).  
 
 ## Before you begin
 

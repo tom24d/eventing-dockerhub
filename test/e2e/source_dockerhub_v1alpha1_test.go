@@ -46,12 +46,10 @@ func TestDockerHubSource(t *testing.T) {
 	for name, test := range tests {
 		testData := test
 		t.Run(name+"-AutoCallbackEnabled", func(t *testing.T) {
-			t.Parallel()
-			helpers.DockerHubSourceV1Alpha1(t, &testData.webhookPayload, false, testData.matcherGen)
+			helpers.DockerHubSourceV1Alpha1(t, testData.webhookPayload, false, testData.matcherGen)
 		})
 		t.Run(name+"-AutoCallbackDisabled", func(t *testing.T) {
-			t.Parallel()
-			helpers.DockerHubSourceV1Alpha1(t, &testData.webhookPayload, true, testData.matcherGen)
+			helpers.DockerHubSourceV1Alpha1(t, testData.webhookPayload, true, testData.matcherGen)
 		})
 	}
 }

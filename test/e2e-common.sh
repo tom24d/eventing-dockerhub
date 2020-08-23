@@ -113,7 +113,7 @@ function install_istio() {
   fi
 
   # TODO: Figure out solid way to install Istio
-  local NET_ISTIO_COMMIT=f64ed34d3776a444372483dddc15a330c6c1ac53
+  local NET_ISTIO_COMMIT=104ee547cee5ec04752a05dae946c5852022cebf
 
   # And checkout the setup script based on that commit.
   local NET_ISTIO_DIR=$(mktemp -d)
@@ -186,6 +186,17 @@ function smoke_test() {
 }
 
 function test_setup() {
+  echo ">> Setting up logging..."
+  # Install kail if needed.
+  if ! which kail > /dev/null; then
+    bash <( curl -sfL https://raw.githubusercontent.com/boz/kail/master/godownloader.sh) -b "$GOPATH/bin"
+  fi
+  # Capture all logs.
+  kail > ${ARTIFACTS}/k8s.log.txt &
+  local kail_pid=$!
+  # Clean up kail so it doesn't interfere with job shutting down
+  add_trap "kill $kail_pid || true" EXIT
+
   echo ">> Creating ${TEST_SOURCE_NAMESPACE} namespace if it does not exist"
   kubectl get ns ${TEST_SOURCE_NAMESPACE} || kubectl create namespace ${TEST_SOURCE_NAMESPACE}
 

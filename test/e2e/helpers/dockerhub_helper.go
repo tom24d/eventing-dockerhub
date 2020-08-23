@@ -20,13 +20,14 @@ import (
 
 	// pkg imports
 	"knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/test"
 
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhsOptions "github.com/tom24d/eventing-dockerhub/pkg/reconciler/testing"
 
 	dockerhub "gopkg.in/go-playground/webhooks.v5/docker"
 
-	"github.com/cloudevents/sdk-go/v2/test"
+	cetestv2 "github.com/cloudevents/sdk-go/v2/test"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -36,6 +37,8 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 	if err != nil {
 		client.T.Fatalf("failed to marshal payload: %v", err)
 	}
+
+	client.T.Logf("Sending %+v to %s", data, targetURL)
 
 	res, err := http.Post(targetURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -89,57 +92,83 @@ func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv
 	}
 }
 
-func DockerHubSourceV1Alpha1(t *testing.T, payload *dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) test.EventMatcher) {
+func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) cetestv2.EventMatcher) {
 	const (
 		dockerHubSourceName = "e2e-dockerhub-source"
 		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
 	)
 
-	client := eventingtestlib.Setup(t, false)
+	payload := &data
+
+	client := eventingtestlib.Setup(t, true)
 	defer eventingtestlib.TearDown(client)
 
-	// create event logger eventSender and service
-	eventTracker, _ := recordevents.StartEventRecordOrFail(client, recordEventPodName)
+	var eventTracker *recordevents.EventInfoStore
+	var ref *v1.KReference
+	var callbackPod *corev1.Pod
+
+	if !disableAutoCallback {
+		// create event logger eventSender and service
+		eventTracker, _ = recordevents.StartEventRecordOrFail(client, recordEventPodName)
+		ref = resources.KnativeRefForService(recordEventPodName, client.Namespace)
+	} else {
+		// create callback-display pod and service
+		callbackPod = CreateCallbackDisplayOrFail(client)
+		ref = resources.KnativeRefForService(callbackPod.Name, client.Namespace)
+	}
 
 	dockerHubSource := dhsOptions.NewDockerHubSourceV1Alpha1(
 		dockerHubSourceName,
 		client.Namespace,
 		dhsOptions.DisabledAutoCallback(disableAutoCallback),
-		dhsOptions.WithSinkV1A1(v1.Destination{
-			Ref: resources.KnativeRefForService(recordEventPodName, client.Namespace)},
-		),
+		dhsOptions.WithSinkV1A1(v1.Destination{Ref: ref}),
 	)
 
 	t.Log("Creating DockerHubSource")
-	createdDHS := CreateDockerHubSourceOrFail(client, dockerHubSource)
+	CreateDockerHubSourceOrFail(client, dockerHubSource)
 
 	// wait for DockerHubSource to be URL allocated
 	client.WaitForAllTestResourcesReadyOrFail()
 
-	// set URL, visibility
-	allocatedURL := GetSourceEndpointOrFail(client, createdDHS)
+	// set URL
+	allocatedURL := GetSourceEndpointOrFail(client, dockerHubSource)
 
-	var validationReceiverPod *corev1.Pod
-	if !disableAutoCallback {
-		validationReceiverPod = CreateValidationReceiverOrFail(client)
+	validationReceiverPod := CreateValidationReceiverOrFail(client)
 
-		client.WaitForAllTestResourcesReadyOrFail()
+	// set callbackURL
+	payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
 
-		// set callbackURL
-		payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
-	}
-
-	// access test from cluster inside
+	// access test
 	t.Log("Send webhook to DockerHubSource")
 	MustSendWebhook(client, allocatedURL, payload)
 
-	if !disableAutoCallback {
-		t.Log("Waiting for validation receiver report...")
-		WaitForValidationReceiverPodSuccessOrFail(client, validationReceiverPod)
+	if eventTracker != nil { // == !disableAutoCallback
+		t.Log("Asserting CloudEvents...")
+		eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+	} else if callbackPod != nil {
+		t.Log("Confirming callback-display reports succeeded...")
+		waitForPodSuccessOrFail(client, callbackPod)
 	}
 
-	t.Log("Asserting CloudEvents...")
-	eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
+	t.Log("Waiting for validation receiver report...")
+	waitForPodSuccessOrFail(client, validationReceiverPod)
 
 	MustHasSameServiceName(client, dockerHubSource)
+}
+
+// waitForPodSuccessOrFail waits for v1.PodSucceeded or fail.
+func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
+	err := test.WaitForPodState(client.Kube, func(p *corev1.Pod) (bool, error) {
+		if p.Status.Phase == corev1.PodFailed {
+			log, e := client.Kube.PodLogs(p.Name, p.Spec.Containers[0].Name, p.Namespace)
+			return true, fmt.Errorf("pod %s failed. (log, err)=: (\n%v,\n%v)", p.Name, string(log), e)
+		} else if p.Status.Phase != corev1.PodSucceeded {
+			return false, nil
+		}
+		return true, nil
+	}, pod.Name, pod.Namespace)
+
+	if err != nil {
+		client.T.Fatalf("Failed waiting for completeness of the pod: %v", err)
+	}
 }
