@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"strconv"
 
 	"k8s.io/api/core/v1"
@@ -67,17 +66,9 @@ func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
 
 func createPodOrFailWithMessage(client *lib.Client, pod *v1.Pod) {
 	client.CreatePodOrFail(pod, lib.WithService(pod.GetName()))
-
-	err := test.WaitForPodState(client.Kube, func(p *v1.Pod) (bool, error) {
-		if p.Status.Phase == v1.PodFailed {
-			return true, fmt.Errorf("pod failed to get up. message: %s", p.Status.Message)
-		} else if p.Status.Phase != v1.PodRunning {
-			return false, nil
-		}
-		return true, nil
-	}, pod.Name, pod.Namespace)
-
+	err := test.WaitForPodRunning(client.Kube, pod.GetName(), client.Namespace)
 	if err != nil {
 		client.T.Fatalf("Failed waiting for pod running %q: %v", pod.Name, pod)
 	}
+	client.WaitForServiceEndpointsOrFail(pod.GetName(), 1)
 }
