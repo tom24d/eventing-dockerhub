@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"time"
 
@@ -17,14 +19,17 @@ func init() {
 	flag.IntVar(&patient, "patient", 30, "The seconds to wait")
 }
 
-// wait for sec PATIENT_DURATION, exit 0 or 1
+// wait for sec patient, exit 0 or 1
 func main() {
 	flag.Parse()
 
 	h := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
+		reqDump, _ := httputil.DumpRequest(r, true)
+		log.Printf("incoming request: %s", string(reqDump))
 		_, err := resources.Parse(r)
 		if err != nil {
+			log.Println(err.Error())
 			os.Exit(1)
 		}
 		os.Exit(0)
@@ -38,6 +43,7 @@ func main() {
 	}
 
 	go server.ListenAndServe()
+	log.Println("listening...")
 
 	counter := 0
 
@@ -46,6 +52,7 @@ func main() {
 		<-ticker.C
 		counter += 1
 		if counter > patient {
+			log.Println("exhausted to wait validation report. exit 1.")
 			os.Exit(1)
 		}
 	}

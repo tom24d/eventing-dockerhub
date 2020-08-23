@@ -14,7 +14,7 @@ import (
 // CreateValidationReceiverOrFail creates validation-receiver pod or fail.
 func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 	const receiverImageName = "validation-receiver"
-	args := []string{"--patient", strconv.Itoa(60)}
+	args := []string{"--patient=" + strconv.Itoa(60)}
 
 	receiverPod := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{

@@ -38,6 +38,8 @@ func MustSendWebhook(client *eventingtestlib.Client, targetURL string, data *doc
 		client.T.Fatalf("failed to marshal payload: %v", err)
 	}
 
+	client.T.Logf("Sending %+v to %s", data, targetURL)
+
 	res, err := http.Post(targetURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		client.T.Fatalf("failed to send payload: %v", err)
@@ -154,11 +156,12 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 	MustHasSameServiceName(client, dockerHubSource)
 }
 
-// waitForValidationReceiverPodSuccessOrFail waits for v1.PodSucceeded or fail.
+// waitForPodSuccessOrFail waits for v1.PodSucceeded or fail.
 func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
 	err := test.WaitForPodState(client.Kube, func(pod *corev1.Pod) (bool, error) {
 		if pod.Status.Phase == corev1.PodFailed {
-			return true, fmt.Errorf("pod %s failed", pod.Name)
+			log, e := client.Kube.PodLogs(pod.Name, pod.Spec.Containers[0].Name, pod.Namespace)
+			return true, fmt.Errorf("pod %s failed. (log, err)=: (%v,\n%v)", pod.Name, string(log), e)
 		} else if pod.Status.Phase != corev1.PodSucceeded {
 			return false, nil
 		}
