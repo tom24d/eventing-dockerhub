@@ -58,7 +58,7 @@ func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
 				ImagePullPolicy: v1.PullAlways,
 				Ports: []v1.ContainerPort{
 					{
-						ContainerPort: 8080,
+						ContainerPort: ValidationReceivePort,
 					},
 				},
 			}},

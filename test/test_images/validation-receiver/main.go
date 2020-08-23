@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
+	"github.com/tom24d/eventing-dockerhub/test/e2e/helpers"
 )
 
 var (
@@ -38,7 +40,7 @@ func main() {
 	r.HandleFunc("/", h)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%d", helpers.ValidationReceivePort),
 		Handler: r,
 	}
 
