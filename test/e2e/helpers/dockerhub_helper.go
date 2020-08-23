@@ -142,9 +142,6 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 	t.Log("Send webhook to DockerHubSource")
 	MustSendWebhook(client, allocatedURL, payload)
 
-	t.Log("Waiting for validation receiver report...")
-	waitForPodSuccessOrFail(client, validationReceiverPod)
-
 	if eventTracker != nil { // == !disableAutoCallback
 		t.Log("Asserting CloudEvents...")
 		eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
@@ -152,6 +149,9 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 		t.Log("Confirming callback-display reports succeeded...")
 		waitForPodSuccessOrFail(client, callbackPod)
 	}
+
+	t.Log("Waiting for validation receiver report...")
+	waitForPodSuccessOrFail(client, validationReceiverPod)
 
 	MustHasSameServiceName(client, dockerHubSource)
 }
