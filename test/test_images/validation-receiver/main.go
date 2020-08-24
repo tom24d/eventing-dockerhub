@@ -53,6 +53,7 @@ func main() {
 	}
 
 	go func() {
+		log.Println("start listening to validation report...")
 		if err := server.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatalf("failed to wake server up: %v", err)
 		}
