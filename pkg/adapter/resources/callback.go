@@ -48,8 +48,8 @@ func (callback *CallbackPayload) EmitValidationCallback(callbackURL string) erro
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode < http.StatusOK || resp.StatusCode >= 300 {
-		return fmt.Errorf("sending callback failed")
+	if c := resp.StatusCode; c < http.StatusOK || http.StatusBadRequest <= c {
+		return fmt.Errorf("failed to send callback. status code: %d", c)
 	}
 	return nil
 }
