@@ -127,13 +127,15 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 	t.Log("Creating DockerHubSource")
 	CreateDockerHubSourceOrFail(client, dockerHubSource)
 
+	validationReceiverPod := CreateValidationReceiverOrFail(client)
+
+
 	// wait for DockerHubSource to be URL allocated
 	client.WaitForAllTestResourcesReadyOrFail()
 
 	// set URL
 	allocatedURL := GetSourceEndpointOrFail(client, dockerHubSource)
 
-	validationReceiverPod := CreateValidationReceiverOrFail(client)
 
 	// set callbackURL
 	payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
