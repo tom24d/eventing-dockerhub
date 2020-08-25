@@ -20,9 +20,7 @@ source $(dirname $0)/e2e-common.sh
 
 
 # Script entry point.
-# TODO(tom24d) cannot install Serving and Eventing together. working on it.
-#initialize $@ --skip-istio-addon --use-istio
-initialize $@ --skip-istio-addon --use-kourier
+initialize $@ --skip-istio-addon --use-istio
 
 go_test_e2e -timeout=5m ./test/e2e -tag=e2e || fail_test
 

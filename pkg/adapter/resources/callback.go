@@ -8,6 +8,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // parse errors
@@ -42,12 +44,12 @@ func (callback *CallbackPayload) EmitValidationCallback(callbackURL string) erro
 		return err
 	}
 
-	resp, err := http.Post(callbackURL, "application/json", bytes.NewBuffer(payload))
+	resp, err := retryablehttp.Post(callbackURL, "application/json", bytes.NewBuffer(payload))
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode < http.StatusOK || resp.StatusCode >= 300 {
-		return fmt.Errorf("sending callback failed")
+	if c := resp.StatusCode; c < http.StatusOK || http.StatusBadRequest <= c {
+		return fmt.Errorf("failed to send callback. status code: %d", c)
 	}
 	return nil
 }

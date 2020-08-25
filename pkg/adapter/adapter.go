@@ -172,6 +172,9 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 		return err
 	}
 
+	// if fail to send, retry with exponential backoff
+	ctx := cloudevents.ContextWithRetriesExponentialBackoff(context.Background(), 50*time.Millisecond, 5)
+
 	event := cloudevents.NewEvent()
 	event.SetID(uid.String())
 	event.SetType(cloudEventType)
@@ -186,7 +189,7 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 
 	a.logger.Infof("Sending event: %v", event)
 
-	result := a.client.Send(context.Background(), event)
+	result := a.client.Send(ctx, event)
 	if !cloudevents.IsACK(result) {
 		return fmt.Errorf("send() could not get ACK: %v", result)
 	}

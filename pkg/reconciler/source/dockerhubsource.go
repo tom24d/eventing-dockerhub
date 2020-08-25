@@ -130,7 +130,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 	}
 
-	if ksvc.Status.GetCondition(apis.ConditionReady).IsTrue() && ksvc.Status.URL != nil {
+	if ksvc.IsReady() && ksvc.Status.URL != nil {
 		src.Status.MarkEndpoint(ksvc.Status.URL)
 	}
 
