@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 # (tom24d) donotpush to org repo
 
 if [[ ! -v TAG ]]; then
   TAG="nightly"
+  readonly TAG
+elif [[ ${TAG} =~ refs/tags/([v|0-9|.]+) ]]; then
+  TAG=${BASH_REMATCH[1]}
   readonly TAG
 fi
 
