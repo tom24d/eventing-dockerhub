@@ -41,7 +41,7 @@ var (
 )
 
 const (
-	dockerHubEventTypePrefix   = "dev.knative.source.dockerhub"
+	dockerHubEventTypePrefix   = "tom24d.source.dockerhub" // TODO change this to dev.knative when the time comes.
 	dockerHubEventSourcePrefix = "https://hub.docker.com"
 )
 

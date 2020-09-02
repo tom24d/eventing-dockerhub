@@ -32,6 +32,7 @@ const (
 	testCallbackPort            = "4320"
 	testAdapterPort             = "8765"
 	callbackServerWaitThreshold = 4
+	cloudEventTypePush          = "tom24d.source.dockerhub.push"
 )
 
 var testTime, _ = cetypes.ParseTime("2018-04-05T17:31:00Z")
@@ -82,7 +83,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPost,
 		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: true,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventType:     cloudEventTypePush,
 		wantCloudEventSubject:  testSubject,
 		wantCloudEventTime: func() time.Time {
 			var testCETime = time.Unix(testTime.Unix(), 0)
@@ -101,7 +102,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPost,
 		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventType:     cloudEventTypePush,
 		wantCallbackExpected:   false,
 	},
 	{
@@ -127,7 +128,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPost,
 		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventType:     cloudEventTypePush,
 		wantCallbackExpected:   false,
 	},
 	{
@@ -139,7 +140,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPost,
 		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventType:     cloudEventTypePush,
 		wantCallbackExpected:   false,
 	},
 	{
@@ -156,7 +157,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPost,
 		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventType:     cloudEventTypePush,
 		wantCallbackExpected:   false,
 	},
 	{
@@ -169,7 +170,7 @@ var testCases = []testCase{
 		httpMethod:             http.MethodPatch,
 		eventType:              resources.DockerHubEventType,
 		cloudEventSendExpected: false,
-		wantCloudEventType:     "dev.knative.source.dockerhub.push",
+		wantCloudEventType:     cloudEventTypePush,
 		wantCallbackExpected:   false,
 	},
 }
