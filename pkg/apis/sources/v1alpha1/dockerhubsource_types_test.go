@@ -21,7 +21,7 @@ func TestDockerHubSource_GetGroupVersionKind(t *testing.T) {
 }
 
 func TestDockerHubCloudEventsEventType(t *testing.T) {
-	prefix := "dev.knative.source.dockerhub"
+	prefix := "tom24d.source.dockerhub"
 	eventType := "push"
 	want := fmt.Sprintf("%s.%s", prefix, eventType)
 
