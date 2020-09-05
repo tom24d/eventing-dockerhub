@@ -71,7 +71,7 @@ Copy `http://<your-endpoint-for-DockerHubSource>` to configure dockerhub webhook
 Validation: valid
 Context Attributes,
   specversion: 1.0
-  type: dev.knative.source.dockerhub.push
+  type: tom24d.source.dockerhub.push
   source: https://hub.docker.com/r/tom24d/postwebhook
   subject: tom24d
   id: fd4c1670-b126-4289-b025-61579ceeee3d
