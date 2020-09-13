@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
@@ -61,13 +62,13 @@ func NewFilteredDockerHubSourceInformer(client versioned.Interface, namespace st
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SourcesV1alpha1().DockerHubSources(namespace).List(options)
+				return client.SourcesV1alpha1().DockerHubSources(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.SourcesV1alpha1().DockerHubSources(namespace).Watch(options)
+				return client.SourcesV1alpha1().DockerHubSources(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&sourcesv1alpha1.DockerHubSource{},

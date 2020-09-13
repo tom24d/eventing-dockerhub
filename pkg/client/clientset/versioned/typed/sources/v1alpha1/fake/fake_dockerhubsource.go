@@ -19,6 +19,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -39,7 +41,7 @@ var dockerhubsourcesResource = schema.GroupVersionResource{Group: "sources.knati
 var dockerhubsourcesKind = schema.GroupVersionKind{Group: "sources.knative.dev", Version: "v1alpha1", Kind: "DockerHubSource"}
 
 // Get takes name of the dockerHubSource, and returns the corresponding dockerHubSource object, and an error if there is any.
-func (c *FakeDockerHubSources) Get(name string, options v1.GetOptions) (result *v1alpha1.DockerHubSource, err error) {
+func (c *FakeDockerHubSources) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DockerHubSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(dockerhubsourcesResource, c.ns, name), &v1alpha1.DockerHubSource{})
 
@@ -50,7 +52,7 @@ func (c *FakeDockerHubSources) Get(name string, options v1.GetOptions) (result *
 }
 
 // List takes label and field selectors, and returns the list of DockerHubSources that match those selectors.
-func (c *FakeDockerHubSources) List(opts v1.ListOptions) (result *v1alpha1.DockerHubSourceList, err error) {
+func (c *FakeDockerHubSources) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DockerHubSourceList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(dockerhubsourcesResource, dockerhubsourcesKind, c.ns, opts), &v1alpha1.DockerHubSourceList{})
 
@@ -72,14 +74,14 @@ func (c *FakeDockerHubSources) List(opts v1.ListOptions) (result *v1alpha1.Docke
 }
 
 // Watch returns a watch.Interface that watches the requested dockerHubSources.
-func (c *FakeDockerHubSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeDockerHubSources) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(dockerhubsourcesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a dockerHubSource and creates it.  Returns the server's representation of the dockerHubSource, and an error, if there is any.
-func (c *FakeDockerHubSources) Create(dockerHubSource *v1alpha1.DockerHubSource) (result *v1alpha1.DockerHubSource, err error) {
+func (c *FakeDockerHubSources) Create(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.CreateOptions) (result *v1alpha1.DockerHubSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(dockerhubsourcesResource, c.ns, dockerHubSource), &v1alpha1.DockerHubSource{})
 
@@ -90,7 +92,7 @@ func (c *FakeDockerHubSources) Create(dockerHubSource *v1alpha1.DockerHubSource)
 }
 
 // Update takes the representation of a dockerHubSource and updates it. Returns the server's representation of the dockerHubSource, and an error, if there is any.
-func (c *FakeDockerHubSources) Update(dockerHubSource *v1alpha1.DockerHubSource) (result *v1alpha1.DockerHubSource, err error) {
+func (c *FakeDockerHubSources) Update(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.UpdateOptions) (result *v1alpha1.DockerHubSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(dockerhubsourcesResource, c.ns, dockerHubSource), &v1alpha1.DockerHubSource{})
 
@@ -102,7 +104,7 @@ func (c *FakeDockerHubSources) Update(dockerHubSource *v1alpha1.DockerHubSource)
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeDockerHubSources) UpdateStatus(dockerHubSource *v1alpha1.DockerHubSource) (*v1alpha1.DockerHubSource, error) {
+func (c *FakeDockerHubSources) UpdateStatus(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.UpdateOptions) (*v1alpha1.DockerHubSource, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(dockerhubsourcesResource, "status", c.ns, dockerHubSource), &v1alpha1.DockerHubSource{})
 
@@ -113,7 +115,7 @@ func (c *FakeDockerHubSources) UpdateStatus(dockerHubSource *v1alpha1.DockerHubS
 }
 
 // Delete takes name of the dockerHubSource and deletes it. Returns an error if one occurs.
-func (c *FakeDockerHubSources) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeDockerHubSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(dockerhubsourcesResource, c.ns, name), &v1alpha1.DockerHubSource{})
 
@@ -121,15 +123,15 @@ func (c *FakeDockerHubSources) Delete(name string, options *v1.DeleteOptions) er
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeDockerHubSources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(dockerhubsourcesResource, c.ns, listOptions)
+func (c *FakeDockerHubSources) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(dockerhubsourcesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.DockerHubSourceList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched dockerHubSource.
-func (c *FakeDockerHubSources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.DockerHubSource, err error) {
+func (c *FakeDockerHubSources) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DockerHubSource, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(dockerhubsourcesResource, c.ns, name, pt, data, subresources...), &v1alpha1.DockerHubSource{})
 
