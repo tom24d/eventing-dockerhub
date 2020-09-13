@@ -34,9 +34,9 @@ func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.Owner
 	expected := resources.MakeSinkBinding(owner, source, subject)
 
 	namespace := owner.GetObjectMeta().GetNamespace()
-	sb, err := r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Get(expected.Name, metav1.GetOptions{})
+	sb, err := r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Get(ctx, expected.Name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
-		sb, err = r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Create(expected)
+		sb, err = r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Create(ctx, expected, metav1.CreateOptions{})
 		if err != nil {
 			return nil, newSinkBindingFailed(expected.Namespace, expected.Name, err)
 		}
@@ -48,7 +48,7 @@ func (r *Reconciler) ReconcileSinkBinding(ctx context.Context, owner kmeta.Owner
 			sb.Name, owner.GetGroupVersionKind().Kind, owner.GetObjectMeta().GetName())
 	} else if r.specChanged(sb.Spec, expected.Spec) {
 		sb.Spec = expected.Spec
-		if sb, err = r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Update(sb); err != nil {
+		if sb, err = r.eventingClientSet.SourcesV1alpha2().SinkBindings(namespace).Update(ctx, sb, metav1.UpdateOptions{}); err != nil {
 			return sb, err
 		}
 		return sb, nil

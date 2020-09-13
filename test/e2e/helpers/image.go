@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"context"
 	"strconv"
 
 	"k8s.io/api/core/v1"
@@ -13,7 +14,7 @@ import (
 )
 
 // CreateValidationReceiverOrFail creates validation-receiver pod or fail.
-func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
+func CreateValidationReceiverOrFail(ctx context.Context, client *lib.Client) *v1.Pod {
 	const receiverImageName = "validation-receiver"
 	args := []string{"--patient=" + strconv.Itoa(180)}
 
@@ -34,13 +35,13 @@ func CreateValidationReceiverOrFail(client *lib.Client) *v1.Pod {
 		},
 	}
 
-	createPodOrFailWithMessage(client, receiverPod)
+	createPodOrFailWithMessage(ctx, client, receiverPod)
 
 	return receiverPod
 }
 
 // CreateCallbackDisplayOrFail creates callback-display pod or fail.
-func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
+func CreateCallbackDisplayOrFail(ctx context.Context, client *lib.Client) *v1.Pod {
 	const receiverImageName = "callback-display"
 
 	callbackPod := &v1.Pod{
@@ -59,16 +60,16 @@ func CreateCallbackDisplayOrFail(client *lib.Client) *v1.Pod {
 		},
 	}
 
-	createPodOrFailWithMessage(client, callbackPod)
+	createPodOrFailWithMessage(ctx, client, callbackPod)
 
 	return callbackPod
 }
 
-func createPodOrFailWithMessage(client *lib.Client, pod *v1.Pod) {
+func createPodOrFailWithMessage(ctx context.Context, client *lib.Client, pod *v1.Pod) {
 	client.CreatePodOrFail(pod, lib.WithService(pod.GetName()))
-	err := test.WaitForPodRunning(client.Kube, pod.GetName(), client.Namespace)
+	err := test.WaitForPodRunning(ctx, client.Kube, pod.GetName(), client.Namespace)
 	if err != nil {
 		client.T.Fatalf("Failed waiting for pod running %q: %v", pod.Name, pod)
 	}
-	client.WaitForServiceEndpointsOrFail(pod.GetName(), 1)
+	client.WaitForServiceEndpointsOrFail(ctx, pod.GetName(), 1)
 }
