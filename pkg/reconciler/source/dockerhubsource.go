@@ -60,7 +60,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	ksvc, err := r.getOwnedService(ctx, src)
 	if apierrors.IsNotFound(err) {
 		ksvc = r.getExpectedService(ctx, src)
-		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Create(ksvc)
+		ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Create(ctx, ksvc, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 				// override env
 				ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
 
-				ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ksvc)
+				ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ctx, ksvc, metav1.UpdateOptions{})
 				return err
 			})
 			if err != nil {
@@ -137,8 +137,8 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	return nil
 }
 
-func (r *Reconciler) getOwnedService(_ context.Context, src *v1alpha1.DockerHubSource) (*v1.Service, error) {
-	serviceList, err := r.servingClientSet.ServingV1().Services(src.Namespace).List(metav1.ListOptions{})
+func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHubSource) (*v1.Service, error) {
+	serviceList, err := r.servingClientSet.ServingV1().Services(src.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}

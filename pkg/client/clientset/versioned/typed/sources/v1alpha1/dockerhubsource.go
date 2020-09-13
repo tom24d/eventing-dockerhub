@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
@@ -37,15 +38,15 @@ type DockerHubSourcesGetter interface {
 
 // DockerHubSourceInterface has methods to work with DockerHubSource resources.
 type DockerHubSourceInterface interface {
-	Create(*v1alpha1.DockerHubSource) (*v1alpha1.DockerHubSource, error)
-	Update(*v1alpha1.DockerHubSource) (*v1alpha1.DockerHubSource, error)
-	UpdateStatus(*v1alpha1.DockerHubSource) (*v1alpha1.DockerHubSource, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.DockerHubSource, error)
-	List(opts v1.ListOptions) (*v1alpha1.DockerHubSourceList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.DockerHubSource, err error)
+	Create(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.CreateOptions) (*v1alpha1.DockerHubSource, error)
+	Update(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.UpdateOptions) (*v1alpha1.DockerHubSource, error)
+	UpdateStatus(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.UpdateOptions) (*v1alpha1.DockerHubSource, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.DockerHubSource, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.DockerHubSourceList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DockerHubSource, err error)
 	DockerHubSourceExpansion
 }
 
@@ -64,20 +65,20 @@ func newDockerHubSources(c *SourcesV1alpha1Client, namespace string) *dockerHubS
 }
 
 // Get takes name of the dockerHubSource, and returns the corresponding dockerHubSource object, and an error if there is any.
-func (c *dockerHubSources) Get(name string, options v1.GetOptions) (result *v1alpha1.DockerHubSource, err error) {
+func (c *dockerHubSources) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DockerHubSource, err error) {
 	result = &v1alpha1.DockerHubSource{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("dockerhubsources").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of DockerHubSources that match those selectors.
-func (c *dockerHubSources) List(opts v1.ListOptions) (result *v1alpha1.DockerHubSourceList, err error) {
+func (c *dockerHubSources) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DockerHubSourceList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -88,13 +89,13 @@ func (c *dockerHubSources) List(opts v1.ListOptions) (result *v1alpha1.DockerHub
 		Resource("dockerhubsources").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested dockerHubSources.
-func (c *dockerHubSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *dockerHubSources) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -105,87 +106,90 @@ func (c *dockerHubSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("dockerhubsources").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a dockerHubSource and creates it.  Returns the server's representation of the dockerHubSource, and an error, if there is any.
-func (c *dockerHubSources) Create(dockerHubSource *v1alpha1.DockerHubSource) (result *v1alpha1.DockerHubSource, err error) {
+func (c *dockerHubSources) Create(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.CreateOptions) (result *v1alpha1.DockerHubSource, err error) {
 	result = &v1alpha1.DockerHubSource{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("dockerhubsources").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(dockerHubSource).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a dockerHubSource and updates it. Returns the server's representation of the dockerHubSource, and an error, if there is any.
-func (c *dockerHubSources) Update(dockerHubSource *v1alpha1.DockerHubSource) (result *v1alpha1.DockerHubSource, err error) {
+func (c *dockerHubSources) Update(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.UpdateOptions) (result *v1alpha1.DockerHubSource, err error) {
 	result = &v1alpha1.DockerHubSource{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("dockerhubsources").
 		Name(dockerHubSource.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(dockerHubSource).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *dockerHubSources) UpdateStatus(dockerHubSource *v1alpha1.DockerHubSource) (result *v1alpha1.DockerHubSource, err error) {
+func (c *dockerHubSources) UpdateStatus(ctx context.Context, dockerHubSource *v1alpha1.DockerHubSource, opts v1.UpdateOptions) (result *v1alpha1.DockerHubSource, err error) {
 	result = &v1alpha1.DockerHubSource{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("dockerhubsources").
 		Name(dockerHubSource.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(dockerHubSource).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the dockerHubSource and deletes it. Returns an error if one occurs.
-func (c *dockerHubSources) Delete(name string, options *v1.DeleteOptions) error {
+func (c *dockerHubSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("dockerhubsources").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *dockerHubSources) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *dockerHubSources) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("dockerhubsources").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched dockerHubSource.
-func (c *dockerHubSources) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.DockerHubSource, err error) {
+func (c *dockerHubSources) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DockerHubSource, err error) {
 	result = &v1alpha1.DockerHubSource{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("dockerhubsources").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

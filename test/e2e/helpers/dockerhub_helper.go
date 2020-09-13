@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -55,7 +56,7 @@ func GetSourceEndpointOrFail(client *eventingtestlib.Client, source *sourcesv1al
 	url := ""
 
 	err := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool, error) {
-		dhs, err := dhCli.Get(source.Name, metav1.GetOptions{})
+		dhs, err := dhCli.Get(context.Background(), source.Name, metav1.GetOptions{})
 		if err != nil {
 			return true, fmt.Errorf("failed to get DockerHubSource: %v", source.Name)
 		}
@@ -72,17 +73,17 @@ func GetSourceEndpointOrFail(client *eventingtestlib.Client, source *sourcesv1al
 }
 
 // MustHasSameServiceName ensures the source keeps same ReceiveAdapterServiceName even if ksvc gets accidentally deleted.
-func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
-	before := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
+func MustHasSameServiceName(ctx context.Context, c *eventingtestlib.Client, dockerHubSource *sourcesv1alpha1.DockerHubSource) {
+	before := GetSourceOrFail(ctx, c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if before == "" {
 		c.T.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
-	DeleteKServiceOrFail(c, before, c.Namespace)
+	DeleteKServiceOrFail(ctx, c, before, c.Namespace)
 
 	// wait for DockerHubSource to re-make ksvc
-	c.WaitForAllTestResourcesReadyOrFail()
+	c.WaitForAllTestResourcesReadyOrFail(ctx)
 
-	after := GetSourceOrFail(c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
+	after := GetSourceOrFail(ctx, c, c.Namespace, dockerHubSource.Name).Status.ReceiveAdapterServiceName
 	if after == "" {
 		c.T.Fatalf("Failed to get DockerHubSource Service for %q", dockerHubSource.Name)
 	}
@@ -92,7 +93,7 @@ func MustHasSameServiceName(c *eventingtestlib.Client, dockerHubSource *sourcesv
 	}
 }
 
-func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) cetestv2.EventMatcher) {
+func DockerHubSourceV1Alpha1(t *testing.T, ctx context.Context, data dockerhub.BuildPayload, disableAutoCallback bool, matcherGen func(namespace string) cetestv2.EventMatcher) {
 	const (
 		dockerHubSourceName = "e2e-dockerhub-source"
 		recordEventPodName  = "e2e-dockerhub-source-logger-event-tracker"
@@ -109,11 +110,11 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 
 	if !disableAutoCallback {
 		// create event logger eventSender and service
-		eventTracker, _ = recordevents.StartEventRecordOrFail(client, recordEventPodName)
+		eventTracker, _ = recordevents.StartEventRecordOrFail(ctx, client, recordEventPodName)
 		ref = resources.KnativeRefForService(recordEventPodName, client.Namespace)
 	} else {
 		// create callback-display pod and service
-		callbackPod = CreateCallbackDisplayOrFail(client)
+		callbackPod = CreateCallbackDisplayOrFail(ctx, client)
 		ref = resources.KnativeRefForService(callbackPod.Name, client.Namespace)
 	}
 
@@ -125,17 +126,15 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 	)
 
 	t.Log("Creating DockerHubSource")
-	CreateDockerHubSourceOrFail(client, dockerHubSource)
+	CreateDockerHubSourceOrFail(ctx, client, dockerHubSource)
 
-	validationReceiverPod := CreateValidationReceiverOrFail(client)
-
+	validationReceiverPod := CreateValidationReceiverOrFail(ctx, client)
 
 	// wait for DockerHubSource to be URL allocated
-	client.WaitForAllTestResourcesReadyOrFail()
+	client.WaitForAllTestResourcesReadyOrFail(ctx)
 
 	// set URL
 	allocatedURL := GetSourceEndpointOrFail(client, dockerHubSource)
-
 
 	// set callbackURL
 	payload.CallbackURL = fmt.Sprintf("http://%s", client.GetServiceHost(validationReceiverPod.GetName()))
@@ -149,20 +148,20 @@ func DockerHubSourceV1Alpha1(t *testing.T, data dockerhub.BuildPayload, disableA
 		eventTracker.AssertExact(1, recordevents.MatchEvent(matcherGen(client.Namespace)))
 	} else if callbackPod != nil {
 		t.Log("Confirming callback-display reports succeeded...")
-		waitForPodSuccessOrFail(client, callbackPod)
+		waitForPodSuccessOrFail(ctx, client, callbackPod)
 	}
 
 	t.Log("Waiting for validation receiver report...")
-	waitForPodSuccessOrFail(client, validationReceiverPod)
+	waitForPodSuccessOrFail(ctx, client, validationReceiverPod)
 
-	MustHasSameServiceName(client, dockerHubSource)
+	MustHasSameServiceName(ctx, client, dockerHubSource)
 }
 
 // waitForPodSuccessOrFail waits for v1.PodSucceeded or fail.
-func waitForPodSuccessOrFail(client *eventingtestlib.Client, pod *corev1.Pod) {
-	err := test.WaitForPodState(client.Kube, func(p *corev1.Pod) (bool, error) {
+func waitForPodSuccessOrFail(ctx context.Context, client *eventingtestlib.Client, pod *corev1.Pod) {
+	err := test.WaitForPodState(ctx, client.Kube, func(p *corev1.Pod) (bool, error) {
 		if p.Status.Phase == corev1.PodFailed {
-			log, e := client.Kube.PodLogs(p.Name, p.Spec.Containers[0].Name, p.Namespace)
+			log, e := client.Kube.PodLogs(ctx, p.Name, p.Spec.Containers[0].Name, p.Namespace)
 			return true, fmt.Errorf("pod %s failed. (log, err)=: (\n%v,\n%v)", p.Name, string(log), e)
 		} else if p.Status.Phase != corev1.PodSucceeded {
 			return false, nil
