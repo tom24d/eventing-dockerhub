@@ -43,6 +43,8 @@ spec:
             value: knative.dev/eventing
           - name: WEBHOOK_NAME
             value: dockerhub-source-webhook
+          - name: WEBHOOK_PORT
+            value: "8443"
           ports:
           - containerPort: 9090
             name: metrics

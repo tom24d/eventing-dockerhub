@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"knative.dev/pkg/configmap"
@@ -17,6 +18,8 @@ import (
 	"knative.dev/pkg/webhook/resourcesemantics/defaulting"
 	"knative.dev/pkg/webhook/resourcesemantics/validation"
 
+	"knative.dev/eventing/pkg/logconfig"
+
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
@@ -26,8 +29,6 @@ var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
 }
 
 var callbacks = map[schema.GroupVersionKind]validation.Callback{}
-
-const admissionWebhookName = "dockerhub-source-webhook"
 
 // NewDefaultingAdmissionController sets up mutating webhook.
 func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
@@ -103,12 +104,12 @@ func NewConfigValidationController(ctx context.Context, cmw configmap.Watcher) *
 func main() {
 	// Set up a signal context with our webhook options
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
-		ServiceName: admissionWebhookName,
-		Port:        8443,
+		ServiceName: logconfig.WebhookName(),
+		Port:        webhook.PortFromEnv(8443),
 		SecretName:  "webhook-certs",
 	})
 
-	sharedmain.WebhookMainWithContext(ctx, admissionWebhookName,
+	sharedmain.WebhookMainWithContext(ctx, logconfig.WebhookName(),
 		certificates.NewController,
 		NewDefaultingAdmissionController,
 		NewValidationAdmissionController,
