@@ -31,16 +31,28 @@ func main() {
 
 	h := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
-		w.Write([]byte("payload received."))
+		fmt.Fprintln(w, "payload received.")
 		reqDump, _ := httputil.DumpRequest(r, true)
 		log.Printf("incoming request: %s", string(reqDump))
+
+		exitCode := 0
 		_, err := resources.Parse(r)
 		if err != nil {
 			log.Println(err.Error())
-			received <- 1
-		} else {
-			received <- 0
+			exitCode = 1
 		}
+
+		ch := make(chan struct{})
+		go func() {
+			ch <- struct{}{}
+
+			// ensure the goroutine of the handler has been finished.
+			time.Sleep(time.Second)
+
+			received <- exitCode
+		}()
+
+		<-ch
 	}
 	r := http.NewServeMux()
 	r.HandleFunc("/", h)
