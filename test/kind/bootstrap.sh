@@ -5,7 +5,7 @@ set -o errexit
 # license: Apache-2.0 License
 
 if [[ ! -v KIND_VERSION ]]; then
-  KIND_VERSION="v0.8.1"
+  KIND_VERSION="v0.9.0"
   readonly KIND_VERSION
 fi
 
@@ -24,7 +24,7 @@ cluster_name=knik
 reg_name='kind-registry'
 reg_port='5000'
 
-node_image='kindest/node:v1.16.9@sha256:7175872357bc85847ec4b1aba46ed1d12fa054c83ac7a8a11f5c268957fd5765'
+node_image='kindest/node:v1.16.15@sha256:a89c771f7de234e6547d43695c7ab047809ffc71a0c3b65aa54eda051c45ed20'
 
 
 
