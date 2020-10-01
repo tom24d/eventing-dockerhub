@@ -23,14 +23,14 @@ jobs:
         id: go
       - name: Get google/ko
         run: GO111MODULE=on go get github.com/google/ko/cmd/ko
-      - name: Log in to DockerHub
-        run: echo ${{ secrets.DOCKERHUB_PAT }} | docker login -u ${{ github.repository_owner }} --password-stdin
+      - name: Log in to GitHub Container Registry
+        run: echo ${{ secrets.UPDATE_BOT_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build source
         run: ./test/release.sh
         env:
-          KO_DOCKER_REPO: ${{ github.repository_owner }}
+          KO_DOCKER_REPO: ghcr.io/${{ github.repository_owner }}
           TAG: ${{ github.ref }}
 
       - name: Create Release
