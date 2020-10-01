@@ -30,7 +30,7 @@ jobs:
       - name: Build source
         run: ./test/release.sh
         env:
-          KO_DOCKER_REPO: ghcr.io/${{ github.repository_owner }}
+          KO_DOCKER_REPO: ghcr.io/${{ github.repository }}
           TAG: ${{ github.ref }}
 
       - name: Create Release
