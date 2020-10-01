@@ -936,7 +936,7 @@ knative.dev/eventing/pkg/client/informers/externalversions/sources/v1alpha2
 knative.dev/eventing/pkg/client/informers/externalversions/sources/v1beta1
 knative.dev/eventing/pkg/client/injection/client
 knative.dev/eventing/pkg/client/injection/informers/factory
-knative.dev/eventing/pkg/client/injection/informers/sources/v1alpha2/sinkbinding
+knative.dev/eventing/pkg/client/injection/informers/sources/v1beta1/sinkbinding
 knative.dev/eventing/pkg/client/listers/configs/v1alpha1
 knative.dev/eventing/pkg/client/listers/eventing/v1
 knative.dev/eventing/pkg/client/listers/eventing/v1beta1

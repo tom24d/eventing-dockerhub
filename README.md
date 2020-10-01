@@ -18,8 +18,8 @@ The demonstration video is [here](https://youtu.be/iU1Jnq0fq8A).
 `DockerHubSource` installation requires two knative component on your kubernetes cluster.  
 Plus, you need a build tool `ko`.
 
-- Knative Serving core  
-- Knative Eventing core  
+- Knative Serving core v0.16+  
+- Knative Eventing core v0.16+  
 - [ko](https://github.com/google/ko)  
 
 
