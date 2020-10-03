@@ -24,9 +24,9 @@ const (
 	// DockerHubSource is ready to receive webhook and send events.
 	DockerHubSourceConditionReady = apis.ConditionReady
 
-	// DockerHubSourceConditionSinkBound has status True when the
+	// DockerHubSourceConditionBindingAvailable has status True when the
 	// DockerHubSource has been configured with a sink target.
-	DockerHubSourceConditionSinkBound apis.ConditionType = "SinkBound"
+	DockerHubSourceConditionBindingAvailable apis.ConditionType = "BindingAvailable"
 
 	// DockerHubSourceConditionEndpointProvided has status True when the
 	// backing knative service gets ready.
@@ -34,7 +34,7 @@ const (
 )
 
 var dockerHubCondSet = apis.NewLivingConditionSet(
-	DockerHubSourceConditionSinkBound,
+	DockerHubSourceConditionBindingAvailable,
 	DockerHubSourceConditionEndpointProvided,
 )
 
@@ -89,12 +89,12 @@ func (dhs *DockerHubSource) GetSubject() tracker.Reference {
 // MarkBindingUnavailable marks the DockerHubSource's Binding Ready condition to False with
 // the provided reason and message.
 func (dhss *DockerHubSourceStatus) MarkBindingUnavailable(reason, message string) {
-	dockerHubCondSet.Manage(dhss).MarkFalse(DockerHubSourceConditionSinkBound, reason, message)
+	dockerHubCondSet.Manage(dhss).MarkFalse(DockerHubSourceConditionBindingAvailable, reason, message)
 }
 
 // MarkBindingAvailable marks the DockerHubSource's Binding Ready condition to True.
 func (dhss *DockerHubSourceStatus) MarkBindingAvailable() {
-	dockerHubCondSet.Manage(dhss).MarkTrue(DockerHubSourceConditionSinkBound)
+	dockerHubCondSet.Manage(dhss).MarkTrue(DockerHubSourceConditionBindingAvailable)
 }
 
 // SetObservedGeneration implements psbinding.BindableStatus
