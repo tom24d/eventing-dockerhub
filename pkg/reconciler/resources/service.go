@@ -1,5 +1,6 @@
 package resources
 
+
 import (
 	"context"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 
 	sourcesv1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
+	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
 )
 
 // ServiceArgs contains what the kservice needs.
@@ -26,7 +28,7 @@ type ServiceArgs struct {
 // MakeService generates, but does not create, a Service for the given
 // DockerHubSource.
 func MakeService(args *ServiceArgs) *v1.Service {
-	labels := Labels(args.Source.Name)
+	labels := resources.Labels(args.Source.Name)
 
 	ksvc := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{

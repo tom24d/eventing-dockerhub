@@ -1,7 +1,8 @@
 package main
 
 import (
-	// The set of controllers this controller process runs.
+	// The set of controllers this process runs.
+	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/binding"
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source"
 
 	// This defines the shared main for injected controllers.
@@ -13,5 +14,5 @@ const (
 )
 
 func main() {
-	sharedmain.Main(component, source.NewController)
+	sharedmain.Main(component, source.NewController, binding.NewController)
 }

@@ -38,6 +38,7 @@ var (
 	_ runtime.Object               = (*DockerHubSource)(nil)
 	_ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
 	_ duckv1.KRShaped              = (*DockerHubSource)(nil)
+
 )
 
 const (
