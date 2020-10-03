@@ -2,7 +2,6 @@ package source
 
 import (
 	"context"
-	"knative.dev/pkg/resolver"
 	"os"
 
 	// k8s.io imports
@@ -14,8 +13,6 @@ import (
 	dockerhubinformer "github.com/tom24d/eventing-dockerhub/pkg/client/injection/informers/sources/v1alpha1/dockerhubsource"
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 
-	eventingclient "knative.dev/eventing/pkg/client/injection/client"
-	sinkbindinginformer "knative.dev/eventing/pkg/client/injection/informers/sources/v1beta1/sinkbinding"
 	serviceclient "knative.dev/serving/pkg/client/injection/client"
 	kserviceinformer "knative.dev/serving/pkg/client/injection/informers/serving/v1/service"
 
@@ -43,32 +40,23 @@ func NewController(
 	}
 
 	ksvcInformer := kserviceinformer.Get(ctx)
-	sinkBindingInformer := sinkbindinginformer.Get(ctx)
 	dockerhubInformer := dockerhubinformer.Get(ctx)
 
 	r := &Reconciler{
 		kubeClientSet:       kubeclient.Get(ctx),
 		servingLister:       ksvcInformer.Lister(),
 		servingClientSet:    serviceclient.Get(ctx),
-		eventingClientSet:   eventingclient.Get(ctx),
 		receiveAdapterImage: raImage,
 		configAccessor:      reconcilersource.WatchConfigurations(ctx, "dockerhub_source", cmw),
 	}
 
 	impl := dhreconciler.NewImpl(ctx, r)
 
-	r.sinkResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
-
 	logging.FromContext(ctx).Info("Setting up DockerHub event handlers")
 
 	dockerhubInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	ksvcInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: controller.FilterControllerGK(v1alpha1.Kind("DockerHubSource")),
-		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-	})
-
-	sinkBindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.FilterControllerGK(v1alpha1.Kind("DockerHubSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})

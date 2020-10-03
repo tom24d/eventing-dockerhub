@@ -16,7 +16,6 @@ import (
 	servinglisters "knative.dev/serving/pkg/client/listers/serving/v1"
 
 	//knative/eventing imports
-	eventingclient "knative.dev/eventing/pkg/client/clientset/versioned"
 	reconcilersource "knative.dev/eventing/pkg/reconciler/source"
 
 	// github.com/tom24d/eventing-dockerhub imports
@@ -24,12 +23,9 @@ import (
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
 
-	"knative.dev/pkg/apis"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
-	"knative.dev/pkg/resolver"
-	"knative.dev/pkg/tracker"
 )
 
 const (
@@ -43,11 +39,7 @@ type Reconciler struct {
 	servingClientSet servingclientset.Interface
 	servingLister    servinglisters.ServiceLister
 
-	eventingClientSet eventingclient.Interface
-
 	receiveAdapterImage string
-
-	sinkResolver *resolver.URIResolver
 
 	configAccessor reconcilersource.ConfigAccessor
 }
@@ -77,30 +69,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		return fmt.Errorf("knative service is not set without error")
 	}
 	src.Status.ReceiveAdapterServiceName = ksvc.Name
-
-	// reconcile SinkBinding for the kservice.
-	// remove this logic once https://github.com/knative/eventing/issues/3422 lands.
-	logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
-	sb, errEvent := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
-		APIVersion: v1.SchemeGroupVersion.String(),
-		Kind:       "Service",
-		Namespace:  ksvc.Namespace,
-		Name:       ksvc.Name,
-	})
-	if sb != nil {
-		s := sb.Status.GetCondition(apis.ConditionReady)
-		if s.IsTrue() {
-			src.Status.MarkSink(sb.Status.SinkURI)
-		} else if s.IsFalse() {
-			// SinkBindingReconcileFailed is a propagated status from SinkBinding controller.
-			src.Status.MarkNoSink("SinkBindingReconcileFailed", "%s", s.GetMessage())
-		}
-	}
-	if errEvent != nil {
-		// FailedReconcileSinkBinding represents this controller itself failed to reconcile SinkBinding resource.
-		src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", errEvent)
-		return errEvent
-	}
 
 	// if user modifies DisableAutoCallback field
 	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
