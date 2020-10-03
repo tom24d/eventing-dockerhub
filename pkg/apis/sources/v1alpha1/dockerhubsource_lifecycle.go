@@ -5,27 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"go.uber.org/zap"
-
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"knative.dev/pkg/apis"
 	"knative.dev/pkg/apis/duck"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/tracker"
-	"knative.dev/pkg/webhook/psbinding"
-	"knative.dev/pkg/webhook/resourcesemantics"
+
+	"go.uber.org/zap"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
 )
-
-// Check that GitHubSource can be validated and can be defaulted.
-var _ runtime.Object = (*DockerHubSource)(nil)
-var _ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
-var _ psbinding.Bindable = (*DockerHubSource)(nil)
 
 const (
 	// DockerHubSourceConditionReady has status True when the

@@ -2,14 +2,15 @@ package v1alpha1
 
 import (
 	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"knative.dev/pkg/apis"
-
-	"knative.dev/pkg/webhook/resourcesemantics"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/webhook/psbinding"
+	"knative.dev/pkg/webhook/resourcesemantics"
 )
 
 // +genclient
@@ -38,7 +39,7 @@ var (
 	_ runtime.Object               = (*DockerHubSource)(nil)
 	_ resourcesemantics.GenericCRD = (*DockerHubSource)(nil)
 	_ duckv1.KRShaped              = (*DockerHubSource)(nil)
-
+	_ psbinding.Bindable           = (*DockerHubSource)(nil)
 )
 
 const (

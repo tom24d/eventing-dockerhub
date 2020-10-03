@@ -3,10 +3,6 @@ package binding
 import (
 	"context"
 
-	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
-	"github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/scheme"
-	dhbinformer "github.com/tom24d/eventing-dockerhub/pkg/client/injection/informers/sources/v1alpha1/dockerhubsource"
-
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -23,6 +19,10 @@ import (
 	"knative.dev/pkg/resolver"
 	"knative.dev/pkg/tracker"
 	"knative.dev/pkg/webhook/psbinding"
+
+	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
+	"github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/scheme"
+	dhbinformer "github.com/tom24d/eventing-dockerhub/pkg/client/injection/informers/sources/v1alpha1/dockerhubsource"
 )
 
 const (
