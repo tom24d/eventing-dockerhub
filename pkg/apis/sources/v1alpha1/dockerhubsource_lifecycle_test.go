@@ -32,11 +32,11 @@ func TestDockerHubSourceStatusIsReady(t *testing.T) {
 		}(),
 		want: false,
 	}, {
-		name: "mark sink",
+		name: "mark bound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			return s
 		}(),
 		want: false,
@@ -50,12 +50,12 @@ func TestDockerHubSourceStatusIsReady(t *testing.T) {
 		}(),
 		want: false,
 	}, {
-		name: "mark sink, then no sink",
+		name: "mark bound, then no bound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
-			s.MarkNoSink("Testing", "")
+			s.MarkBindingAvailable()
+			s.MarkBindingUnavailable("Testing", "")
 			return s
 		}(),
 		want: false,
@@ -70,31 +70,21 @@ func TestDockerHubSourceStatusIsReady(t *testing.T) {
 		}(),
 		want: false,
 	}, {
-		name: "mark sink, endpoint",
+		name: "mark bound, endpoint",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			s.MarkEndpoint(apis.HTTP("example"))
 			return s
 		}(),
 		want: true,
 	}, {
-		name: "mark sink nil",
+		name: "mark unbound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(nil)
-			return s
-		}(),
-		want: false,
-	}, {
-		name: "mark sink nil, then sink",
-		s: func() *DockerHubSourceStatus {
-			s := &DockerHubSourceStatus{}
-			s.InitializeConditions()
-			s.MarkSink(nil)
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingUnavailable("Test", "")
 			return s
 		}(),
 		want: false,
@@ -118,24 +108,24 @@ func TestDockerHubSourceStatusIsReady(t *testing.T) {
 		}(),
 		want: false,
 	}, {
-		name: "mark endpoint, sink, then no endpoint",
+		name: "mark endpoint, bound, then no endpoint",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
 			s.MarkEndpoint(apis.HTTP("example"))
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			s.MarkNoEndpoint("Testing", "")
 			return s
 		}(),
 		want: false,
 	}, {
-		name: "mark endpoint, sink, then no sink",
+		name: "mark endpoint, bound, then no bound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
 			s.MarkEndpoint(apis.HTTP("example"))
-			s.MarkSink(apis.HTTP("example"))
-			s.MarkNoSink("Testing", "")
+			s.MarkBindingAvailable()
+			s.MarkBindingUnavailable("Testing", "")
 			return s
 		}(),
 		want: false,
@@ -175,11 +165,11 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 			Status: corev1.ConditionUnknown,
 		},
 	}, {
-		name: "mark sink",
+		name: "mark bound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			return s
 		}(),
 		condQuery: DockerHubSourceConditionReady,
@@ -192,8 +182,8 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
-			s.MarkNoSink("Testing", "hi%s", "")
+			s.MarkBindingAvailable()
+			s.MarkBindingUnavailable("Testing", "hi")
 			return s
 		}(),
 		condQuery: DockerHubSourceConditionReady,
@@ -233,19 +223,19 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 			Message: "hi",
 		},
 	}, {
-		name: "mark sink nil",
+		name: "mark unbound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(nil)
+			s.MarkBindingUnavailable("Test", "hi")
 			return s
 		}(),
 		condQuery: DockerHubSourceConditionReady,
 		want: &apis.Condition{
 			Type:    DockerHubSourceConditionReady,
-			Status:  corev1.ConditionUnknown,
-			Reason:  "SinkEmpty",
-			Message: "Sink has resolved to empty.",
+			Status:  corev1.ConditionFalse,
+			Reason:  "Test",
+			Message: "hi",
 		},
 	}, {
 		name: "mark endpoint nil",
@@ -262,21 +252,7 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 			Reason:  "EndpointEmpty",
 			Message: "Endpoint URL has resolved to empty.",
 		},
-	}, {
-		name: "mark sink nil, then sink",
-		s: func() *DockerHubSourceStatus {
-			s := &DockerHubSourceStatus{}
-			s.InitializeConditions()
-			s.MarkSink(nil)
-			s.MarkSink(apis.HTTP("example"))
-			return s
-		}(),
-		condQuery: DockerHubSourceConditionReady,
-		want: &apis.Condition{
-			Type:   DockerHubSourceConditionReady,
-			Status: corev1.ConditionUnknown,
-		},
-	}, {
+	},  {
 		name: "mark endpoint nil, then endpoint",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
@@ -291,11 +267,11 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 			Status: corev1.ConditionUnknown,
 		},
 	}, {
-		name: "mark sink, endpoint",
+		name: "mark bound, endpoint",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			s.MarkEndpoint(apis.HTTP("example"))
 			return s
 		}(),
@@ -305,28 +281,28 @@ func TestDockerHubSourceStatusGetCondition(t *testing.T) {
 			Status: corev1.ConditionTrue,
 		},
 	}, {
-		name: "mark sink, endpoint, then no sink",
+		name: "mark bound, endpoint, then unbound",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			s.MarkEndpoint(apis.HTTP("example"))
-			s.MarkNoSink("Testing", "hi%s", "")
+			s.MarkBindingUnavailable("Test", "hi")
 			return s
 		}(),
 		condQuery: DockerHubSourceConditionReady,
 		want: &apis.Condition{
 			Type:    DockerHubSourceConditionReady,
 			Status:  corev1.ConditionFalse,
-			Reason:  "Testing",
+			Reason:  "Test",
 			Message: "hi",
 		},
 	}, {
-		name: "mark sink, endpoint, then no endpoint",
+		name: "mark bound, endpoint, then no endpoint",
 		s: func() *DockerHubSourceStatus {
 			s := &DockerHubSourceStatus{}
 			s.InitializeConditions()
-			s.MarkSink(apis.HTTP("example"))
+			s.MarkBindingAvailable()
 			s.MarkEndpoint(apis.HTTP("example"))
 			s.MarkNoEndpoint("Testing", "hi%s", "")
 			return s
