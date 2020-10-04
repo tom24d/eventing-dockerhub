@@ -10,13 +10,12 @@ require (
 	go.uber.org/zap v1.15.0
 	gopkg.in/go-playground/webhooks.v5 v5.15.0
 	k8s.io/api v0.18.8
-	k8s.io/apiextensions-apiserver v0.18.8 // indirect
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	knative.dev/eventing v0.18.1-0.20201001001229-aa7a3b7b2508
-	knative.dev/pkg v0.0.0-20201001021029-41ee63575a47
-	knative.dev/serving v0.18.1-0.20201001003729-c00c6d551355
-	knative.dev/test-infra v0.0.0-20200930161929-242b7529399e
+	knative.dev/eventing v0.18.1-0.20201002163333-46407e8814db
+	knative.dev/pkg v0.0.0-20201003175733-ea7374e81105
+	knative.dev/serving v0.18.1-0.20201003052433-cda0f0eb206e
+	knative.dev/test-infra v0.0.0-20201002164834-8c07ff018549
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks

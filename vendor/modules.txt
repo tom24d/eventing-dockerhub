@@ -585,7 +585,6 @@ k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
 # k8s.io/apiextensions-apiserver v0.18.8 => k8s.io/apiextensions-apiserver v0.18.8
-## explicit
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
@@ -877,7 +876,7 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/eventing v0.18.1-0.20201001001229-aa7a3b7b2508
+# knative.dev/eventing v0.18.1-0.20201002163333-46407e8814db
 ## explicit
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
@@ -964,11 +963,11 @@ knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/test_images
 knative.dev/eventing/test/test_images/recordevents
-# knative.dev/networking v0.0.0-20200930162730-9f4d4bd01696
+# knative.dev/networking v0.0.0-20201002064630-8af68c77dad5
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20201001021029-41ee63575a47
+# knative.dev/pkg v0.0.0-20201003175733-ea7374e81105
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1038,7 +1037,7 @@ knative.dev/pkg/webhook/configmaps
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.18.1-0.20201001003729-c00c6d551355
+# knative.dev/serving v0.18.1-0.20201003052433-cda0f0eb206e
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1063,7 +1062,7 @@ knative.dev/serving/pkg/client/injection/informers/serving/v1/service
 knative.dev/serving/pkg/client/listers/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1
 knative.dev/serving/pkg/networking
-# knative.dev/test-infra v0.0.0-20200930161929-242b7529399e
+# knative.dev/test-infra v0.0.0-20201002164834-8c07ff018549
 ## explicit
 knative.dev/test-infra/scripts
 # sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba
