@@ -58,6 +58,15 @@ rules:
   - list
   - watch
 
+- apiGroups:
+    - ""
+  resources:
+    - namespaces
+  verbs:
+    - list
+    - watch
+    - patch
+
 # Events admin
 - apiGroups:
     - ""
@@ -71,6 +80,15 @@ rules:
   resources:
     - leases
   verbs: *everything
+
+- apiGroups:
+    - admissionregistration.k8s.io
+  resources:
+    - mutatingwebhookconfigurations
+  verbs:
+    - get
+    - list
+    - watch
 
 ---
 # The role is needed for the aggregated role source-observer in knative-eventing to provide readonly access to "Sources".
