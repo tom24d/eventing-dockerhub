@@ -41,3 +41,19 @@ func TestDockerHubEventSource(t *testing.T) {
 		t.Errorf("unexpected source (-want, +got) = %v", diff)
 	}
 }
+
+func TestDockerHubSource_GetStatus(t *testing.T) {
+	want := &duckv1.Status{
+		ObservedGeneration: int64(1),
+	}
+	d := DockerHubSource{
+		Status: DockerHubSourceStatus{
+			SourceStatus: duckv1.SourceStatus{
+				Status: *want,
+			},
+		},
+	}
+	if diff := cmp.Diff(want, d.GetStatus()); diff != "" {
+		t.Errorf("unexpected status (-want, +got) = %v", diff)
+	}
+}
