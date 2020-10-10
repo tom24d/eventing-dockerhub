@@ -18,7 +18,7 @@ jobs:
 
     env:
       GOPATH: ${{ github.workspace }}
-      KO_DOCKER_REPO: localhost:5000
+      KO_DOCKER_REPO: kind.local
 
     steps:
       - name: Set up Go ${{ matrix.go-version }}
