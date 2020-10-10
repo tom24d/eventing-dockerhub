@@ -20,8 +20,10 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	cetypes "github.com/cloudevents/sdk-go/v2/types"
-	"github.com/google/go-cmp/cmp"
+
 	dh "gopkg.in/go-playground/webhooks.v5/docker"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 )
@@ -173,15 +175,6 @@ var testCases = []testCase{
 		wantCloudEventType:     cloudEventTypePush,
 		wantCallbackExpected:   false,
 	},
-}
-
-func TestNewEnv(t *testing.T) {
-	want := &envConfig{}
-
-	got := NewEnv()
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Fatalf("unexpected event data (-want, +got) = %v", diff)
-	}
 }
 
 func TestServer(t *testing.T) {
