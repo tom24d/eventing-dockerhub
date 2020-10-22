@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package v1alpha1
 
-import "os"
+import (
+	"context"
+)
 
-// SystemNamespace is the namespace where Eventing is installed, it's default to be knative-eventing.
-var SystemNamespace = getenv("TEST_EVENTING_NAMESPACE", "knative-eventing")
-
-func getenv(name, defaultValue string) string {
-	value, set := os.LookupEnv(name)
-	if !set {
-		value = defaultValue
+// SetDefaults implements apis.Defaultable.
+func (dm *DomainMapping) SetDefaults(ctx context.Context) {
+	if dm.Spec.Ref.Namespace == "" {
+		dm.Spec.Ref.Namespace = dm.Namespace
 	}
-	return value
 }
