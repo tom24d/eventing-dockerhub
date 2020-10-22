@@ -24,6 +24,7 @@ import (
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
+	"knative.dev/pkg/resolver"
 
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
@@ -51,6 +52,8 @@ func NewController(
 	}
 
 	impl := dhreconciler.NewImpl(ctx, r)
+
+	r.sinkResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
 
 	logging.FromContext(ctx).Info("Setting up DockerHub event handlers")
 
