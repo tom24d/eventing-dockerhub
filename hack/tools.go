@@ -20,7 +20,6 @@ package tools
 
 import (
 	_ "knative.dev/pkg/hack"
-	_ "knative.dev/pkg/system/testing"
 	_ "knative.dev/test-infra/scripts"
 
 	_ "knative.dev/eventing/test/test_images/recordevents"
