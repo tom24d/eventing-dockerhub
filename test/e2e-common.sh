@@ -32,9 +32,6 @@ readonly DOCKERHUB_INSTALLATION_CONFIG="config"
 
 # Vendored eventing test image.
 readonly VENDOR_EVENTING_TEST_IMAGES="vendor/knative.dev/eventing/test/test_images/"
-# HEAD eventing test images.
-readonly HEAD_EVENTING_TEST_IMAGES="${GOPATH}/src/knative.dev/eventing/test/test_images/"
-
 
 # The number of pods for leader-election test
 readonly REPLICAS=3
@@ -55,6 +52,11 @@ if [[ ! -v TEST_SOURCE_NAMESPACE ]]; then
   readonly TEST_SOURCE_NAMESPACE
   echo "using 'knative-sources' for test installation namespace"
 fi
+
+# this is needed for calling eventingtestlib.Setup
+# TODO migrate off its own test Setup client.
+export SYSTEM_NAMESPACE
+SYSTEM_NAMESPACE="knative-eventing"
 
 ON_KIND=0
 USE_ISTIO=0

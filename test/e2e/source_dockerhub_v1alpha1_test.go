@@ -14,6 +14,8 @@ import (
 	adapterresource "github.com/tom24d/eventing-dockerhub/pkg/adapter/resources"
 	sourcev1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	"github.com/tom24d/eventing-dockerhub/test/e2e/helpers"
+
+	_ "knative.dev/pkg/system/testing"
 )
 
 func TestDockerHubSource(t *testing.T) {
