@@ -145,7 +145,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.1.3
+# github.com/google/go-containerregistry v0.1.4-0.20201020135303-da2eb53b5bd1
 github.com/google/go-containerregistry/pkg/name
 # github.com/google/gofuzz v1.1.0
 github.com/google/gofuzz
@@ -286,7 +286,7 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/internal/ztest
 go.uber.org/zap/zapcore
 go.uber.org/zap/zaptest
-# golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+# golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
@@ -829,7 +829,7 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/eventing v0.18.1-0.20201016165957-4612d3391fca
+# knative.dev/eventing v0.18.1-0.20201022075137-c29798077cfc
 ## explicit
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
@@ -868,38 +868,6 @@ knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha1
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1alpha2
 knative.dev/eventing/pkg/client/clientset/versioned/typed/sources/v1beta1
-knative.dev/eventing/pkg/client/informers/externalversions
-knative.dev/eventing/pkg/client/informers/externalversions/configs
-knative.dev/eventing/pkg/client/informers/externalversions/configs/v1alpha1
-knative.dev/eventing/pkg/client/informers/externalversions/eventing
-knative.dev/eventing/pkg/client/informers/externalversions/eventing/v1
-knative.dev/eventing/pkg/client/informers/externalversions/eventing/v1beta1
-knative.dev/eventing/pkg/client/informers/externalversions/flows
-knative.dev/eventing/pkg/client/informers/externalversions/flows/v1
-knative.dev/eventing/pkg/client/informers/externalversions/flows/v1beta1
-knative.dev/eventing/pkg/client/informers/externalversions/internalinterfaces
-knative.dev/eventing/pkg/client/informers/externalversions/messaging
-knative.dev/eventing/pkg/client/informers/externalversions/messaging/v1
-knative.dev/eventing/pkg/client/informers/externalversions/messaging/v1beta1
-knative.dev/eventing/pkg/client/informers/externalversions/sources
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1alpha1
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1alpha2
-knative.dev/eventing/pkg/client/informers/externalversions/sources/v1beta1
-knative.dev/eventing/pkg/client/injection/client
-knative.dev/eventing/pkg/client/injection/informers/factory
-knative.dev/eventing/pkg/client/injection/informers/sources/v1beta1/sinkbinding
-knative.dev/eventing/pkg/client/listers/configs/v1alpha1
-knative.dev/eventing/pkg/client/listers/eventing/v1
-knative.dev/eventing/pkg/client/listers/eventing/v1beta1
-knative.dev/eventing/pkg/client/listers/flows/v1
-knative.dev/eventing/pkg/client/listers/flows/v1beta1
-knative.dev/eventing/pkg/client/listers/messaging/v1
-knative.dev/eventing/pkg/client/listers/messaging/v1beta1
-knative.dev/eventing/pkg/client/listers/sources/v1
-knative.dev/eventing/pkg/client/listers/sources/v1alpha1
-knative.dev/eventing/pkg/client/listers/sources/v1alpha2
-knative.dev/eventing/pkg/client/listers/sources/v1beta1
 knative.dev/eventing/pkg/kncloudevents
 knative.dev/eventing/pkg/logconfig
 knative.dev/eventing/pkg/reconciler/source
@@ -916,11 +884,11 @@ knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/test_images
 knative.dev/eventing/test/test_images/recordevents
-# knative.dev/networking v0.0.0-20201015161058-8425f7b44b89
+# knative.dev/networking v0.0.0-20201021020317-3f7ed1c2482b
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20201018212257-b39d5da935b0
+# knative.dev/pkg v0.0.0-20201022015237-8139298650a4
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -969,6 +937,7 @@ knative.dev/pkg/source
 knative.dev/pkg/system
 knative.dev/pkg/system/testing
 knative.dev/pkg/test
+knative.dev/pkg/test/flags
 knative.dev/pkg/test/gcs
 knative.dev/pkg/test/helpers
 knative.dev/pkg/test/ingress
@@ -990,7 +959,7 @@ knative.dev/pkg/webhook/configmaps
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.18.1-0.20201018064257-b53451e7855d
+# knative.dev/serving v0.18.1-0.20201022024737-dbbf6fe59243
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1019,7 +988,7 @@ knative.dev/serving/pkg/client/listers/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1
 knative.dev/serving/pkg/client/listers/serving/v1alpha1
 knative.dev/serving/pkg/networking
-# knative.dev/test-infra v0.0.0-20201015231956-d236fb0ea9ff
+# knative.dev/test-infra v0.0.0-20201022003632-7d3ea6019158
 ## explicit
 knative.dev/test-infra/scripts
 # sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba
