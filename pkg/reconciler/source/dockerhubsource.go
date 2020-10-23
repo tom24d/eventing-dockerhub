@@ -11,7 +11,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-
 	//knative.dev/serving imports
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingclientset "knative.dev/serving/pkg/client/clientset/versioned"
@@ -52,10 +51,10 @@ type Reconciler struct {
 	configAccessor reconcilersource.ConfigAccessor
 }
 
-// // Check that our Reconciler implements Interface
+// Check that our Reconciler implements Interface
 var _ dhreconciler.Interface = (*Reconciler)(nil)
 
-// // ReconcileKind implements Interface.ReconcileKind.
+// ReconcileKind implements Interface.ReconcileKind.
 func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubSource) pkgreconciler.Event {
 
 	dest := src.Spec.Sink.DeepCopy()
