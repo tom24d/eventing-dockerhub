@@ -57,15 +57,7 @@ var _ dhreconciler.Interface = (*Reconciler)(nil)
 // ReconcileKind implements Interface.ReconcileKind.
 func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubSource) pkgreconciler.Event {
 
-	dest := src.Spec.Sink.DeepCopy()
-
-	uri, err := r.sinkResolver.URIFromDestinationV1(ctx, *dest, src)
-	if err != nil {
-		src.Status.MarkNoSink("NotFound", "%s", err)
-		return err
-	}
-	src.Status.MarkSink(uri)
-	ctx = eventingv1.WithSinkURI(ctx, uri)
+	ctx = eventingv1.WithURIResolver(ctx, r.sinkResolver)
 
 	ksvc, err := r.getOwnedService(ctx, src)
 	if apierrors.IsNotFound(err) {
@@ -150,7 +142,18 @@ func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.Docke
 	sb := &eventingv1.SinkBinding{}
 	sb.Spec.SourceSpec = src.Spec.SourceSpec
 
+	// hack hack hack
+	// this is necessary to requeue reconciliation when the sink reference changes.
+	sb.SetName(src.GetName())
+	sb.SetNamespace(src.GetNamespace())
+
 	sb.Do(ctx, ps)
+
+	if c := sb.Status.GetCondition(eventingv1.SinkBindingConditionSinkProvided); c.IsTrue() && sb.Status.SinkURI != nil {
+		src.Status.MarkSink(sb.Status.SinkURI)
+	} else if c.IsFalse() {
+		src.Status.MarkNoSink(c.GetReason(), "%s", c.GetMessage())
+	}
 
 	return ksvc
 }
