@@ -6,6 +6,7 @@ import (
 
 	//k8s.io imports
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -74,7 +75,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		if err != nil {
 			return err
 		}
-		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceCreated", "Created Service %q", ksvc.Name)
 	} else if err != nil {
 		src.Status.MarkNoEndpoint("ServiceUnavailable", "%v", err)
@@ -85,42 +85,44 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	} else if ksvc == nil {
 		logging.FromContext(ctx).Fatalf("knative service is not set without error. src: %v", src)
 		return fmt.Errorf("knative service is not set without error")
-	}
-	src.Status.ReceiveAdapterServiceName = ksvc.Name
-
-	// if user modifies DisableAutoCallback field
-	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
-		if len(ksvc.Spec.Template.Spec.Containers) >= 1 {
-			err = pkgreconciler.RetryUpdateConflicts(func(_ int) error {
-				// Fetch ksvc in case ReconcileSinkBinding might update ksvc above.
-				k, err := r.getOwnedService(ctx, src)
-				if err != nil {
-					return err
-				}
-				ksvc = k.DeepCopy()
-				// override env
-				ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-
-				ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ctx, ksvc, metav1.UpdateOptions{})
-				return err
-			})
+	} else if expected := r.getExpectedService(ctx, src); podSpecChanged(expected, ksvc) {
+		err := pkgreconciler.RetryUpdateConflicts(func(int) error {
+			ksvc, err := r.getOwnedService(ctx, src)
 			if err != nil {
-				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
 				return err
 			}
+			syncPodSpec(expected, ksvc)
+			ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ctx, ksvc, metav1.UpdateOptions{})
+			return err
+		})
+		if err != nil {
+			src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+			return err
 		}
 
 		controller.GetEventRecorder(ctx).
 			Eventf(src, corev1.EventTypeNormal,
 				"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
-		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 	}
 
+	// status propagation
+	src.Status.ReceiveAdapterServiceName = ksvc.Name
+	src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 	if ksvc.IsReady() && ksvc.Status.URL != nil {
 		src.Status.MarkEndpoint(ksvc.Status.URL)
 	}
 
 	return nil
+}
+
+func podSpecChanged(expected *servingv1.Service, now *servingv1.Service) bool {
+	old := now.DeepCopy()
+	syncPodSpec(expected, now)
+	return !equality.Semantic.DeepEqual(old.Spec.Template.Spec.PodSpec, now.Spec.Template.Spec.PodSpec)
+}
+
+func syncPodSpec(expected *servingv1.Service, now *servingv1.Service) {
+	now.Spec.Template.Spec.PodSpec = expected.Spec.GetTemplate().Spec.PodSpec
 }
 
 func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHubSource) (*servingv1.Service, error) {
