@@ -10,22 +10,26 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+
 	//knative.dev/serving imports
-	v1 "knative.dev/serving/pkg/apis/serving/v1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingclientset "knative.dev/serving/pkg/client/clientset/versioned"
 	servinglisters "knative.dev/serving/pkg/client/listers/serving/v1"
 
-	//knative/eventing imports
+	// knative.dev/eventing imports
+	eventingv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	reconcilersource "knative.dev/eventing/pkg/reconciler/source"
+
+	// knative.dev/pkg imports
+	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/pkg/resolver"
 
 	// github.com/tom24d/eventing-dockerhub imports
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
-
-	"knative.dev/pkg/controller"
-	"knative.dev/pkg/logging"
-	pkgreconciler "knative.dev/pkg/reconciler"
 )
 
 const (
@@ -39,6 +43,8 @@ type Reconciler struct {
 	servingClientSet servingclientset.Interface
 	servingLister    servinglisters.ServiceLister
 
+	sinkResolver *resolver.URIResolver
+
 	receiveAdapterImage string
 
 	configAccessor reconcilersource.ConfigAccessor
@@ -49,6 +55,17 @@ var _ dhreconciler.Interface = (*Reconciler)(nil)
 
 // // ReconcileKind implements Interface.ReconcileKind.
 func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubSource) pkgreconciler.Event {
+
+	dest := src.Spec.Sink.DeepCopy()
+
+	uri, err := r.sinkResolver.URIFromDestinationV1(ctx, *dest, src)
+	if err != nil {
+		src.Status.MarkNoSink("NotFound", "%s", err)
+		return err
+	}
+	src.Status.MarkSink(uri)
+	ctx = eventingv1.WithSinkURI(ctx, uri)
+
 	ksvc, err := r.getOwnedService(ctx, src)
 	if apierrors.IsNotFound(err) {
 		ksvc = r.getExpectedService(ctx, src)
@@ -105,7 +122,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	return nil
 }
 
-func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHubSource) (*v1.Service, error) {
+func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHubSource) (*servingv1.Service, error) {
 	serviceList, err := r.servingClientSet.ServingV1().Services(src.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -115,10 +132,10 @@ func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHu
 			return &serviceList.Items[i], nil
 		}
 	}
-	return nil, apierrors.NewNotFound(v1.Resource("services"), "")
+	return nil, apierrors.NewNotFound(servingv1.Resource("services"), "")
 }
 
-func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *v1.Service {
+func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *servingv1.Service {
 	ksvc := resources.MakeService(r.getServiceArgs(ctx, src))
 	if firstName := src.Status.ReceiveAdapterServiceName; firstName != "" {
 		ksvc.ObjectMeta.SetGenerateName("")
