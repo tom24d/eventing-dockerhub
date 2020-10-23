@@ -5,9 +5,8 @@ import (
 )
 
 func (d *DockerHubSource) SetDefaults(ctx context.Context) {
-	d.Spec.SetDefaults(ctx)
-}
-
-func (ds *DockerHubSourceSpec) SetDefaults(ctx context.Context) {
-	//initialize here if needed
+	if d.Spec.Sink.Ref.Namespace == "" {
+		// default the sink namespaces to the namespace of DockerHubSource.
+		d.Spec.Sink.Ref.Namespace = d.GetNamespace()
+	}
 }
