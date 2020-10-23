@@ -21,6 +21,7 @@ import (
 	reconcilersource "knative.dev/eventing/pkg/reconciler/source"
 
 	// knative.dev/pkg imports
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
@@ -141,6 +142,15 @@ func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.Docke
 		ksvc.ObjectMeta.SetGenerateName("")
 		ksvc.ObjectMeta.SetName(firstName)
 	}
+
+	ps := &duckv1.WithPod{}
+	ps.Spec.Template.Spec = ksvc.Spec.Template.Spec.PodSpec
+
+	sb := &eventingv1.SinkBinding{}
+	sb.Spec.SourceSpec = src.Spec.SourceSpec
+
+	sb.Do(ctx, ps)
+
 	return ksvc
 }
 
