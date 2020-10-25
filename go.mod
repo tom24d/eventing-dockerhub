@@ -12,10 +12,10 @@ require (
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	knative.dev/eventing v0.18.1-0.20201023032537-9152466416d7
-	knative.dev/pkg v0.0.0-20201023012137-324e49bc7fe1
-	knative.dev/serving v0.18.1-0.20201023043437-057660a56891
-	knative.dev/test-infra v0.0.0-20201022003632-7d3ea6019158
+	knative.dev/eventing v0.18.1-0.20201023191938-7734430d30b3
+	knative.dev/pkg v0.0.0-20201023200637-5807b6f9eeb0
+	knative.dev/serving v0.18.1-0.20201024022037-5233f0c607c5
+	knative.dev/test-infra v0.0.0-20201023182438-7efa632471b9
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
