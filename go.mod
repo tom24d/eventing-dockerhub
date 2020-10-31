@@ -5,17 +5,17 @@ go 1.14
 require (
 	github.com/cloudevents/sdk-go/v2 v2.2.0
 	github.com/google/go-cmp v0.5.2
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/hashicorp/go-retryablehttp v0.6.7
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.16.0
 	gopkg.in/go-playground/webhooks.v5 v5.15.0
 	k8s.io/api v0.18.8
 	k8s.io/apimachinery v0.18.8
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	knative.dev/eventing v0.18.1-0.20201023191938-7734430d30b3
-	knative.dev/pkg v0.0.0-20201023200637-5807b6f9eeb0
-	knative.dev/serving v0.18.1-0.20201024022037-5233f0c607c5
-	knative.dev/test-infra v0.0.0-20201023182438-7efa632471b9
+	knative.dev/eventing v0.18.1-0.20201030152235-29ff9510e6f6
+	knative.dev/pkg v0.0.0-20201030200734-72451e0d5973
+	knative.dev/serving v0.18.1-0.20201030225334-a45beb3ac892
+	knative.dev/test-infra v0.0.0-20201030214934-cb2c0a727744
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
