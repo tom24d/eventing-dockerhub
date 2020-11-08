@@ -6,30 +6,31 @@ import (
 
 	//k8s.io imports
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	//knative.dev/serving imports
-	v1 "knative.dev/serving/pkg/apis/serving/v1"
+	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingclientset "knative.dev/serving/pkg/client/clientset/versioned"
 	servinglisters "knative.dev/serving/pkg/client/listers/serving/v1"
 
-	//knative/eventing imports
-	eventingclient "knative.dev/eventing/pkg/client/clientset/versioned"
+	// knative.dev/eventing imports
+	eventingv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	reconcilersource "knative.dev/eventing/pkg/reconciler/source"
+
+	// knative.dev/pkg imports
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
+	pkgreconciler "knative.dev/pkg/reconciler"
+	"knative.dev/pkg/resolver"
 
 	// github.com/tom24d/eventing-dockerhub imports
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 	"github.com/tom24d/eventing-dockerhub/pkg/reconciler/source/resources"
-
-	"knative.dev/pkg/apis"
-	"knative.dev/pkg/controller"
-	"knative.dev/pkg/logging"
-	pkgreconciler "knative.dev/pkg/reconciler"
-	"knative.dev/pkg/resolver"
-	"knative.dev/pkg/tracker"
 )
 
 const (
@@ -43,20 +44,21 @@ type Reconciler struct {
 	servingClientSet servingclientset.Interface
 	servingLister    servinglisters.ServiceLister
 
-	eventingClientSet eventingclient.Interface
+	sinkResolver *resolver.URIResolver
 
 	receiveAdapterImage string
-
-	sinkResolver *resolver.URIResolver
 
 	configAccessor reconcilersource.ConfigAccessor
 }
 
-// // Check that our Reconciler implements Interface
+// Check that our Reconciler implements Interface
 var _ dhreconciler.Interface = (*Reconciler)(nil)
 
-// // ReconcileKind implements Interface.ReconcileKind.
+// ReconcileKind implements Interface.ReconcileKind.
 func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubSource) pkgreconciler.Event {
+
+	ctx = eventingv1.WithURIResolver(ctx, r.sinkResolver)
+
 	ksvc, err := r.getOwnedService(ctx, src)
 	if apierrors.IsNotFound(err) {
 		ksvc = r.getExpectedService(ctx, src)
@@ -64,7 +66,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 		if err != nil {
 			return err
 		}
-		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 		controller.GetEventRecorder(ctx).Eventf(src, corev1.EventTypeNormal, "ServiceCreated", "Created Service %q", ksvc.Name)
 	} else if err != nil {
 		src.Status.MarkNoEndpoint("ServiceUnavailable", "%v", err)
@@ -75,61 +76,29 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	} else if ksvc == nil {
 		logging.FromContext(ctx).Fatalf("knative service is not set without error. src: %v", src)
 		return fmt.Errorf("knative service is not set without error")
-	}
-	src.Status.ReceiveAdapterServiceName = ksvc.Name
-
-	// reconcile SinkBinding for the kservice.
-	// remove this logic once https://github.com/knative/eventing/issues/3422 lands.
-	logging.FromContext(ctx).Info("going to ReconcileSinkBinding")
-	sb, errEvent := r.ReconcileSinkBinding(ctx, src, src.Spec.SourceSpec, tracker.Reference{
-		APIVersion: v1.SchemeGroupVersion.String(),
-		Kind:       "Service",
-		Namespace:  ksvc.Namespace,
-		Name:       ksvc.Name,
-	})
-	if sb != nil {
-		s := sb.Status.GetCondition(apis.ConditionReady)
-		if s.IsTrue() {
-			src.Status.MarkSink(sb.Status.SinkURI)
-		} else if s.IsFalse() {
-			// SinkBindingReconcileFailed is a propagated status from SinkBinding controller.
-			src.Status.MarkNoSink("SinkBindingReconcileFailed", "%s", s.GetMessage())
-		}
-	}
-	if errEvent != nil {
-		// FailedReconcileSinkBinding represents this controller itself failed to reconcile SinkBinding resource.
-		src.Status.MarkNoSink("FailedReconcileSinkBinding", "%s", errEvent)
-		return errEvent
-	}
-
-	// if user modifies DisableAutoCallback field
-	if src.Status.AutoCallbackDisabled != src.Spec.DisableAutoCallback {
-		if len(ksvc.Spec.Template.Spec.Containers) >= 1 {
-			err = pkgreconciler.RetryUpdateConflicts(func(_ int) error {
-				// Fetch ksvc in case ReconcileSinkBinding might update ksvc above.
-				k, err := r.getOwnedService(ctx, src)
-				if err != nil {
-					return err
-				}
-				ksvc = k.DeepCopy()
-				// override env
-				ksvc.Spec.Template.Spec.Containers[0].Env = r.getServiceArgs(ctx, src).GetEnv()
-
-				ksvc, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ctx, ksvc, metav1.UpdateOptions{})
-				return err
-			})
+	} else if expected := r.getExpectedService(ctx, src); podSpecChanged(expected, ksvc) {
+		err := pkgreconciler.RetryUpdateConflicts(func(int) error {
+			ksvc, err := r.getOwnedService(ctx, src)
 			if err != nil {
-				src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
 				return err
 			}
+			syncPodSpec(expected, ksvc)
+			_, err = r.servingClientSet.ServingV1().Services(src.Namespace).Update(ctx, ksvc, metav1.UpdateOptions{})
+			return err
+		})
+		if err != nil {
+			src.Status.MarkNoEndpoint("ServiceUpdateFailed", "failed to update service: %v", err)
+			return err
 		}
 
 		controller.GetEventRecorder(ctx).
 			Eventf(src, corev1.EventTypeNormal,
 				"ServiceUpdated", "Updated disableAutoCallback: %t", src.Spec.DisableAutoCallback)
-		src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 	}
 
+	// status propagation
+	src.Status.ReceiveAdapterServiceName = ksvc.Name
+	src.Status.AutoCallbackDisabled = src.Spec.DisableAutoCallback
 	if ksvc.IsReady() && ksvc.Status.URL != nil {
 		src.Status.MarkEndpoint(ksvc.Status.URL)
 	}
@@ -137,7 +106,17 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, src *v1alpha1.DockerHubS
 	return nil
 }
 
-func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHubSource) (*v1.Service, error) {
+func podSpecChanged(expected *servingv1.Service, now *servingv1.Service) bool {
+	old := now.DeepCopy()
+	syncPodSpec(expected, now)
+	return !equality.Semantic.DeepEqual(old.Spec.Template.Spec.PodSpec, now.Spec.Template.Spec.PodSpec)
+}
+
+func syncPodSpec(expected *servingv1.Service, now *servingv1.Service) {
+	now.Spec.Template.Spec.PodSpec = expected.Spec.GetTemplate().Spec.PodSpec
+}
+
+func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHubSource) (*servingv1.Service, error) {
 	serviceList, err := r.servingClientSet.ServingV1().Services(src.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -147,15 +126,35 @@ func (r *Reconciler) getOwnedService(ctx context.Context, src *v1alpha1.DockerHu
 			return &serviceList.Items[i], nil
 		}
 	}
-	return nil, apierrors.NewNotFound(v1.Resource("services"), "")
+	return nil, apierrors.NewNotFound(servingv1.Resource("services"), "")
 }
 
-func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *v1.Service {
+func (r *Reconciler) getExpectedService(ctx context.Context, src *v1alpha1.DockerHubSource) *servingv1.Service {
 	ksvc := resources.MakeService(r.getServiceArgs(ctx, src))
 	if firstName := src.Status.ReceiveAdapterServiceName; firstName != "" {
 		ksvc.ObjectMeta.SetGenerateName("")
 		ksvc.ObjectMeta.SetName(firstName)
 	}
+
+	ps := &duckv1.WithPod{}
+	ps.Spec.Template.Spec = ksvc.Spec.Template.Spec.PodSpec
+
+	sb := &eventingv1.SinkBinding{}
+	sb.Spec.SourceSpec = src.Spec.SourceSpec
+
+	// hack hack hack
+	// this is necessary to requeue reconciliation when the sink reference changes.
+	sb.SetName(src.GetName())
+	sb.SetNamespace(src.GetNamespace())
+
+	sb.Do(ctx, ps)
+
+	if c := sb.Status.GetCondition(eventingv1.SinkBindingConditionSinkProvided); c.IsTrue() && sb.Status.SinkURI != nil {
+		src.Status.MarkSink(sb.Status.SinkURI)
+	} else if c.IsFalse() {
+		src.Status.MarkNoSink(c.GetReason(), "%s", c.GetMessage())
+	}
+
 	return ksvc
 }
 

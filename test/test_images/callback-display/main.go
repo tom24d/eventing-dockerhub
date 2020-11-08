@@ -23,7 +23,7 @@ func display(event cloudevents.Event) {
 	log.Printf("Got Data: %+v\n", data)
 
 	// ensure RA finished processing incoming webhook.
-	time.Sleep(time.Second*5)
+	time.Sleep(time.Second * 5)
 	// if RA send validation webhook behalf, operation below should fail.
 
 	if data.CallbackURL != "" {

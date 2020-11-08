@@ -52,6 +52,8 @@ func MakeService(args *ServiceArgs) *v1.Service {
 			},
 		},
 	}
+
+	ksvc.Spec.Template.Spec.SetDefaults(args.Context)
 	return ksvc
 }
 
