@@ -18,8 +18,6 @@ import (
 	"knative.dev/pkg/webhook/resourcesemantics/defaulting"
 	"knative.dev/pkg/webhook/resourcesemantics/validation"
 
-	"knative.dev/eventing/pkg/logconfig"
-
 	"github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 )
 
@@ -104,12 +102,12 @@ func NewConfigValidationController(ctx context.Context, cmw configmap.Watcher) *
 func main() {
 	// Set up a signal context with our webhook options
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
-		ServiceName: logconfig.WebhookName(),
+		ServiceName: webhook.NameFromEnv(),
 		Port:        webhook.PortFromEnv(8443),
 		SecretName:  "webhook-certs",
 	})
 
-	sharedmain.WebhookMainWithContext(ctx, logconfig.WebhookName(),
+	sharedmain.WebhookMainWithContext(ctx, webhook.NameFromEnv(),
 		certificates.NewController,
 		NewDefaultingAdmissionController,
 		NewValidationAdmissionController,
