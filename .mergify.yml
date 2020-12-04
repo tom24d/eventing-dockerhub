@@ -1,0 +1,17 @@
+pull_request_rules:
+  - name: Automatic merge on scheduled PR
+    conditions:
+      - "check-success=Build Test with ko"
+      - "check-success=Integration Test"
+      - "check-success=Unit Test"
+      - "check-success=Verify-codegen"
+      - "check-success=Presubmit Build Test"
+      - "check-success=LGTM analysis: Go"
+      - "author=tom24d"
+      - files~=^vendor/
+      - files~=^third_party/
+      - files=go.mod, go.sum
+      - base=master
+    actions:
+      merge:
+        method: squash
