@@ -8,7 +8,7 @@ pull_request_rules:
       - "check-success=Presubmit Build Test"
       - "check-success=LGTM analysis: Go"
       - "author=tom24d"
-      - title=(?!)scheduled
+      - title~=(?i)scheduled
       - base=master
     actions:
       merge:
