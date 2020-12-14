@@ -26,6 +26,9 @@ jobs:
         go-version: ${{ matrix.go-version }}
       id: go
 
+    - name: Get go-licenses
+      run: go get github.com/google/go-licenses
+
     - name: Check out code onto GOPATH
       uses: actions/checkout@v2
       with:
