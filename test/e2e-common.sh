@@ -16,7 +16,7 @@
 
 export GO111MODULE=on
 REPO_ROOT_DIR=$(git rev-parse --show-toplevel)
-source ${REPO_ROOT_DIR}/vendor/knative.dev/test-infra/scripts/e2e-tests.sh
+source ${REPO_ROOT_DIR}/vendor/knative.dev/hack/e2e-tests.sh
 
 # Use GNU tools on macOS. Requires the 'grep' and 'gnu-sed' Homebrew formulae.
 if [ "$(uname)" == "Darwin" ]; then
