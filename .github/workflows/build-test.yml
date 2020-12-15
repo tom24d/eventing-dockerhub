@@ -40,51 +40,8 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Build test
+        run: go build -race ./...
+
       - name: Build test for e2e code
         run: go build -race -tags e2e ./test/...
-
-  build-presubmit:
-    name: Presubmit Build Test
-    strategy:
-      matrix:
-        go-version: [1.15.x]
-    runs-on: ubuntu-latest
-
-    env:
-      GOPATH: ${{ github.workspace }}
-      KO_DOCKER_REPO: ${{ github.repository_owner }}
-
-
-    steps:
-
-      - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go-version }}
-        id: go
-
-      - name: Check out test-infra
-        uses: actions/checkout@v2
-        with:
-          repository: knative/test-infra
-          fetch-depth: 1
-          path: ./src/knative.dev/test-infra
-
-      - name: Install kntest
-        run: |
-          pushd ./src/knative.dev/test-infra
-          go install ./kntest/cmd/kntest
-          popd
-
-      - name: Check out code onto GOPATH
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-          path: ./src/github.com/tom24d/eventing-dockerhub
-
-      - name: Run presubmit-test.sh
-        run: |
-          pushd ./src/github.com/tom24d/eventing-dockerhub
-          ./test/presubmit-tests.sh --build-tests
-          popd
-
