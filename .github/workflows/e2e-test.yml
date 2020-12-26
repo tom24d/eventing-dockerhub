@@ -28,7 +28,7 @@ jobs:
         id: go
 
       - name: Get google/ko
-        run: GO111MODULE=on go get github.com/google/ko/cmd/ko
+        run: go get github.com/google/ko
 
       - uses: actions/checkout@v2
         with:
