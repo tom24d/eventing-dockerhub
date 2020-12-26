@@ -154,7 +154,7 @@ function unleash_duck() {
   subheader "unleash the duck"
   cat test/config/chaosduck.yaml | \
     sed "s/namespace: ${KNATIVE_SOURCE_DEFAULT_NAMESPACE}/namespace: ${TEST_SOURCE_NAMESPACE}/g" | \
-    ko apply --strict -f - || return $?
+    ko apply -f - || return $?
 }
 
 function knative_setup() {
@@ -238,7 +238,7 @@ function dockerhub_setup() {
   mkdir -p ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
   cp -r ${DOCKERHUB_INSTALLATION_CONFIG}/* ${TMP_SOURCE_CONTROLLER_CONFIG_DIR}
   find ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} -type f -name "*.yaml" -exec sed -i "s/namespace: ${KNATIVE_SOURCE_DEFAULT_NAMESPACE}/namespace: ${TEST_SOURCE_NAMESPACE}/g" {} +
-  ko apply --strict -f ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} || return 1
+  ko apply -f ${TMP_SOURCE_CONTROLLER_CONFIG_DIR} || return 1
 
   scale_control_plane dockerhub-source-controller dockerhub-source-webhook
 
