@@ -836,7 +836,7 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/eventing v0.19.1-0.20201217221202-9643baffd747
+# knative.dev/eventing v0.19.1-0.20201231084129-953478d67e80
 ## explicit
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
@@ -896,11 +896,11 @@ knative.dev/eventing/test/test_images
 knative.dev/eventing/test/test_images/recordevents
 # knative.dev/hack v0.0.0-20201214230143-4ed1ecb8db24
 knative.dev/hack
-# knative.dev/networking v0.0.0-20201217015204-ceef42482365
+# knative.dev/networking v0.0.0-20201223042504-b9e08949dfbc
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20201218185703-e41409af6cff
+# knative.dev/pkg v0.0.0-20201231084629-fb3dc711206a
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -918,6 +918,7 @@ knative.dev/pkg/codegen/cmd/injection-gen
 knative.dev/pkg/codegen/cmd/injection-gen/args
 knative.dev/pkg/codegen/cmd/injection-gen/generators
 knative.dev/pkg/configmap
+knative.dev/pkg/configmap/informer
 knative.dev/pkg/controller
 knative.dev/pkg/hack
 knative.dev/pkg/hash
@@ -970,7 +971,7 @@ knative.dev/pkg/webhook/configmaps
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.19.1-0.20201218215002-782b7f2851a4
+# knative.dev/serving v0.19.1-0.20210101232430-6bb7c1d825cc
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -999,7 +1000,7 @@ knative.dev/serving/pkg/client/listers/autoscaling/v1alpha1
 knative.dev/serving/pkg/client/listers/serving/v1
 knative.dev/serving/pkg/client/listers/serving/v1alpha1
 knative.dev/serving/pkg/networking
-# knative.dev/test-infra v0.0.0-20201217014403-38ea1d9e2357
+# knative.dev/test-infra v0.0.0-20201221075203-d99502731eb6
 ## explicit
 knative.dev/test-infra/scripts
 # sigs.k8s.io/structured-merge-diff/v3 v3.0.1-0.20200706213357-43c19bbb7fba
