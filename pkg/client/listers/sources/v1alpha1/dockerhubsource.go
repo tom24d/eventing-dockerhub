@@ -26,8 +26,10 @@ import (
 )
 
 // DockerHubSourceLister helps list DockerHubSources.
+// All objects returned here must be treated as read-only.
 type DockerHubSourceLister interface {
 	// List lists all DockerHubSources in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.DockerHubSource, err error)
 	// DockerHubSources returns an object that can list and get DockerHubSources.
 	DockerHubSources(namespace string) DockerHubSourceNamespaceLister
@@ -58,10 +60,13 @@ func (s *dockerHubSourceLister) DockerHubSources(namespace string) DockerHubSour
 }
 
 // DockerHubSourceNamespaceLister helps list and get DockerHubSources.
+// All objects returned here must be treated as read-only.
 type DockerHubSourceNamespaceLister interface {
 	// List lists all DockerHubSources in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.DockerHubSource, err error)
 	// Get retrieves the DockerHubSource from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.DockerHubSource, error)
 	DockerHubSourceNamespaceListerExpansion
 }
