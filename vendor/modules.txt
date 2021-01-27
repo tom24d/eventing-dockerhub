@@ -244,7 +244,7 @@ github.com/rogpeppe/go-internal/semver
 github.com/sirupsen/logrus
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.5.1
+# github.com/stretchr/testify v1.6.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # go.opencensus.io v0.22.5
@@ -500,6 +500,8 @@ gopkg.in/go-playground/webhooks.v5/docker
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+gopkg.in/yaml.v3
 # k8s.io/api v0.19.7 => k8s.io/api v0.19.7
 ## explicit
 k8s.io/api/admission/v1
@@ -837,7 +839,7 @@ k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/eventing v0.20.1-0.20210122193254-ff327f0343c6
+# knative.dev/eventing v0.20.1-0.20210127002130-ce099cf65fec
 ## explicit
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
@@ -899,11 +901,11 @@ knative.dev/eventing/test/test_images/recordevents
 # knative.dev/hack v0.0.0-20210120165453-8d623a0af457
 ## explicit
 knative.dev/hack
-# knative.dev/networking v0.0.0-20210120054853-b17f43505630
+# knative.dev/networking v0.0.0-20210125050654-94433ab7f620
 knative.dev/networking/pkg
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20210122211754-250a1834dbef
+# knative.dev/pkg v0.0.0-20210125222030-6040b3af4803
 ## explicit
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -974,7 +976,7 @@ knative.dev/pkg/webhook/configmaps
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.20.1-0.20210122205253-16dc14f94e89
+# knative.dev/serving v0.20.1-0.20210127022430-b083383b340f
 ## explicit
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
