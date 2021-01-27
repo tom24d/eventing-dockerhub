@@ -502,7 +502,7 @@ gopkg.in/inf.v0
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 gopkg.in/yaml.v3
-# k8s.io/api v0.19.7 => k8s.io/api v0.19.7
+# k8s.io/api v0.19.7
 ## explicit
 k8s.io/api/admission/v1
 k8s.io/api/admissionregistration/v1
@@ -546,13 +546,13 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.19.7 => k8s.io/apiextensions-apiserver v0.19.7
+# k8s.io/apiextensions-apiserver v0.19.7
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1
-# k8s.io/apimachinery v0.19.7 => k8s.io/apimachinery v0.19.7
+# k8s.io/apimachinery v0.19.7
 ## explicit
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -601,9 +601,9 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.19.7 => k8s.io/apiserver v0.19.7
+# k8s.io/apiserver v0.19.7
 k8s.io/apiserver/pkg/storage/names
-# k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible => k8s.io/client-go v0.19.7
+# k8s.io/client-go v0.19.7
 ## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
@@ -778,7 +778,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.19.7 => k8s.io/code-generator v0.19.7
+# k8s.io/code-generator v0.19.7
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
 k8s.io/code-generator/cmd/client-gen/args
@@ -1010,9 +1010,3 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
 # gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
-# k8s.io/api => k8s.io/api v0.19.7
-# k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
-# k8s.io/client-go => k8s.io/client-go v0.19.7
-# k8s.io/code-generator => k8s.io/code-generator v0.19.7
-# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
-# k8s.io/apiserver => k8s.io/apiserver v0.19.7
