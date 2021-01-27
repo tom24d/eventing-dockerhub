@@ -11,7 +11,7 @@ require (
 	gopkg.in/go-playground/webhooks.v5 v5.15.0
 	k8s.io/api v0.19.7
 	k8s.io/apimachinery v0.19.7
-	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
+	k8s.io/client-go v0.19.7
 	knative.dev/eventing v0.20.1-0.20210127002130-ce099cf65fec
 	knative.dev/hack v0.0.0-20210120165453-8d623a0af457
 	knative.dev/pkg v0.0.0-20210125222030-6040b3af4803
@@ -19,15 +19,3 @@ require (
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
-
-replace k8s.io/api => k8s.io/api v0.19.7
-
-replace k8s.io/apimachinery => k8s.io/apimachinery v0.19.7
-
-replace k8s.io/client-go => k8s.io/client-go v0.19.7
-
-replace k8s.io/code-generator => k8s.io/code-generator v0.19.7
-
-replace k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.19.7
-
-replace k8s.io/apiserver => k8s.io/apiserver v0.19.7
