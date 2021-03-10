@@ -167,16 +167,12 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	if err != nil {
 		a.logger.Warnf("failed to parse pushedAt field. Use time.Now(): %v", err)
 	}
-	uid, err := uuid.NewRandom()
-	if err != nil {
-		return err
-	}
 
 	// if fail to send, retry with exponential backoff
 	ctx := cloudevents.ContextWithRetriesExponentialBackoff(context.Background(), 50*time.Millisecond, 5)
 
 	event := cloudevents.NewEvent()
-	event.SetID(uid.String())
+	event.SetID(uuid.NewString())
 	event.SetType(cloudEventType)
 	event.SetSource(cloudEventSource)
 	event.SetTime(cloudEventTime)
