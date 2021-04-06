@@ -350,7 +350,6 @@ github.com/google/go-cmp v0.5.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.1/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.3/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
-github.com/google/go-cmp v0.5.4 h1:L8R9j+yAqZuZjsqh/z+F1NCffTKKLShY6zXTItVIZ8M=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
@@ -629,7 +628,6 @@ github.com/prometheus/common v0.4.0/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y8
 github.com/prometheus/common v0.4.1/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y86RQel1bk4=
 github.com/prometheus/common v0.7.0/go.mod h1:DjGbpBbp5NYNiECxcL/VnbXCCaQpKd3tt26CguLLsqA=
 github.com/prometheus/common v0.10.0/go.mod h1:Tlit/dnDKsSWFlCLTWaA1cyBgKHSMdTB80sz/V91rCo=
-github.com/prometheus/common v0.15.0 h1:4fgOnadei3EZvgRwxJ7RMpG1k1pOZth5Pc13tyspaKM=
 github.com/prometheus/common v0.15.0/go.mod h1:U+gB1OBLb1lF3O42bTCL+FK18tX9Oar16Clt/msog/s=
 github.com/prometheus/common v0.19.0 h1:Itb4+NjG9wRdkAWgVucbM/adyIXxEhbw0866e0uZE6A=
 github.com/prometheus/common v0.19.0/go.mod h1:U+gB1OBLb1lF3O42bTCL+FK18tX9Oar16Clt/msog/s=
@@ -1258,8 +1256,8 @@ knative.dev/pkg v0.0.0-20210331062321-6317ec6066f4/go.mod h1:PD5g8hUCXq6iR3tILjm
 knative.dev/pkg v0.0.0-20210331065221-952fdd90dbb0 h1:z05hcB4br0qz7JdwIoUSTXLTF+7ThuJ+R6NFfXd1Y4Q=
 knative.dev/pkg v0.0.0-20210331065221-952fdd90dbb0/go.mod h1:PD5g8hUCXq6iR3tILjmZeJBvQfXGnHMPKryq54qHJhg=
 knative.dev/reconciler-test v0.0.0-20210329214021-2a67496462a4/go.mod h1:qLfJMHc0i9ENTSet/SUp/FcQm4QVfNTX8ZC//aVQN0M=
-knative.dev/serving v0.21.1-0.20210402152223-a43d38d97c2f h1:kdYz/Ww/xYhDWg7NbfGj5UucNbBbSWLqDZg7g7rRZHk=
-knative.dev/serving v0.21.1-0.20210402152223-a43d38d97c2f/go.mod h1:20yuZH4F7cvoovC2Pi1uQBoIbOjllapVSKDkWAXkItA=
+knative.dev/serving v0.21.1-0.20210405153826-813aa65967ae h1:NBc8psIqE0kaW6bvFNLhKqpH/j07GOMUKMMWyTtbxmY=
+knative.dev/serving v0.21.1-0.20210405153826-813aa65967ae/go.mod h1:20yuZH4F7cvoovC2Pi1uQBoIbOjllapVSKDkWAXkItA=
 modernc.org/cc v1.0.0/go.mod h1:1Sk4//wdnYJiUIxnW8ddKpaOJCF37yAdqYnkxUpaYxw=
 modernc.org/golex v1.0.0/go.mod h1:b/QX9oBD/LhixY6NDh+IdGv17hgB+51fET1i2kPSmvk=
 modernc.org/mathutil v1.0.0/go.mod h1:wU0vUrJsVWBZ4P6e7xtFJEhFSNsfRLJ8H458uRjg03k=
