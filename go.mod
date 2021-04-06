@@ -15,7 +15,7 @@ require (
 	knative.dev/eventing v0.21.1-0.20210331231822-8f35d42544e0
 	knative.dev/hack v0.0.0-20210325223819-b6ab329907d3
 	knative.dev/pkg v0.0.0-20210331065221-952fdd90dbb0
-	knative.dev/serving v0.21.1-0.20210402152223-a43d38d97c2f
+	knative.dev/serving v0.21.1-0.20210405153826-813aa65967ae
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
