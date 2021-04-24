@@ -22,7 +22,6 @@ import (
 	context "context"
 	json "encoding/json"
 	fmt "fmt"
-	reflect "reflect"
 
 	v1alpha1 "github.com/tom24d/eventing-dockerhub/pkg/apis/sources/v1alpha1"
 	versioned "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned"
@@ -212,8 +211,15 @@ func (r *reconcilerImpl) Reconcile(ctx context.Context, key string) error {
 	original, err := getter.Get(s.name)
 
 	if errors.IsNotFound(err) {
-		// The resource may no longer exist, in which case we stop processing.
+		// The resource may no longer exist, in which case we stop processing and call
+		// the ObserveDeletion handler if appropriate.
 		logger.Debugf("Resource %q no longer exists", key)
+		if del, ok := r.reconciler.(reconciler.OnDeletionInterface); ok {
+			return del.ObserveDeletion(ctx, types.NamespacedName{
+				Namespace: s.namespace,
+				Name:      s.name,
+			})
+		}
 		return nil
 	} else if err != nil {
 		return err
@@ -322,7 +328,7 @@ func (r *reconcilerImpl) updateStatus(ctx context.Context, existing *v1alpha1.Do
 		}
 
 		// If there's nothing to update, just return.
-		if reflect.DeepEqual(existing.Status, desired.Status) {
+		if equality.Semantic.DeepEqual(existing.Status, desired.Status) {
 			return nil
 		}
 
