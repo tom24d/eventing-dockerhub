@@ -186,8 +186,8 @@ func (a *Adapter) sendEventToSink(payload dockerhub.BuildPayload) error {
 	a.logger.Infof("Sending event: %v", event)
 
 	result := a.client.Send(ctx, event)
-	if !cloudevents.IsACK(result) {
-		return fmt.Errorf("send() could not get ACK: %v", result)
+	if cloudevents.IsUndelivered(result) {
+		return fmt.Errorf("the event is not delivered: %v", result)
 	}
 	return nil
 }
