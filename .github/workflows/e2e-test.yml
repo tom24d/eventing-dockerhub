@@ -13,7 +13,7 @@ jobs:
     name: Integration Test
     strategy:
       matrix:
-        go-version: [1.15.x]
+        go-version: [1.16.x]
     runs-on: ubuntu-latest
 
     env:
@@ -28,7 +28,7 @@ jobs:
         id: go
 
       - name: Get google/ko
-        run: go get github.com/google/ko
+        run: go install github.com/google/ko@v0.8.2
 
       - uses: actions/checkout@v2
         with:

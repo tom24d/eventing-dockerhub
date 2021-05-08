@@ -8,10 +8,10 @@ on:
 
 jobs:
   build-ko:
-    name: Build Test with ko
+    name: Build Test
     strategy:
       matrix:
-        go-version: [1.15.x]
+        go-version: [1.16.x]
     runs-on: ubuntu-latest
     steps:
 
@@ -22,7 +22,7 @@ jobs:
         id: go
 
       - name: Get google/ko
-        run: go get github.com/google/ko
+        run: go install github.com/google/ko@v0.8.2
 
 
       - name: Check out code into the Go module directory
