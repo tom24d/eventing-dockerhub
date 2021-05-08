@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-ko:
-    name: Build Test with ko
+    name: Build Test
     strategy:
       matrix:
         go-version: [1.16.x]
