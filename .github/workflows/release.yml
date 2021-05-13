@@ -26,7 +26,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo ${{ secrets.UPDATE_BOT_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
       - name: Build source
         run: ./test/release.sh
         env:
