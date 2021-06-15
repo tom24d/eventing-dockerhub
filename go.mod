@@ -9,13 +9,13 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.7
 	go.uber.org/zap v1.17.0
 	gopkg.in/go-playground/webhooks.v5 v5.15.0
-	k8s.io/api v0.19.7
-	k8s.io/apimachinery v0.19.7
-	k8s.io/client-go v0.19.7
-	knative.dev/eventing v0.23.1-0.20210604160145-ab3978c3656d
-	knative.dev/hack v0.0.0-20210601210329-de04b70e00d0
-	knative.dev/pkg v0.0.0-20210602095030-0e61d6763dd6
-	knative.dev/serving v0.23.1-0.20210604162645-4dd16dbab51d
+	k8s.io/api v0.20.7
+	k8s.io/apimachinery v0.20.7
+	k8s.io/client-go v0.20.7
+	knative.dev/eventing v0.23.1-0.20210615125721-af6744d48af9
+	knative.dev/hack v0.0.0-20210614141220-66ab1a098940
+	knative.dev/pkg v0.0.0-20210615092720-192b0c9d6e56
+	knative.dev/serving v0.23.1-0.20210615134628-561d9d0c6a04
 )
 
 replace gopkg.in/go-playground/webhooks.v5 => ./third_party/webhooks
