@@ -121,8 +121,6 @@ nodes:
   image: ${node_image}
 - role: worker
   image: ${node_image}
-- role: worker
-  image: ${node_image}
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
