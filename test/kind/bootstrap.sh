@@ -138,5 +138,7 @@ for node in $(${KIND_BIN} get nodes); do
   kubectl annotate node "${node}" "kind.x-k8s.io/registry=localhost:${reg_port}";
 done
 
+kubectl get nodes
+
 echo "To use local registry:"
 echo "export KO_DOCKER_REPO=localhost:${reg_port}"
