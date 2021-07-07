@@ -104,7 +104,7 @@ fi
 
 
 
-cat <<EOF | ${KIND_BIN} create cluster --name ${cluster_name} --config=-
+cat <<EOF | ${KIND_BIN} create cluster --name ${cluster_name} --wait 5m --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
@@ -117,8 +117,6 @@ nodes:
   - containerPort: 31443
     hostPort: 443
     protocol: TCP
-- role: worker
-  image: ${node_image}
 - role: worker
   image: ${node_image}
 - role: worker
@@ -139,6 +137,8 @@ fi
 for node in $(${KIND_BIN} get nodes); do
   kubectl annotate node "${node}" "kind.x-k8s.io/registry=localhost:${reg_port}";
 done
+
+kubectl get nodes
 
 echo "To use local registry:"
 echo "export KO_DOCKER_REPO=localhost:${reg_port}"

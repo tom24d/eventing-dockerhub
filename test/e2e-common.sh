@@ -88,9 +88,10 @@ function install_net_kourier() {
   --patch '{"data":{"ingress.class":"kourier.ingress.networking.knative.dev"}}'
 
   if [[ ${ON_KIND} ]]; then
+    configure_dns
     kubectl apply -f "${REPO_ROOT_DIR}/test/config/kourier.yaml"
     kubectl patch configmap/config-domain --namespace knative-serving --type merge \
-      --patch '{"data":{"127.0.0.1.nip.io":""}}'
+      --patch '{"data":{"127.0.0.1.sslip.io":""}}'
   else
     configure_dns
     wait_until_service_has_external_http_address kourier-system kourier
