@@ -37,7 +37,7 @@ jobs:
 
       - name: Create KinD Cluster
         env:
-          KIND_VERSION: v0.8.1
+          KIND_VERSION: v0.11.1
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/kind/bootstrap.sh
