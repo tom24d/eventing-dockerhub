@@ -1,8 +1,5 @@
 package docker
 
-// copy from gopkg.in/go-playground/webhooks/docker.
-// Remove this once https://github.com/go-playground/webhooks/issues/116 is resolved.
-
 // this package recieves the Docker Hub Automated Build webhook
 // https://docs.docker.com/docker-hub/webhooks/
 // NOT the Docker Trusted Registry webhook
@@ -36,13 +33,13 @@ type BuildPayload struct {
 	CallbackURL string `json:"callback_url"`
 	PushData    struct {
 		Images   []string `json:"images"`
-		PushedAt float64  `json:"pushed_at"`
+		PushedAt float32  `json:"pushed_at"`
 		Pusher   string   `json:"pusher"`
 		Tag      string   `json:"tag"`
 	} `json:"push_data"`
 	Repository struct {
 		CommentCount    int     `json:"comment_count"`
-		DateCreated     float64 `json:"date_created"`
+		DateCreated     float32 `json:"date_created"`
 		Description     string  `json:"description"`
 		Dockerfile      string  `json:"dockerfile"`
 		FullDescription string  `json:"full_description"`
@@ -94,4 +91,3 @@ func (hook Webhook) Parse(r *http.Request, events ...Event) (interface{}, error)
 	return pl, err
 
 }
-
