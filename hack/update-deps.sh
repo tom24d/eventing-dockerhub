@@ -21,3 +21,6 @@ set -o pipefail
 source $(dirname "$0")/../vendor/knative.dev/hack/library.sh
 
 go_update_deps "$@"
+
+# Remove this once https://github.com/go-playground/webhooks/issues/116 is resolved.
+git apply ${REPO_ROOT_DIR}/hack/docker_webhook.patch

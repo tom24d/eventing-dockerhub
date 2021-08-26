@@ -1,8 +1,5 @@
 package docker
 
-// copy from gopkg.in/go-playground/webhooks/docker.
-// Remove this once https://github.com/go-playground/webhooks/issues/116 is resolved.
-
 // this package recieves the Docker Hub Automated Build webhook
 // https://docs.docker.com/docker-hub/webhooks/
 // NOT the Docker Trusted Registry webhook
@@ -94,4 +91,3 @@ func (hook Webhook) Parse(r *http.Request, events ...Event) (interface{}, error)
 	return pl, err
 
 }
-
