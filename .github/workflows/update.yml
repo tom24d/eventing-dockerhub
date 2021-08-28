@@ -25,7 +25,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          go install knative.dev/test-infra/buoy@latest
           go install github.com/google/go-licenses@latest
 
       - name: Check out code onto GOPATH
