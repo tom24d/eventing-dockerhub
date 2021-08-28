@@ -53,9 +53,7 @@ func NewController(
 
 	impl := dhreconciler.NewImpl(ctx, r)
 
-	r.sinkResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
-
-	logging.FromContext(ctx).Info("Setting up DockerHub event handlers")
+	r.sinkResolver = resolver.NewURIResolverFromTracker(ctx, impl.Tracker)
 
 	dockerhubInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
