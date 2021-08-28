@@ -5,11 +5,9 @@ import (
 	"os"
 
 	// k8s.io imports
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 
 	//Injection imports
-	sourcescheme "github.com/tom24d/eventing-dockerhub/pkg/client/clientset/versioned/scheme"
 	dockerhubinformer "github.com/tom24d/eventing-dockerhub/pkg/client/injection/informers/sources/v1alpha1/dockerhubsource"
 	dhreconciler "github.com/tom24d/eventing-dockerhub/pkg/client/injection/reconciler/sources/v1alpha1/dockerhubsource"
 
@@ -53,9 +51,7 @@ func NewController(
 
 	impl := dhreconciler.NewImpl(ctx, r)
 
-	r.sinkResolver = resolver.NewURIResolver(ctx, impl.EnqueueKey)
-
-	logging.FromContext(ctx).Info("Setting up DockerHub event handlers")
+	r.sinkResolver = resolver.NewURIResolverFromTracker(ctx, impl.Tracker)
 
 	dockerhubInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
@@ -65,8 +61,4 @@ func NewController(
 	})
 
 	return impl
-}
-
-func init() {
-	sourcescheme.AddToScheme(scheme.Scheme)
 }
