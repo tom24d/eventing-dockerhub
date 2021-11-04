@@ -30,7 +30,7 @@ jobs:
       - name: Get google/ko
         run: go install github.com/google/ko@v0.8.2
 
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 1
           path: ./src/github.com/tom24d/eventing-dockerhub
