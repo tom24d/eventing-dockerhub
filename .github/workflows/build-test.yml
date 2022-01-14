@@ -22,8 +22,7 @@ jobs:
         id: go
 
       - name: Get google/ko
-        run: go install github.com/google/ko@v0.8.2
-
+        run: go install github.com/google/ko@v0.9
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2.4.0
