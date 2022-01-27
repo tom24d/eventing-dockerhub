@@ -15,6 +15,7 @@
 # limitations under the License.
 
 export GO111MODULE=on
+export GOFLAGS=-mod=vendor
 
 source $(dirname $0)/e2e-common.sh
 
