@@ -18,6 +18,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+export GOFLAGS=-mod=vendor
+
+
 source $(dirname "$0")/../vendor/knative.dev/hack/library.sh
 
 go_update_deps "$@"
