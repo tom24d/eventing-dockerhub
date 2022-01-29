@@ -20,6 +20,7 @@ set -o pipefail
 
 export GO111MODULE=on
 
+
 source $(dirname $0)/../vendor/knative.dev/hack/library.sh
 
 readonly TMP_DIFFROOT="$(mktemp -d ${REPO_ROOT_DIR}/tmpdiffroot.XXXXXX)"
@@ -36,6 +37,7 @@ cleanup
 mkdir -p "${TMP_DIFFROOT}"
 
 cp -aR \
+  "${REPO_ROOT_DIR}/go.mod" \
   "${REPO_ROOT_DIR}/go.sum" \
   "${REPO_ROOT_DIR}/third_party" \
   "${REPO_ROOT_DIR}/vendor" \
@@ -53,6 +55,7 @@ diff -Naupr --no-dereference \
 
 # Restore working tree state
 rm -fr \
+  "${REPO_ROOT_DIR}/go.mod" \
   "${REPO_ROOT_DIR}/go.sum" \
   "${REPO_ROOT_DIR}/third_party" \
   "${REPO_ROOT_DIR}/vendor"

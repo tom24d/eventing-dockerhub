@@ -24,7 +24,7 @@ cluster_name=knik
 reg_name='kind-registry'
 reg_port='5000'
 
-node_image="kindest/node:v1.20.7@sha256:cbeaf907fc78ac97ce7b625e4bf0de16e3ea725daf6b04f930bd14c67c671ff9"
+node_image="kindest/node:v1.23.0@sha256:49824ab1727c04e56a21a5d8372a402fcd32ea51ac96a2706a12af38934f81ac"
 
 
 # Parse flags to determine any we should pass to dep.
