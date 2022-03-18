@@ -1,10 +1,10 @@
 pull_request_rules:
   - name: Automatic merge on scheduled PR
     conditions:
-      - "check-success=Build Test.*"
-      - "check-success=Integration Test.*"
-      - "check-success=Unit Test.*"
-      - "check-success=Verify-codegen.*"
+      - "check-success=^Build\sTest"
+      - "check-success=^Integration\sTest"
+      - "check-success=^Unit\sTest"
+      - "check-success=^Verify-codegen"
       - "author=tom24d"
       - title~=(?i)scheduled
       - base=main
