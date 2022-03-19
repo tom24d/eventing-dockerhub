@@ -117,7 +117,7 @@ func (c *FakeDockerHubSources) UpdateStatus(ctx context.Context, dockerHubSource
 // Delete takes name of the dockerHubSource and deletes it. Returns an error if one occurs.
 func (c *FakeDockerHubSources) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(dockerhubsourcesResource, c.ns, name), &v1alpha1.DockerHubSource{})
+		Invokes(testing.NewDeleteActionWithOptions(dockerhubsourcesResource, c.ns, name, opts), &v1alpha1.DockerHubSource{})
 
 	return err
 }
