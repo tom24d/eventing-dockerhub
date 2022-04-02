@@ -939,7 +939,7 @@ k8s.io/utils/internal/third_party/forked/golang/net
 k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/eventing v0.30.1-0.20220325083448-4be06cdde807
+# knative.dev/eventing v0.30.1-0.20220401091146-380849fdf5ea
 ## explicit; go 1.16
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
@@ -991,14 +991,14 @@ knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/test_images
 knative.dev/eventing/test/test_images/recordevents
-# knative.dev/hack v0.0.0-20220318020218-14f832e506f8
+# knative.dev/hack v0.0.0-20220401031746-a75ca495e7f4
 ## explicit; go 1.14
 knative.dev/hack
 # knative.dev/networking v0.0.0-20220323170318-55757e9c20d6
 ## explicit; go 1.16
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
-# knative.dev/pkg v0.0.0-20220325200448-1f7514acd0c2
+# knative.dev/pkg v0.0.0-20220401214546-c2f1f3ec291f
 ## explicit; go 1.17
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1070,7 +1070,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.30.1-0.20220326000048-0bc4171698a2
+# knative.dev/serving v0.30.1-0.20220401192246-43ca40f96f57
 ## explicit; go 1.16
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
