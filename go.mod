@@ -14,10 +14,10 @@ require (
 	k8s.io/api v0.23.5
 	k8s.io/apimachinery v0.23.5
 	k8s.io/client-go v0.23.5
-	knative.dev/eventing v0.31.1-0.20220428204853-01f56122bf2a
-	knative.dev/hack v0.0.0-20220427014036-5f473869d377
-	knative.dev/pkg v0.0.0-20220428192552-5c8cc3c9efd3
-	knative.dev/serving v0.31.1-0.20220429200154-f6cb424aaae3
+	knative.dev/eventing v0.31.1-0.20220505082027-22e2a2cff566
+	knative.dev/hack v0.0.0-20220506160929-a8076b0510ed
+	knative.dev/pkg v0.0.0-20220505013700-a8b7d99374a3
+	knative.dev/serving v0.31.1-0.20220505032827-18da4c0f0f2e
 )
 
 require (
@@ -71,7 +71,7 @@ require (
 	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect
-	github.com/prometheus/procfs v0.6.0 // indirect
+	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/rickb777/date v1.13.0 // indirect
 	github.com/rickb777/plural v1.2.1 // indirect
@@ -107,7 +107,7 @@ require (
 	k8s.io/klog/v2 v2.60.1-0.20220317184644-43cc75f9ae89 // indirect
 	k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/networking v0.0.0-20220429044653-591d2bb63aae // indirect
+	knative.dev/networking v0.0.0-20220504043559-8d5dcbeeea2a // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
