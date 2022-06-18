@@ -272,6 +272,8 @@ github.com/cloudevents/sdk-go/sql/v2 v2.8.0/go.mod h1:u9acNJbhmi1wnDJro4PEAqbr4N
 github.com/cloudevents/sdk-go/v2 v2.4.1/go.mod h1:MZiMwmAh5tGj+fPFvtHv9hKurKqXtdB9haJYMJ/7GJY=
 github.com/cloudevents/sdk-go/v2 v2.8.0 h1:kmRaLbsafZmidZ0rZ6h7WOMqCkRMcVTLV5lxV/HKQ9Y=
 github.com/cloudevents/sdk-go/v2 v2.8.0/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
+github.com/cloudevents/sdk-go/v2 v2.10.1 h1:qNFovJ18fWOd8Q9ydWJPk1oiFudXyv1GxJIP7MwPjuM=
+github.com/cloudevents/sdk-go/v2 v2.10.1/go.mod h1:GpCBmUj7DIRiDhVvsK5d6WCbgTWs8DxAWTRtAwQmIXs=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
@@ -1383,12 +1385,15 @@ go.uber.org/automaxprocs v1.4.0/go.mod h1:/mTEdr7LvHhs0v7mjdxDreTz1OG5zdZGqgOnhW
 go.uber.org/goleak v1.1.10/go.mod h1:8a7PlsEVH3e/a/GLqe5IIrQx6GzcnRmZEufDUTk4A7A=
 go.uber.org/goleak v1.1.11-0.20210813005559-691160354723 h1:sHOAIxRGBp443oHZIPB+HsUGaksVCXVQENPxwTfQdH4=
 go.uber.org/goleak v1.1.11-0.20210813005559-691160354723/go.mod h1:cwTWslyiVhfpKIDGSZEM2HlOvcqm+tG4zioyIeLoqMQ=
+go.uber.org/goleak v1.1.11/go.mod h1:cwTWslyiVhfpKIDGSZEM2HlOvcqm+tG4zioyIeLoqMQ=
 go.uber.org/goleak v1.1.12 h1:gZAh5/EyT/HQwlpkCy6wTpqfH9H8Lz8zbm3dZh+OyzA=
 go.uber.org/multierr v1.1.0/go.mod h1:wR5kodmAFQ0UK8QlbwjlSNy0Z68gJhDJUG5sjR94q/0=
 go.uber.org/multierr v1.3.0/go.mod h1:VgVr7evmIr6uPjLBxg28wmKNXyqE9akIJ5XnfpiKl+4=
 go.uber.org/multierr v1.4.0/go.mod h1:VgVr7evmIr6uPjLBxg28wmKNXyqE9akIJ5XnfpiKl+4=
 go.uber.org/multierr v1.6.0 h1:y6IPFStTAIT5Ytl7/XYmHvzXQ7S3g/IeZW9hyZ5thw4=
 go.uber.org/multierr v1.6.0/go.mod h1:cdWPpRnG4AhwMwsgIHip0KRBQjJy5kYEpYjJxpXp9iU=
+go.uber.org/multierr v1.8.0 h1:dg6GjLku4EH+249NNmoIciG9N/jURbDG+pFlTkhzIC8=
+go.uber.org/multierr v1.8.0/go.mod h1:7EAYxJLBy9rStEaz58O2t4Uvip6FSURkq8/ppBp95ak=
 go.uber.org/tools v0.0.0-20190618225709-2cfd321de3ee/go.mod h1:vJERXedbb3MVM5f9Ejo0C68/HhF8uaILCdgjnY+goOA=
 go.uber.org/zap v1.10.0/go.mod h1:vwi/ZaCAaUcBkycHslxD9B2zi4UTXhF60s6SWpuDF0Q=
 go.uber.org/zap v1.13.0/go.mod h1:zwrFLgMcdUuIBviXEYEH1YKNaOBnKXsx2IPda5bBwHM=
@@ -1396,6 +1401,8 @@ go.uber.org/zap v1.17.0/go.mod h1:MXVU+bhUf/A7Xi2HNOnopQOrmycQ5Ih87HtOu4q5SSo=
 go.uber.org/zap v1.19.0/go.mod h1:xg/QME4nWcxGxrpdeYfq7UvYrLh66cuVKdrbD1XF/NI=
 go.uber.org/zap v1.19.1 h1:ue41HOKd1vGURxrmeKIgELGb3jPW9DMUDGtsinblHwI=
 go.uber.org/zap v1.19.1/go.mod h1:j3DNczoxDZroyBnOT1L/Q79cfUMGZxlv/9dzN7SM1rI=
+go.uber.org/zap v1.21.0 h1:WefMeulhovoZ2sYXz7st6K0sLj7bBhpiFaud4r4zST8=
+go.uber.org/zap v1.21.0/go.mod h1:wjWOCqI0f2ZZrJF/UufIOkiC8ii6tm1iqIsLo76RfJw=
 golang.org/x/crypto v0.0.0-20171113213409-9f005a07e0d3/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180501155221-613d6eafa307/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
@@ -2168,6 +2175,8 @@ knative.dev/eventing v0.32.1-0.20220603013553-13ed6edb136b h1:VdvYbLb0zfeyJqZGOf
 knative.dev/eventing v0.32.1-0.20220603013553-13ed6edb136b/go.mod h1:669e7eZgjBLy+SLXi4I0HvE+trswWV1w36lCyUnXGCY=
 knative.dev/eventing v0.32.1-0.20220610013825-f488f4670727 h1:4dEOTqf5VREEFVh9Ji99O2K2R3tblkCvifNQaz3W6/s=
 knative.dev/eventing v0.32.1-0.20220610013825-f488f4670727/go.mod h1:669e7eZgjBLy+SLXi4I0HvE+trswWV1w36lCyUnXGCY=
+knative.dev/eventing v0.32.1-0.20220614135415-c1b0ea692715 h1:efjNLZXLgbphN5IiHpkTqK1ztorP+1Nlu1s53/1BPS0=
+knative.dev/eventing v0.32.1-0.20220614135415-c1b0ea692715/go.mod h1:WKC5YSu8dhjcSOgrhgB5ipdV9Of/KrcETkJObM67Mhk=
 knative.dev/hack v0.0.0-20220224013837-e1785985d364/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack v0.0.0-20220328133751-f06773764ce3/go.mod h1:PHt8x8yX5Z9pPquBEfIj0X66f8iWkWfR0S/sarACJrI=
 knative.dev/hack v0.0.0-20220407171644-0e0784b13cef h1:tIBTdo8Ui1oVYyaQV9kup1qA3Rp9YQosS7c5fhjHnMc=
@@ -2197,6 +2206,7 @@ knative.dev/hack/schema v0.0.0-20220503220458-46c77f157e20/go.mod h1:ffjwmdcrH5v
 knative.dev/hack/schema v0.0.0-20220506160929-a8076b0510ed/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
 knative.dev/hack/schema v0.0.0-20220512014059-f4972b4daff9/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
 knative.dev/hack/schema v0.0.0-20220524153203-12d3e2a7addc/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
+knative.dev/hack/schema v0.0.0-20220610014127-dc6c287516dc/go.mod h1:ffjwmdcrH5vN3mPhO8RrF2KfNnbHeCE2C60A+2cv3U0=
 knative.dev/networking v0.0.0-20220407165945-7307ffd0a8eb h1:YmlxFL4T46fHu+l44542rFLP0tRLKEWswtvV1dQwrW8=
 knative.dev/networking v0.0.0-20220407165945-7307ffd0a8eb/go.mod h1:5mOmDZAOLZ4spdHWoiRpjIVCSWuA8V4NYIVtFycdSn8=
 knative.dev/networking v0.0.0-20220412073408-56c4a3e1329c h1:/5d1H1iZWSmCZUku/Q3OQFW4KJmDC5E45dPEE1r20JQ=
@@ -2249,6 +2259,7 @@ knative.dev/reconciler-test v0.0.0-20220428151655-74b18404decf/go.mod h1:hSnnO5Q
 knative.dev/reconciler-test v0.0.0-20220505183729-e295cedfd97b/go.mod h1:blANTpykbOpFykGxucL/8RkU8hH4WmZRWaxifP8heF4=
 knative.dev/reconciler-test v0.0.0-20220513144654-fdb392439fb5/go.mod h1:blANTpykbOpFykGxucL/8RkU8hH4WmZRWaxifP8heF4=
 knative.dev/reconciler-test v0.0.0-20220524205904-f750f80bfc7e/go.mod h1:/ps2aEdmtjId+pUGJuuADQN4IucIp4rI7KnrYEahOgE=
+knative.dev/reconciler-test v0.0.0-20220610141926-64ffd15625ec/go.mod h1:/vZ6/AKGYQQPYY/7BSebqt62QrxiJ97T3r1jso9dAJg=
 knative.dev/serving v0.30.1-0.20220408151545-e38c4cfabefb h1:EsMlGkIIf7w1hG2asKI24OHD8fWuEjqZESAJnXEpaIY=
 knative.dev/serving v0.30.1-0.20220408151545-e38c4cfabefb/go.mod h1:lrBIaI6Qz1NFQK3bAs1pR1NsvMpIp9219Rk3qFZg49g=
 knative.dev/serving v0.30.1-0.20220414210010-f931c3a82617 h1:MRsC6pfAuJauoFHogIl1CaU6TRFDC440e5kGu69z9G4=
@@ -2269,6 +2280,8 @@ knative.dev/serving v0.32.1-0.20220603130453-6bb357618d1a h1:vPPVm69WudADl357Xkw
 knative.dev/serving v0.32.1-0.20220603130453-6bb357618d1a/go.mod h1:Psh3snY/m7EnYAezbdlt2LPN88KcVIhYof8DMH89BpA=
 knative.dev/serving v0.32.1-0.20220610185625-2f7b6dbeaf25 h1:Uf5yuPzu9e2NS9pi1BIeGSZRP+LkpGG8oQhUCWculYI=
 knative.dev/serving v0.32.1-0.20220610185625-2f7b6dbeaf25/go.mod h1:2DTwW8KZVZgsobW0EYhv4nTR8+LhKu2pZhEAoytUqE8=
+knative.dev/serving v0.32.1-0.20220617224118-e67dbb956d69 h1:2pNpbqGoCClQ87k+XeVBZr/ari1H8p0gtUq/R9EDHik=
+knative.dev/serving v0.32.1-0.20220617224118-e67dbb956d69/go.mod h1:2DTwW8KZVZgsobW0EYhv4nTR8+LhKu2pZhEAoytUqE8=
 mvdan.cc/gofumpt v0.1.1/go.mod h1:yXG1r1WqZVKWbVRtBWKWX9+CxGYfA51nSomhM0woR48=
 mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed/go.mod h1:Xkxe497xwlCKkIaQYRfC7CSLworTXY9RMqwhhCm+8Nc=
 mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b/go.mod h1:2odslEg/xrtNQqCYg2/jCoyKnw3vv5biOc3JnIcYfL4=
