@@ -2,14 +2,14 @@ name: Update Deps
 
 on:
   schedule:
-    - cron: '0 0 * * 6'
+    - cron: '0 0 */14 * *'
 
 jobs:
   update-deps:
     name: Update Dependencies
     strategy:
       matrix:
-        go-version: [1.17.x]
+        go-version: [1.18.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
 
@@ -56,7 +56,9 @@ jobs:
           token: ${{ secrets.UPDATE_BOT_TOKEN }}
           assignees: tom24d
           labels: dependencies
-          commit-message: 'ran ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh'
+          commit-message: |
+            Update Dependencies.
+            ran ./hack/update-deps.sh --upgrade && ./hack/update-codegen.sh
           title: '[scheduled] Auto Update Dependencies'
           body: |
             This is scheduled PR by GitHub Action.
