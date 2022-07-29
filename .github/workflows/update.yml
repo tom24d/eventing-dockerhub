@@ -9,7 +9,7 @@ jobs:
     name: Update Dependencies
     strategy:
       matrix:
-        go-version: [1.17.x]
+        go-version: [1.18.x]
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
 
