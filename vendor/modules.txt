@@ -539,7 +539,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# k8s.io/api v0.23.8
+# k8s.io/api v0.23.9
 ## explicit; go 1.16
 k8s.io/api/admission/v1
 k8s.io/api/admissionregistration/v1
@@ -587,14 +587,14 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apiextensions-apiserver v0.23.8
+# k8s.io/apiextensions-apiserver v0.23.9
 ## explicit; go 1.16
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme
 k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1
-# k8s.io/apimachinery v0.23.8
+# k8s.io/apimachinery v0.23.9
 ## explicit; go 1.16
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -643,7 +643,7 @@ k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/client-go v0.23.8
+# k8s.io/client-go v0.23.9
 ## explicit; go 1.16
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1beta1
@@ -875,7 +875,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.23.8
+# k8s.io/code-generator v0.23.9
 ## explicit; go 1.16
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
@@ -910,7 +910,7 @@ k8s.io/code-generator/cmd/set-gen
 k8s.io/code-generator/pkg/namer
 k8s.io/code-generator/pkg/util
 k8s.io/code-generator/third_party/forked/golang/reflect
-# k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b
+# k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7
 ## explicit; go 1.13
 k8s.io/gengo/args
 k8s.io/gengo/examples/deepcopy-gen/generators
@@ -922,10 +922,12 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
-# k8s.io/klog/v2 v2.60.1-0.20220317184644-43cc75f9ae89
+# k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f
 ## explicit; go 1.13
 k8s.io/klog/v2
 k8s.io/klog/v2/internal/buffer
+k8s.io/klog/v2/internal/clock
+k8s.io/klog/v2/internal/dbg
 k8s.io/klog/v2/internal/serialize
 k8s.io/klog/v2/internal/severity
 # k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf
@@ -950,8 +952,8 @@ k8s.io/utils/lru
 k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# knative.dev/eventing v0.33.1-0.20220728144837-15dd7ca8c811
-## explicit; go 1.17
+# knative.dev/eventing v0.33.1-0.20220812013702-4e563701f01e
+## explicit; go 1.18
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
 knative.dev/eventing/pkg/adapter/v2/util/crstatusevent
@@ -1002,15 +1004,15 @@ knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/test_images
 knative.dev/eventing/test/test_images/recordevents
-# knative.dev/hack v0.0.0-20220728013938-9dabf7cf62e3
+# knative.dev/hack v0.0.0-20220812013902-4621ee6b33ca
 ## explicit; go 1.17
 knative.dev/hack
-# knative.dev/networking v0.0.0-20220723000421-cddb0ff95789
-## explicit; go 1.17
+# knative.dev/networking v0.0.0-20220803115018-d2c739da1c1b
+## explicit; go 1.18
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
 knative.dev/networking/pkg/config
-# knative.dev/pkg v0.0.0-20220728013737-449f7e6dab63
+# knative.dev/pkg v0.0.0-20220812013701-52261a1dc69d
 ## explicit; go 1.18
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1082,7 +1084,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.33.1-0.20220729195738-02d89d82807b
+# knative.dev/serving v0.33.1-0.20220812142301-86a3daf11a23
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
