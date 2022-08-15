@@ -11,13 +11,13 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	go.uber.org/zap v1.21.0
 	gopkg.in/go-playground/webhooks.v5 v5.15.0
-	k8s.io/api v0.23.8
-	k8s.io/apimachinery v0.23.8
-	k8s.io/client-go v0.23.8
-	knative.dev/eventing v0.33.1-0.20220728144837-15dd7ca8c811
-	knative.dev/hack v0.0.0-20220728013938-9dabf7cf62e3
-	knative.dev/pkg v0.0.0-20220728013737-449f7e6dab63
-	knative.dev/serving v0.33.1-0.20220729195738-02d89d82807b
+	k8s.io/api v0.23.9
+	k8s.io/apimachinery v0.23.9
+	k8s.io/client-go v0.23.9
+	knative.dev/eventing v0.33.1-0.20220812013702-4e563701f01e
+	knative.dev/hack v0.0.0-20220812013902-4621ee6b33ca
+	knative.dev/pkg v0.0.0-20220812013701-52261a1dc69d
+	knative.dev/serving v0.33.1-0.20220812142301-86a3daf11a23
 )
 
 require (
@@ -102,13 +102,13 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/apiextensions-apiserver v0.23.8 // indirect
-	k8s.io/code-generator v0.23.8 // indirect
-	k8s.io/gengo v0.0.0-20220307231824-4627b89bbf1b // indirect
-	k8s.io/klog/v2 v2.60.1-0.20220317184644-43cc75f9ae89 // indirect
+	k8s.io/apiextensions-apiserver v0.23.9 // indirect
+	k8s.io/code-generator v0.23.9 // indirect
+	k8s.io/gengo v0.0.0-20220613173612-397b4ae3bce7 // indirect
+	k8s.io/klog/v2 v2.70.2-0.20220707122935-0990e81f1a8f // indirect
 	k8s.io/kube-openapi v0.0.0-20220124234850-424119656bbf // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
-	knative.dev/networking v0.0.0-20220723000421-cddb0ff95789 // indirect
+	knative.dev/networking v0.0.0-20220803115018-d2c739da1c1b // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
