@@ -14,10 +14,10 @@ require (
 	k8s.io/api v0.24.4
 	k8s.io/apimachinery v0.24.4
 	k8s.io/client-go v0.24.4
-	knative.dev/eventing v0.34.1-0.20220912074833-e46f4d509d74
-	knative.dev/hack v0.0.0-20220914183605-d1317b08c0c3
-	knative.dev/pkg v0.0.0-20220914154704-5f66ecf267fe
-	knative.dev/serving v0.34.1-0.20220914230604-c832f358b92f
+	knative.dev/eventing v0.34.1-0.20220928014117-bd37622589a4
+	knative.dev/hack v0.0.0-20220928014218-68872175ea9c
+	knative.dev/pkg v0.0.0-20220928014015-6d718681cd8c
+	knative.dev/serving v0.34.1-0.20220928145016-47907d057537
 )
 
 require (
@@ -79,7 +79,7 @@ require (
 	github.com/rickb777/plural v1.2.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/stretchr/testify v1.8.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/automaxprocs v1.4.0 // indirect
