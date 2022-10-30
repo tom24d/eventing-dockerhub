@@ -36,9 +36,6 @@ jobs:
       - name: Build test for receive adapter with ko
         run: ko publish ./cmd/receive_adapter -L
 
-      - name: Vet
-        run: go vet ./...
-
       - name: Build test
         run: go build -race ./...
 
