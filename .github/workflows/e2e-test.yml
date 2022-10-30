@@ -36,8 +36,6 @@ jobs:
           path: ./src/github.com/tom24d/eventing-dockerhub
 
       - name: Create KinD Cluster
-        env:
-          KIND_VERSION: v0.14.0
         run: |
           pushd ./src/github.com/tom24d/eventing-dockerhub
           ./test/kind/bootstrap.sh
