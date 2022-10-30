@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file, and the cloud.google.com/go import, won't actually become part of
-// the resultant binary.
-//go:build modhack
-// +build modhack
+package internal
 
-package iam
-
-// Necessary for safely adding multi-module repo. See: https://github.com/golang/go/wiki/Modules#is-it-possible-to-add-a-module-to-a-multi-module-repository
-import _ "cloud.google.com/go"
+// Version is the current tagged release of the library.
+const Version = "1.23.0"
