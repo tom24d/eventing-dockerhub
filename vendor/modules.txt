@@ -57,11 +57,11 @@ github.com/census-instrumentation/opencensus-proto/gen-go/trace/v1
 # github.com/cespare/xxhash/v2 v2.1.2
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
-# github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.12.0
+# github.com/cloudevents/sdk-go/observability/opencensus/v2 v2.13.0
 ## explicit; go 1.17
 github.com/cloudevents/sdk-go/observability/opencensus/v2/client
 github.com/cloudevents/sdk-go/observability/opencensus/v2/http
-# github.com/cloudevents/sdk-go/sql/v2 v2.0.0-20220930150014-52b12276cc4a
+# github.com/cloudevents/sdk-go/sql/v2 v2.13.0
 ## explicit; go 1.17
 github.com/cloudevents/sdk-go/sql/v2
 github.com/cloudevents/sdk-go/sql/v2/expression
@@ -70,7 +70,7 @@ github.com/cloudevents/sdk-go/sql/v2/gen
 github.com/cloudevents/sdk-go/sql/v2/parser
 github.com/cloudevents/sdk-go/sql/v2/runtime
 github.com/cloudevents/sdk-go/sql/v2/utils
-# github.com/cloudevents/sdk-go/v2 v2.12.0
+# github.com/cloudevents/sdk-go/v2 v2.13.0
 ## explicit; go 1.17
 github.com/cloudevents/sdk-go/v2
 github.com/cloudevents/sdk-go/v2/binding
@@ -985,7 +985,7 @@ k8s.io/utils/net
 k8s.io/utils/pointer
 k8s.io/utils/strings/slices
 k8s.io/utils/trace
-# knative.dev/eventing v0.35.1-0.20221222110658-271c9bb53a52
+# knative.dev/eventing v0.35.1-0.20230113013452-694f82436a31
 ## explicit; go 1.18
 knative.dev/eventing/pkg/adapter/v2
 knative.dev/eventing/pkg/adapter/v2/test
@@ -1037,15 +1037,15 @@ knative.dev/eventing/test/lib/resources
 knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/test_images
 knative.dev/eventing/test/test_images/recordevents
-# knative.dev/hack v0.0.0-20221209013717-b9801b4f5a4d
+# knative.dev/hack v0.0.0-20230113013652-c7cfcb062de9
 ## explicit; go 1.18
 knative.dev/hack
-# knative.dev/networking v0.0.0-20221222133558-f1db313cf4bb
+# knative.dev/networking v0.0.0-20230113014853-fe0ac7de80b7
 ## explicit; go 1.18
 knative.dev/networking/pkg/apis/networking
 knative.dev/networking/pkg/apis/networking/v1alpha1
 knative.dev/networking/pkg/config
-# knative.dev/pkg v0.0.0-20221221230956-4fd6eb8652b7
+# knative.dev/pkg v0.0.0-20230113013451-8abadb0a3c19
 ## explicit; go 1.18
 knative.dev/pkg/apis
 knative.dev/pkg/apis/duck
@@ -1118,7 +1118,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/defaulting
 knative.dev/pkg/webhook/resourcesemantics/validation
-# knative.dev/serving v0.35.1-0.20221223180151-aaa992e30bee
+# knative.dev/serving v0.35.1-0.20230113212649-162b8fbfda2f
 ## explicit; go 1.18
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
