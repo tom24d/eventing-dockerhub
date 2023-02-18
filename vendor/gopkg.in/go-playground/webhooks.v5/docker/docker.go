@@ -33,13 +33,13 @@ type BuildPayload struct {
 	CallbackURL string `json:"callback_url"`
 	PushData    struct {
 		Images   []string `json:"images"`
-		PushedAt float64  `json:"pushed_at"`
+		PushedAt float32  `json:"pushed_at"`
 		Pusher   string   `json:"pusher"`
 		Tag      string   `json:"tag"`
 	} `json:"push_data"`
 	Repository struct {
 		CommentCount    int     `json:"comment_count"`
-		DateCreated     float64 `json:"date_created"`
+		DateCreated     float32 `json:"date_created"`
 		Description     string  `json:"description"`
 		Dockerfile      string  `json:"dockerfile"`
 		FullDescription string  `json:"full_description"`
